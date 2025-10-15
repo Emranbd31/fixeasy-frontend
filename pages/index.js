@@ -14,7 +14,7 @@ export default function Home(){
   return (
     <div>
       <Hero />
-      <main className="container">
+      <main className="container" id="services">
         <h2 className="section-title">Popular Home Services</h2>
         <div className="grid">
           {services.map(s => (
