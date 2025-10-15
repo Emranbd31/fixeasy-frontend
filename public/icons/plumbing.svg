@@ -1,5 +1,15 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' width='128' height='128' fill='none'>
-  <rect width='64' height='64' rx='18' fill='#dcfce7'/>
-  <path fill='#16a34a' d='M22 18h20v6h-8v10h6v6h-6v6h-6v-6h-6v-6h6V24h-6z'/>
-  <path fill='#bbf7d0' d='M34 24h6v10h-6z'/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" fill="none">
+  <defs>
+    <linearGradient id="plumb-bg" x1="10" y1="6" x2="54" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e0f2fe" />
+      <stop offset="1" stop-color="#ede9fe" />
+    </linearGradient>
+    <linearGradient id="plumb-accent" x1="20" y1="20" x2="46" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38bdf8" />
+      <stop offset="1" stop-color="#6366f1" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#plumb-bg)" />
+  <path d="M21 24h10v-6h12c1.7 0 3 1.3 3 3v6h-6v-3h-6v9h8c1.7 0 3 1.3 3 3v14h-6v-11h-5v8h-8v-8h-5v-6h5v-6h-5z" fill="url(#plumb-accent)" />
+  <path d="M33 43c0 2.8-1.6 5.8-4.4 7.6-.5.3-1.1-.1-1-.7.2-1.5.7-3.2 1.6-4.9 1-2 2.5-3.7 3.6-4.7.6-.6 1.4-.2 1.4.7-.1.6-.1 1.2-.1 2z" fill="#0ea5e9" opacity=".55" />
 </svg>
