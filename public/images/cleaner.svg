@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#006d77" />
+      <stop offset="1" stop-color="#83c5be" />
+    </linearGradient>
+    <linearGradient id="sparkle" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.1" />
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)" />
+  <g opacity="0.9">
+    <circle cx="400" cy="320" r="160" fill="rgba(255,255,255,0.15)" />
+    <circle cx="1520" cy="840" r="220" fill="rgba(255,255,255,0.18)" />
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" opacity="0.85">
+    <path d="M640 680h640" />
+    <path d="M720 520h480l140-160" />
+    <path d="M1170 520v160" />
+    <path d="M780 520v160" />
+    <path d="M860 680v140c0 55 45 100 100 100h200" />
+  </g>
+  <g opacity="0.75">
+    <rect x="900" y="360" width="120" height="140" rx="60" fill="#f0f7ff" />
+    <rect x="760" y="640" width="420" height="140" rx="70" fill="#e9f5ff" />
+    <rect x="960" y="460" width="280" height="60" rx="30" fill="url(#sparkle)" />
+  </g>
+  <text x="960" y="950" font-family="'Inter', 'Segoe UI', sans-serif" font-size="120" text-anchor="middle" fill="rgba(255,255,255,0.85)">
+    Spotless homes & offices
+  </text>
+</svg>

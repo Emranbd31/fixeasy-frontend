@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#432371" />
+      <stop offset="1" stop-color="#7f4aca" />
+    </linearGradient>
+    <linearGradient id="stroke" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffd166" />
+      <stop offset="1" stop-color="#f6ae2d" />
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)" />
+  <g opacity="0.85" fill="none" stroke="url(#stroke)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M520 720h420l80-220 80 220h420" />
+    <path d="M900 500h120l60-160 60 160h120" />
+    <path d="M720 720v160" />
+    <path d="M1200 720v160" />
+  </g>
+  <g fill="#ffe8a3" opacity="0.9">
+    <rect x="780" y="360" width="360" height="160" rx="80" />
+    <rect x="860" y="540" width="200" height="280" rx="100" />
+    <rect x="740" y="640" width="120" height="200" rx="60" />
+    <rect x="1160" y="640" width="120" height="200" rx="60" />
+  </g>
+  <text x="960" y="960" font-family="'Inter', 'Segoe UI', sans-serif" font-size="120" text-anchor="middle" fill="rgba(255,240,215,0.88)">
+    Fresh paint, perfect finish
+  </text>
+</svg>

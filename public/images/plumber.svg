@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0a3d62" />
+      <stop offset="1" stop-color="#1a659e" />
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)" />
+  <g fill="none" stroke="#d6ecff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.88">
+    <path d="M630 600h200v-110c0-66 54-120 120-120h220" />
+    <path d="M1150 370h190" />
+    <path d="M960 445v295" />
+    <path d="M775 600v160c0 55 45 100 100 100h190" />
+    <path d="M960 740c45 0 82 37 82 82v38" />
+    <circle cx="1080" cy="860" r="68" />
+    <path d="M550 640c0-55 45-100 100-100" />
+    <path d="M550 640v80c0 61 49 110 110 110" />
+  </g>
+  <g fill="#f5fbff" opacity="0.85">
+    <circle cx="720" cy="450" r="90" />
+    <rect x="650" y="530" width="140" height="200" rx="70" />
+    <rect x="680" y="640" width="180" height="120" rx="36" />
+  </g>
+  <text x="960" y="980" font-family="'Inter', 'Segoe UI', sans-serif" font-size="120" text-anchor="middle" fill="rgba(255,255,255,0.85)">
+    Plumbing pros ready to help
+  </text>
+</svg>
