@@ -44,6 +44,9 @@ export default function Hero() {
             <a className="hero__secondary" href="#services">
               Browse services
             </a>
+            <a className="hero__secondary" href="/enterprise-summary">
+              Enterprise summary
+            </a>
           </div>
 
           <ul className="hero__points">
