@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import {
   isValidIrishCompanyNumber,
@@ -65,7 +65,9 @@ const initialState = {
   certifications: null,
   ppsNumber: '',
   notes: '',
-  acceptPolicies: false
+  confirmAccuracy: false,
+  acceptTerms: false,
+  marketingConsent: false
 }
 
 export default function ProfessionalRegistration() {
@@ -74,11 +76,13 @@ export default function ProfessionalRegistration() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [apiResponse, setApiResponse] = useState(null)
+  const [termsVersion, setTermsVersion] = useState(null)
+  const [termsLoading, setTermsLoading] = useState(true)
 
   const handleInputChange = (event) => {
     const { name, value, type, checked, files } = event.target
 
-    if (type === 'checkbox' && name === 'acceptPolicies') {
+    if (type === 'checkbox') {
       setFormData((prev) => ({ ...prev, [name]: checked }))
       return
     }
@@ -100,6 +104,35 @@ export default function ProfessionalRegistration() {
       }
     })
   }
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadTerms() {
+      try {
+        const response = await fetch('/api/legal/terms')
+        if (!response.ok) {
+          throw new Error('Unable to load terms')
+        }
+        const latest = await response.json()
+        if (isMounted && latest?.ok && latest.version) {
+          setTermsVersion(latest.version)
+        }
+      } catch (error) {
+        console.error('Failed to load terms', error)
+      } finally {
+        if (isMounted) {
+          setTermsLoading(false)
+        }
+      }
+    }
+
+    loadTerms()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const validate = () => {
     const nextErrors = {}
@@ -156,8 +189,16 @@ export default function ProfessionalRegistration() {
       nextErrors.taxClearance = 'Upload a current Revenue tax clearance certificate or ROS screenshot.'
     }
 
-    if (!formData.acceptPolicies) {
-      nextErrors.acceptPolicies = 'Confirm that submitted documents are valid and up to date.'
+    if (!formData.confirmAccuracy) {
+      nextErrors.confirmAccuracy = 'Confirm that submitted documents are valid and up to date.'
+    }
+
+    if (!formData.acceptTerms) {
+      nextErrors.acceptTerms = 'You must accept the FixEasy Terms & Conditions to continue.'
+    }
+
+    if (!termsVersion) {
+      nextErrors.acceptTerms = 'We could not confirm the latest Terms version. Refresh and try again.'
     }
 
     return nextErrors
@@ -206,7 +247,11 @@ export default function ProfessionalRegistration() {
       certifications: formData.certifications
         ? { name: formData.certifications.name, size: formData.certifications.size }
         : null,
-      notes: sanitizeText(formData.notes)
+      notes: sanitizeText(formData.notes),
+      confirmAccuracy: formData.confirmAccuracy,
+      marketingConsent: formData.marketingConsent,
+      termsAcceptedAt: new Date().toISOString(),
+      termsVersion: termsVersion
     }
 
     try {
@@ -579,30 +624,73 @@ export default function ProfessionalRegistration() {
               </fieldset>
 
               <div className="registration-actions">
+                <div className="registration-consent">
+                  <label htmlFor="pro-confirm-accuracy">
+                    <input
+                      id="pro-confirm-accuracy"
+                      type="checkbox"
+                      name="confirmAccuracy"
+                      checked={formData.confirmAccuracy}
+                      onChange={handleInputChange}
+                      aria-invalid={Boolean(errors.confirmAccuracy)}
+                    />
+                    I confirm all uploaded documents are current, accurate, and issued to this business.
+                  </label>
+                  {errors.confirmAccuracy && (
+                    <p className="registration-hint registration-hint--error">{errors.confirmAccuracy}</p>
+                  )}
+                </div>
+
+                <div className="registration-consent">
+                  <label htmlFor="pro-marketing">
+                    <input
+                      id="pro-marketing"
+                      type="checkbox"
+                      name="marketingConsent"
+                      checked={formData.marketingConsent}
+                      onChange={handleInputChange}
+                    />
+                    Keep me updated on FixEasy lead programmes and training (optional).
+                  </label>
+                </div>
+
+                <div className="registration-consent">
+                  <label htmlFor="pro-terms">
+                    <input
+                      id="pro-terms"
+                      type="checkbox"
+                      name="acceptTerms"
+                      checked={formData.acceptTerms}
+                      onChange={handleInputChange}
+                      aria-invalid={Boolean(errors.acceptTerms)}
+                    />
+                    I agree to the{' '}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer">
+                      FixEasy Terms &amp; Conditions
+                    </a>{' '}
+                    {termsVersion ? `(version ${termsVersion})` : ''} and confirm the{' '}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer">
+                      Privacy Policy
+                    </a>
+                    .
+                  </label>
+                  {errors.acceptTerms && (
+                    <p className="registration-hint registration-hint--error">{errors.acceptTerms}</p>
+                  )}
+                </div>
+
+                {termsLoading && (
+                  <p className="registration-hint">Loading latest Terms &amp; Conditions…</p>
+                )}
+
                 <button
                   type="submit"
                   className="registration-submit"
-                  disabled={submitting}
+                  disabled={submitting || termsLoading}
                   aria-busy={submitting}
                 >
                   {submitting ? 'Submitting…' : 'Submit compliance pack'}
                 </button>
-                <div className="registration-consent">
-                  <label htmlFor="pro-consent">
-                    <input
-                      id="pro-consent"
-                      type="checkbox"
-                      name="acceptPolicies"
-                      checked={formData.acceptPolicies}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.acceptPolicies)}
-                    />
-                    I confirm all documents are valid, Irish-compliant, and I agree to FixEasy pro standards.
-                  </label>
-                  {errors.acceptPolicies && (
-                    <p className="registration-hint registration-hint--error">{errors.acceptPolicies}</p>
-                  )}
-                </div>
               </div>
             </form>
           </section>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { isValidEircode, isValidIrishPhone, sanitizePhone, sanitizeText } from '../../lib/validation'
 
@@ -44,7 +44,9 @@ const initialState = {
   docFile: null,
   addressFile: null,
   notes: '',
-  acceptPolicies: false
+  confirmAccuracy: false,
+  marketingConsent: false,
+  acceptTerms: false
 }
 
 export default function ClientRegistration() {
@@ -53,6 +55,8 @@ export default function ClientRegistration() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [apiResponse, setApiResponse] = useState(null)
+  const [termsVersion, setTermsVersion] = useState(null)
+  const [termsLoading, setTermsLoading] = useState(true)
 
   const handleChange = (event) => {
     const { name, value, type, checked, files } = event.target
@@ -64,6 +68,35 @@ export default function ClientRegistration() {
 
     setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
   }
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadTerms() {
+      try {
+        const response = await fetch('/api/legal/terms')
+        if (!response.ok) {
+          throw new Error('Unable to load terms')
+        }
+        const latest = await response.json()
+        if (isMounted && latest?.ok && latest.version) {
+          setTermsVersion(latest.version)
+        }
+      } catch (error) {
+        console.error('Failed to load terms', error)
+      } finally {
+        if (isMounted) {
+          setTermsLoading(false)
+        }
+      }
+    }
+
+    loadTerms()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const validate = () => {
     const nextErrors = {}
@@ -100,8 +133,16 @@ export default function ClientRegistration() {
       nextErrors.addressProof = 'Upload proof of address dated within the required timeframe.'
     }
 
-    if (!formData.acceptPolicies) {
-      nextErrors.acceptPolicies = 'You must confirm that all details supplied are accurate.'
+    if (!formData.confirmAccuracy) {
+      nextErrors.confirmAccuracy = 'You must confirm that all details supplied are accurate.'
+    }
+
+    if (!formData.acceptTerms) {
+      nextErrors.acceptTerms = 'You must accept the FixEasy Terms & Conditions to continue.'
+    }
+
+    if (!termsVersion) {
+      nextErrors.acceptTerms = 'We could not confirm the latest Terms version. Refresh and try again.'
     }
 
     return nextErrors
@@ -135,7 +176,10 @@ export default function ClientRegistration() {
         ? { name: formData.addressFile.name, size: formData.addressFile.size }
         : null,
       notes: sanitizeText(formData.notes),
-      acceptPolicies: formData.acceptPolicies
+      confirmAccuracy: formData.confirmAccuracy,
+      marketingConsent: formData.marketingConsent,
+      termsAcceptedAt: new Date().toISOString(),
+      termsVersion: termsVersion
     }
 
     try {
@@ -378,25 +422,73 @@ export default function ClientRegistration() {
               </fieldset>
 
               <div className="registration-actions">
-                <button type="submit" className="registration-submit" disabled={submitting} aria-busy={submitting}>
-                  {submitting ? 'Submitting…' : 'Submit for verification'}
-                </button>
                 <div className="registration-consent">
-                  <label htmlFor="client-consent">
+                  <label htmlFor="client-confirm-accuracy">
                     <input
-                      id="client-consent"
+                      id="client-confirm-accuracy"
                       type="checkbox"
-                      name="acceptPolicies"
-                      checked={formData.acceptPolicies}
+                      name="confirmAccuracy"
+                      checked={formData.confirmAccuracy}
                       onChange={handleChange}
-                      aria-invalid={Boolean(errors.acceptPolicies)}
+                      aria-invalid={Boolean(errors.confirmAccuracy)}
                     />
-                    I confirm these details are accurate and I agree to FixEasy onboarding policies.
+                    I confirm the information supplied is accurate and belongs to me.
                   </label>
-                  {errors.acceptPolicies && (
-                    <p className="registration-hint registration-hint--error">{errors.acceptPolicies}</p>
+                  {errors.confirmAccuracy && (
+                    <p className="registration-hint registration-hint--error">{errors.confirmAccuracy}</p>
                   )}
                 </div>
+
+                <div className="registration-consent">
+                  <label htmlFor="client-marketing">
+                    <input
+                      id="client-marketing"
+                      type="checkbox"
+                      name="marketingConsent"
+                      checked={formData.marketingConsent}
+                      onChange={handleChange}
+                    />
+                    Keep me informed about product updates and seasonal offers (optional).
+                  </label>
+                </div>
+
+                <div className="registration-consent">
+                  <label htmlFor="client-terms">
+                    <input
+                      id="client-terms"
+                      type="checkbox"
+                      name="acceptTerms"
+                      checked={formData.acceptTerms}
+                      onChange={handleChange}
+                      aria-invalid={Boolean(errors.acceptTerms)}
+                    />
+                    I agree to the{' '}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer">
+                      FixEasy Terms &amp; Conditions
+                    </a>{' '}
+                    {termsVersion ? `(version ${termsVersion})` : ''} and confirm I have read the{' '}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer">
+                      Privacy Policy
+                    </a>
+                    .
+                  </label>
+                  {errors.acceptTerms && (
+                    <p className="registration-hint registration-hint--error">{errors.acceptTerms}</p>
+                  )}
+                </div>
+
+                {termsLoading && (
+                  <p className="registration-hint">Loading latest Terms &amp; Conditions…</p>
+                )}
+
+                <button
+                  type="submit"
+                  className="registration-submit"
+                  disabled={submitting || termsLoading}
+                  aria-busy={submitting}
+                >
+                  {submitting ? 'Submitting…' : 'Submit for verification'}
+                </button>
               </div>
             </form>
           </section>

@@ -321,6 +321,10 @@ export default function Home() {
             </span>
             <span className="footer__brand">FixEasy</span>
           </div>
+          <nav aria-label="Legal links" className="footer__links">
+            <a href="/terms">Terms &amp; Conditions</a>
+            <a href="/privacy">Privacy Policy</a>
+          </nav>
           <p>© {new Date().getFullYear()} FixEasy. All rights reserved.</p>
         </div>
       </footer>

@@ -6,9 +6,10 @@ import {
   sanitizePhone,
   sanitizeText
 } from '../../lib/validation'
+import { getLatestTerms } from '../../lib/terms'
+import { recordTermsAcceptance, validateTermsAcceptance } from '../../lib/terms-audit'
 
 const MAX_NOTES_LENGTH = 1200
-
 function buildError(message, field) {
   return {
     ok: false,
@@ -17,7 +18,7 @@ function buildError(message, field) {
   }
 }
 
-function validateClient(payload) {
+function validateClient(payload, latestTerms) {
   const {
     fullName,
     email,
@@ -26,7 +27,8 @@ function validateClient(payload) {
     idType,
     idNumber,
     addressProof,
-    identityDocument
+    identityDocument,
+    confirmAccuracy
   } = payload
 
   if (!fullName || sanitizeText(fullName).length < 4) {
@@ -61,10 +63,19 @@ function validateClient(payload) {
     return buildError('Attach proof of Irish address.', 'addressProof')
   }
 
+  if (!confirmAccuracy) {
+    return buildError('Confirm your information is accurate.', 'confirmAccuracy')
+  }
+
+  const termsResult = validateTermsAcceptance(payload, latestTerms)
+  if (!termsResult.ok) {
+    return termsResult
+  }
+
   return { ok: true }
 }
 
-function validateProfessional(payload) {
+function validateProfessional(payload, latestTerms) {
   const {
     fullName,
     email,
@@ -75,7 +86,8 @@ function validateProfessional(payload) {
     identityDocument,
     insuranceEvidence,
     taxClearance,
-    serviceRegions
+    serviceRegions,
+    confirmAccuracy
   } = payload
 
   if (!fullName || sanitizeText(fullName).length < 4) {
@@ -118,6 +130,15 @@ function validateProfessional(payload) {
     return buildError('Upload your Revenue tax clearance certificate.', 'taxClearance')
   }
 
+  if (!confirmAccuracy) {
+    return buildError('Confirm your information is accurate.', 'confirmAccuracy')
+  }
+
+  const termsResult = validateTermsAcceptance(payload, latestTerms)
+  if (!termsResult.ok) {
+    return termsResult
+  }
+
   return { ok: true }
 }
 
@@ -131,7 +152,7 @@ function normalizeFiles(entry = {}) {
   }
 }
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
     return res.status(405).json({ ok: false, error: 'Method not allowed' })
@@ -143,6 +164,7 @@ export default function handler(req, res) {
     return res.status(400).json(buildError('Registration type and payload required.'))
   }
 
+  const latestTerms = getLatestTerms()
   const normalizedPayload = {
     ...payload,
     fullName: sanitizeText(payload.fullName),
@@ -150,6 +172,12 @@ export default function handler(req, res) {
     phone: sanitizePhone(payload.phone),
     notes: sanitizeText(payload.notes)
   }
+
+  normalizedPayload.confirmAccuracy = Boolean(payload.confirmAccuracy)
+  normalizedPayload.marketingConsent = Boolean(payload.marketingConsent)
+  normalizedPayload.termsVersion = sanitizeText(payload.termsVersion)
+  normalizedPayload.termsAcceptedAt =
+    typeof payload.termsAcceptedAt === 'string' ? payload.termsAcceptedAt : ''
 
   if (Array.isArray(payload.serviceRegions)) {
     normalizedPayload.serviceRegions = payload.serviceRegions
@@ -169,7 +197,11 @@ export default function handler(req, res) {
   }
 
   const validationResult =
-    type === 'client' ? validateClient(normalizedPayload) : type === 'professional' ? validateProfessional(normalizedPayload) : null
+    type === 'client'
+      ? validateClient(normalizedPayload, latestTerms)
+      : type === 'professional'
+      ? validateProfessional(normalizedPayload, latestTerms)
+      : null
 
   if (!validationResult) {
     return res.status(400).json(buildError('Unsupported registration type.'))
@@ -180,6 +212,8 @@ export default function handler(req, res) {
   }
 
   const reference = `${type === 'client' ? 'CL' : 'PR'}-${Date.now().toString(36).toUpperCase()}`
+
+  await recordTermsAcceptance({ accountType: type, payload: normalizedPayload, req, reference })
 
   return res.status(200).json({
     ok: true,
