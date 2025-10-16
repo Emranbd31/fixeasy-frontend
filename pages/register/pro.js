@@ -1,5 +1,12 @@
 import { useState } from 'react'
 import Head from 'next/head'
+import {
+  isValidIrishCompanyNumber,
+  isValidIrishPhone,
+  isValidPpsNumber,
+  sanitizePhone,
+  sanitizeText
+} from '../../lib/validation'
 
 const serviceCategories = [
   'Plumbing & heating',
@@ -56,6 +63,8 @@ const initialState = {
   insuranceDocument: null,
   taxDocument: null,
   certifications: null,
+  ppsNumber: '',
+  notes: '',
   acceptPolicies: false
 }
 
@@ -63,6 +72,8 @@ export default function ProfessionalRegistration() {
   const [formData, setFormData] = useState(initialState)
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [apiResponse, setApiResponse] = useState(null)
 
   const handleInputChange = (event) => {
     const { name, value, type, checked, files } = event.target
@@ -93,27 +104,27 @@ export default function ProfessionalRegistration() {
   const validate = () => {
     const nextErrors = {}
 
-    if (!formData.businessName.trim()) {
+    if (!sanitizeText(formData.businessName)) {
       nextErrors.businessName = 'Enter your registered business or sole trader name.'
     }
 
-    if (!formData.contactName.trim()) {
+    if (!sanitizeText(formData.contactName)) {
       nextErrors.contactName = 'Provide the primary contact responsible for compliance.'
     }
 
-    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!sanitizeText(formData.email) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       nextErrors.email = 'Add a valid email for onboarding updates.'
     }
 
-    if (!formData.phone.trim() || !/^\+?353\d{8,9}$/.test(formData.phone.replace(/\s+/g, ''))) {
+    if (!isValidIrishPhone(formData.phone)) {
       nextErrors.phone = 'Use an Irish mobile or landline in +353 format.'
     }
 
-    if (!formData.serviceCounties.trim()) {
+    if (!sanitizeText(formData.serviceCounties)) {
       nextErrors.serviceCounties = 'List the Irish counties or districts you cover.'
     }
 
-    if (!formData.experienceYears.trim()) {
+    if (!sanitizeText(formData.experienceYears)) {
       nextErrors.experienceYears = 'Share years of professional experience in your trade.'
     }
 
@@ -121,24 +132,28 @@ export default function ProfessionalRegistration() {
       nextErrors.services = 'Select at least one service category you deliver.'
     }
 
-    if (!formData.registrationNumber.trim()) {
-      nextErrors.registrationNumber = 'Include CRO, RBN or VAT number as applicable.'
+    if (!sanitizeText(formData.registrationNumber) || !isValidIrishCompanyNumber(formData.registrationNumber)) {
+      nextErrors.registrationNumber = 'Include a valid CRO, RBN, or VAT number.'
     }
 
-    if (!formData.insuranceExpiry.trim()) {
+    if (!sanitizeText(formData.insuranceExpiry)) {
       nextErrors.insuranceExpiry = 'Confirm when your liability insurance expires.'
     }
 
+    if (!formData.ppsNumber || !isValidPpsNumber(formData.ppsNumber)) {
+      nextErrors.ppsNumber = 'Provide the PPS number for the responsible person.'
+    }
+
     if (!formData.idDocument) {
-      nextErrors.idDocument = 'Upload the front page of your passport, driver licence or IRP.'
+      nextErrors.identityDocument = 'Upload the front page of your passport, driver licence or IRP.'
     }
 
     if (!formData.insuranceDocument) {
-      nextErrors.insuranceDocument = 'Upload proof of insurance coverage (PDF or image).'
+      nextErrors.insuranceEvidence = 'Upload proof of insurance coverage (PDF or image).'
     }
 
     if (!formData.taxDocument) {
-      nextErrors.taxDocument = 'Upload a current Revenue tax clearance certificate or ROS screenshot.'
+      nextErrors.taxClearance = 'Upload a current Revenue tax clearance certificate or ROS screenshot.'
     }
 
     if (!formData.acceptPolicies) {
@@ -148,9 +163,10 @@ export default function ProfessionalRegistration() {
     return nextErrors
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setSubmitted(false)
+    setApiResponse(null)
     const validation = validate()
 
     if (Object.keys(validation).length > 0) {
@@ -159,8 +175,75 @@ export default function ProfessionalRegistration() {
     }
 
     setErrors({})
-    setSubmitted(true)
-    // Production: send payload to pro onboarding API with secure storage via signed URLs and Stripe Connect onboarding trigger.
+    setSubmitting(true)
+
+    const serviceRegions = formData.serviceCounties
+      .split(',')
+      .map((entry) => sanitizeText(entry))
+      .filter(Boolean)
+
+    const payload = {
+      fullName: sanitizeText(formData.contactName),
+      email: sanitizeText(formData.email),
+      phone: sanitizePhone(formData.phone),
+      companyName: sanitizeText(formData.businessName || formData.tradingName || formData.contactName),
+      registrationNumber: sanitizeText(formData.registrationNumber),
+      ppsNumber: sanitizeText(formData.ppsNumber),
+      serviceRegions,
+      services: formData.services,
+      insuranceExpiry: sanitizeText(formData.insuranceExpiry),
+      staffCount: sanitizeText(formData.staffCount),
+      experienceYears: sanitizeText(formData.experienceYears),
+      identityDocument: formData.idDocument
+        ? { name: formData.idDocument.name, size: formData.idDocument.size }
+        : null,
+      insuranceEvidence: formData.insuranceDocument
+        ? { name: formData.insuranceDocument.name, size: formData.insuranceDocument.size }
+        : null,
+      taxClearance: formData.taxDocument
+        ? { name: formData.taxDocument.name, size: formData.taxDocument.size }
+        : null,
+      certifications: formData.certifications
+        ? { name: formData.certifications.name, size: formData.certifications.size }
+        : null,
+      notes: sanitizeText(formData.notes)
+    }
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'professional',
+          payload
+        })
+      })
+
+      const result = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        if (result?.field) {
+          const fieldMap = {
+            serviceRegions: 'serviceCounties'
+          }
+          const fieldKey = fieldMap[result.field] ?? result.field
+          setErrors({ [fieldKey]: result.error })
+        } else {
+          setErrors({ form: result?.error ?? 'We were unable to submit your details. Try again shortly.' })
+        }
+        return
+      }
+
+      setApiResponse({ ...result, email: payload.email, contact: payload.fullName })
+      setSubmitted(true)
+      setFormData({ ...initialState })
+    } catch (error) {
+      setErrors({ form: 'We could not reach the onboarding service. Check your connection and try again.' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const renderServiceOption = (service) => (
@@ -217,12 +300,19 @@ export default function ProfessionalRegistration() {
               </div>
             )}
 
-            {submitted && (
+            {submitted && apiResponse && (
               <div className="registration-success" role="status">
                 <span>Thanks for sharing your credentials.</span>
                 <span>
-                  Our compliance team will review and schedule your onboarding call within one business day. Confirmation will be
-                  sent to <strong>{formData.email}</strong> along with Stripe Connect setup instructions.
+                  Reference <strong>{apiResponse.reference}</strong> logged at{' '}
+                  <time dateTime={apiResponse.receivedAt}>
+                    {new Date(apiResponse.receivedAt).toLocaleString('en-IE', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short'
+                    })}
+                  </time>
+                  . We will contact <strong>{apiResponse.contact}</strong> at <strong>{apiResponse.email}</strong> within one
+                  business day to complete onboarding and Stripe Connect setup.
                 </span>
               </div>
             )}
@@ -304,6 +394,9 @@ export default function ProfessionalRegistration() {
                       onChange={handleInputChange}
                       aria-invalid={Boolean(errors.serviceCounties)}
                     />
+                    {errors.serviceCounties && (
+                      <p className="registration-hint registration-hint--error">{errors.serviceCounties}</p>
+                    )}
                   </div>
                 </div>
 
@@ -342,7 +435,11 @@ export default function ProfessionalRegistration() {
                   <div className="registration-two-column">
                     {serviceCategories.map((service) => renderServiceOption(service))}
                   </div>
-                  {errors.services && <p className="registration-hint" role="alert">{errors.services}</p>}
+                  {errors.services && (
+                    <p className="registration-hint registration-hint--error" role="alert">
+                      {errors.services}
+                    </p>
+                  )}
                 </div>
               </fieldset>
 
@@ -359,18 +456,41 @@ export default function ProfessionalRegistration() {
                       onChange={handleInputChange}
                       aria-invalid={Boolean(errors.registrationNumber)}
                     />
+                    {errors.registrationNumber && (
+                      <p className="registration-hint registration-hint--error">{errors.registrationNumber}</p>
+                    )}
                   </div>
                   <div className="registration-field">
-                    <label htmlFor="insuranceExpiry">Insurance expiry date</label>
+                    <label htmlFor="ppsNumber">Responsible PPS number</label>
                     <input
-                      id="insuranceExpiry"
-                      name="insuranceExpiry"
-                      type="date"
-                      value={formData.insuranceExpiry}
+                      id="ppsNumber"
+                      name="ppsNumber"
+                      type="text"
+                      placeholder="1234567T"
+                      value={formData.ppsNumber}
                       onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.insuranceExpiry)}
+                      aria-invalid={Boolean(errors.ppsNumber)}
                     />
+                    <p className="registration-hint">Used to meet Revenue due diligence requirements and stored encrypted.</p>
+                    {errors.ppsNumber && (
+                      <p className="registration-hint registration-hint--error">{errors.ppsNumber}</p>
+                    )}
                   </div>
+                </div>
+
+                <div className="registration-field">
+                  <label htmlFor="insuranceExpiry">Insurance expiry date</label>
+                  <input
+                    id="insuranceExpiry"
+                    name="insuranceExpiry"
+                    type="date"
+                    value={formData.insuranceExpiry}
+                    onChange={handleInputChange}
+                    aria-invalid={Boolean(errors.insuranceExpiry)}
+                  />
+                  {errors.insuranceExpiry && (
+                    <p className="registration-hint registration-hint--error">{errors.insuranceExpiry}</p>
+                  )}
                 </div>
 
                 <div className="registration-two-column">
@@ -384,9 +504,12 @@ export default function ProfessionalRegistration() {
                       type="file"
                       accept="application/pdf,image/jpeg,image/png"
                       onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.idDocument)}
+                      aria-invalid={Boolean(errors.identityDocument)}
                     />
                     <p className="registration-hint">Combine passport/IRP and CRO certificate into one file if needed.</p>
+                    {errors.identityDocument && (
+                      <p className="registration-hint registration-hint--error">{errors.identityDocument}</p>
+                    )}
                   </div>
                   <div className="registration-field">
                     <label htmlFor="insuranceDocument">
@@ -398,9 +521,12 @@ export default function ProfessionalRegistration() {
                       type="file"
                       accept="application/pdf,image/jpeg,image/png"
                       onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.insuranceDocument)}
+                      aria-invalid={Boolean(errors.insuranceEvidence)}
                     />
                     <p className="registration-hint">Ensure the document shows policy number, cover level, and expiry.</p>
+                    {errors.insuranceEvidence && (
+                      <p className="registration-hint registration-hint--error">{errors.insuranceEvidence}</p>
+                    )}
                   </div>
                 </div>
 
@@ -415,9 +541,12 @@ export default function ProfessionalRegistration() {
                       type="file"
                       accept="application/pdf,image/jpeg,image/png"
                       onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.taxDocument)}
+                      aria-invalid={Boolean(errors.taxClearance)}
                     />
                     <p className="registration-hint">ROS screenshot must display the verification code and expiry date.</p>
+                    {errors.taxClearance && (
+                      <p className="registration-hint registration-hint--error">{errors.taxClearance}</p>
+                    )}
                   </div>
                   <div className="registration-field">
                     <label htmlFor="certifications">Trade certifications (optional)</label>
@@ -433,9 +562,30 @@ export default function ProfessionalRegistration() {
                 </div>
               </fieldset>
 
+              <fieldset className="registration-fieldset">
+                <legend>Operational notes (optional)</legend>
+                <div className="registration-field">
+                  <label htmlFor="notes">Information to help our onboarding team</label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    rows={4}
+                    value={formData.notes}
+                    onChange={handleInputChange}
+                    maxLength={1200}
+                  />
+                  <p className="registration-hint">Share details on high-risk works, subcontractors, or regional compliance considerations.</p>
+                </div>
+              </fieldset>
+
               <div className="registration-actions">
-                <button type="submit" className="registration-submit">
-                  Submit compliance pack
+                <button
+                  type="submit"
+                  className="registration-submit"
+                  disabled={submitting}
+                  aria-busy={submitting}
+                >
+                  {submitting ? 'Submitting…' : 'Submit compliance pack'}
                 </button>
                 <div className="registration-consent">
                   <label htmlFor="pro-consent">

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Head from 'next/head'
+import { isValidEircode, isValidIrishPhone, sanitizePhone, sanitizeText } from '../../lib/validation'
 
 const identityDocuments = [
   'Irish passport (current)',
@@ -50,6 +51,8 @@ export default function ClientRegistration() {
   const [formData, setFormData] = useState(initialState)
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [apiResponse, setApiResponse] = useState(null)
 
   const handleChange = (event) => {
     const { name, value, type, checked, files } = event.target
@@ -65,19 +68,19 @@ export default function ClientRegistration() {
   const validate = () => {
     const nextErrors = {}
 
-    if (!formData.fullName.trim()) {
+    if (!sanitizeText(formData.fullName)) {
       nextErrors.fullName = 'Enter your full legal name as it appears on your identification.'
     }
 
-    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!sanitizeText(formData.email) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       nextErrors.email = 'Provide a valid email address so we can send activation steps.'
     }
 
-    if (!formData.phone.trim() || !/^\+?353\d{8,9}$/.test(formData.phone.replace(/\s+/g, ''))) {
+    if (!isValidIrishPhone(formData.phone)) {
       nextErrors.phone = 'Use an Irish contact number in +353 format.'
     }
 
-    if (!formData.eircode.trim() || !/^[A-Z]{1,2}\d{2}\s?[A-Z0-9]{4}$/i.test(formData.eircode.trim())) {
+    if (!isValidEircode(formData.eircode)) {
       nextErrors.eircode = 'Add the Eircode for your primary service address (e.g. D02 Y006).'
     }
 
@@ -90,11 +93,11 @@ export default function ClientRegistration() {
     }
 
     if (!formData.docFile) {
-      nextErrors.docFile = 'Upload a clear scan or photo of your identification document.'
+      nextErrors.identityDocument = 'Upload a clear scan or photo of your identification document.'
     }
 
     if (!formData.addressFile) {
-      nextErrors.addressFile = 'Upload proof of address dated within the required timeframe.'
+      nextErrors.addressProof = 'Upload proof of address dated within the required timeframe.'
     }
 
     if (!formData.acceptPolicies) {
@@ -104,9 +107,10 @@ export default function ClientRegistration() {
     return nextErrors
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setSubmitted(false)
+    setApiResponse(null)
     const validation = validate()
 
     if (Object.keys(validation).length > 0) {
@@ -115,8 +119,56 @@ export default function ClientRegistration() {
     }
 
     setErrors({})
-    setSubmitted(true)
-    // In production this would send to the FixEasy onboarding API with encrypted upload handling.
+    setSubmitting(true)
+
+    const payload = {
+      fullName: sanitizeText(formData.fullName),
+      email: sanitizeText(formData.email),
+      phone: sanitizePhone(formData.phone),
+      eircode: sanitizeText(formData.eircode).toUpperCase(),
+      idType: formData.idType,
+      idNumber: sanitizeText(formData.idNumber),
+      identityDocument: formData.docFile
+        ? { name: formData.docFile.name, size: formData.docFile.size }
+        : null,
+      addressProof: formData.addressFile
+        ? { name: formData.addressFile.name, size: formData.addressFile.size }
+        : null,
+      notes: sanitizeText(formData.notes),
+      acceptPolicies: formData.acceptPolicies
+    }
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'client',
+          payload
+        })
+      })
+
+      const result = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        if (result?.field) {
+          setErrors({ [result.field]: result.error })
+        } else {
+          setErrors({ form: result?.error ?? 'We were unable to submit your request. Try again shortly.' })
+        }
+        return
+      }
+
+      setApiResponse({ ...result, email: payload.email })
+      setSubmitted(true)
+      setFormData({ ...initialState })
+    } catch (error) {
+      setErrors({ form: 'We could not reach the onboarding service. Check your connection and try again.' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -160,12 +212,18 @@ export default function ClientRegistration() {
               </div>
             )}
 
-            {submitted && (
+            {submitted && apiResponse && (
               <div className="registration-success" role="status">
                 <span>Your registration details are ready for review.</span>
                 <span>
-                  A member of our trust &amp; safety team will confirm your FixEasy client account within one working day. Keep an
-                  eye on <strong>{formData.email}</strong> for the activation email.
+                  Reference <strong>{apiResponse.reference}</strong> received at{' '}
+                  <time dateTime={apiResponse.receivedAt}>
+                    {new Date(apiResponse.receivedAt).toLocaleString('en-IE', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short'
+                    })}
+                  </time>
+                  . We will confirm the FixEasy client account for <strong>{apiResponse.email}</strong> within one working day.
                 </span>
               </div>
             )}
@@ -274,9 +332,12 @@ export default function ClientRegistration() {
                       type="file"
                       accept="image/jpeg,image/png,application/pdf"
                       onChange={handleChange}
-                      aria-invalid={Boolean(errors.docFile)}
+                      aria-invalid={Boolean(errors.identityDocument)}
                     />
                     <p className="registration-hint">Accepted formats: PDF, JPG, PNG. Maximum size 10MB.</p>
+                    {errors.identityDocument && (
+                      <p className="registration-hint registration-hint--error">{errors.identityDocument}</p>
+                    )}
                   </div>
                   <div className="registration-field">
                     <label htmlFor="addressFile">
@@ -288,9 +349,12 @@ export default function ClientRegistration() {
                       type="file"
                       accept="image/jpeg,image/png,application/pdf"
                       onChange={handleChange}
-                      aria-invalid={Boolean(errors.addressFile)}
+                      aria-invalid={Boolean(errors.addressProof)}
                     />
                     <p className="registration-hint">Ensure the document shows your name, address, and issue date.</p>
+                    {errors.addressProof && (
+                      <p className="registration-hint registration-hint--error">{errors.addressProof}</p>
+                    )}
                   </div>
                 </div>
               </fieldset>
@@ -314,8 +378,8 @@ export default function ClientRegistration() {
               </fieldset>
 
               <div className="registration-actions">
-                <button type="submit" className="registration-submit">
-                  Submit for verification
+                <button type="submit" className="registration-submit" disabled={submitting} aria-busy={submitting}>
+                  {submitting ? 'Submitting…' : 'Submit for verification'}
                 </button>
                 <div className="registration-consent">
                   <label htmlFor="client-consent">
