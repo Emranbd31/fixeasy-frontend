@@ -6,14 +6,18 @@ html,body{margin:0;padding:0;font-family:Inter,ui-sans-serif,system-ui,-apple-sy
 a{text-decoration:none;color:#0369a1}
 .container{max-width:1120px;margin:0 auto;padding:24px}
 .section-title{font: 900 26px/1.2 Inter, ui-sans-serif; letter-spacing:-.02em; text-align:center; margin:28px 0 12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-.card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px;transition:box-shadow .2s,transform .2s}
-.card:hover{box-shadow:0 12px 28px rgba(15,23,42,.08); transform:translateY(-2px)}
-.card h3{margin:12px 0 6px;font: 800 18px/1.2 Inter}
-.card p{margin:0 0 12px;color:var(--slate)}
-.badge{display:inline-block;background:rgba(22,163,74,.12);color:var(--green);padding:4px 10px;border-radius:999px;font:700 12px/1 Inter}
+.services-subtitle{margin:0 auto 28px;max-width:640px;text-align:center;font:500 16px/1.6 Inter;color:#475569}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px}
+.service-card{display:flex;flex-direction:column;gap:16px;background:rgba(255,255,255,.92);border:1px solid rgba(15,23,42,.08);border-radius:20px;padding:22px;box-shadow:0 18px 36px rgba(15,23,42,.06);transition:transform .25s ease,box-shadow .25s ease}
+.service-card:hover{transform:translateY(-4px);box-shadow:0 24px 46px rgba(15,23,42,.1)}
+.service-card__icon{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:20px;background:rgba(14,165,233,.08)}
+.service-card__icon svg{width:42px;height:42px}
+.service-card__body h3{margin:0;font:800 20px/1.2 Inter;color:var(--navy)}
+.service-card__body p{margin:6px 0 0;font:500 15px/1.6 Inter;color:var(--slate)}
+.service-card__footer{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;font:600 14px/1.4 Inter;color:#1e293b}
+.service-card__price{color:var(--green);font:700 16px/1 Inter}
+.service-card__meta{color:#64748b;font-weight:500}
 .footer{margin:42px 0 16px;text-align:center;color:#64748b;font-size:13px}
-.icon{width:56px;height:56px;display:block}
 
 .hero{position:relative;overflow:hidden;padding:clamp(4rem,10vw,6rem) 0 clamp(3rem,8vw,5rem);}
 .hero::before{content:"";position:absolute;inset:-20% -35% auto;min-height:420px;background:radial-gradient(circle at top,var(--green-light) 0,rgba(220,252,231,0) 70%);opacity:.85;pointer-events:none;}
