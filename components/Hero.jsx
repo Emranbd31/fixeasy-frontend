@@ -1,154 +1,118 @@
-import { motion } from "framer-motion"
+import { motion } from 'framer-motion'
 
 const navLinks = [
-  { href: "#services", label: "Services" },
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#sustainability", label: "Trust & ESG" },
-  { href: "#testimonials", label: "Reviews" }
+  { href: '#services', label: 'Services' },
+  { href: '#how-it-works', label: 'How it works' },
+  { href: '#trust', label: 'Security' },
+  { href: '#testimonials', label: 'Stories' }
 ]
 
-const timeline = [
-  {
-    time: "08:45",
-    title: "Emergency leak repair",
-    detail: "Pro assigned • Dublin 2",
-    status: "Confirmed"
-  },
-  {
-    time: "11:20",
-    title: "Workspace deep clean",
-    detail: "Eco supplies requested",
-    status: "In progress"
-  },
-  {
-    time: "14:10",
-    title: "EV charger install",
-    detail: "Permit cleared • Cork",
-    status: "Survey"
-  }
+const heroStats = [
+  { label: 'Average rating', value: '4.9/5', helper: 'from 12k verified jobs' },
+  { label: 'Same-day slots', value: '120+', helper: 'released every morning' },
+  { label: 'Response time', value: '11 min', helper: 'to confirm your booking' }
 ]
 
-const highlightStats = [
-  { label: "Same-day slots", value: "120+", helper: "nationwide each week" },
-  { label: "Pro network", value: "650", helper: "vetted specialists" },
-  { label: "Response time", value: "<15m", helper: "to confirm a booking" }
+const heroChecklist = [
+  'KYC-verified pros with live insurance',
+  'Two-factor protected client and pro apps',
+  'Realtime updates, chat and digital invoices'
 ]
 
-const trustPoints = [
-  "Screened, insured pros",
-  "Live progress tracking",
-  "Secure payments & audit trail"
+const jobFeed = [
+  { time: '08:20', title: 'Heating reset in Dublin 8', status: 'Completed' },
+  { time: '10:05', title: 'Office deep clean in Galway', status: 'In progress' },
+  { time: '12:40', title: 'EV charger install in Cork', status: 'Survey' }
 ]
 
 export default function Hero() {
   return (
     <motion.section
       className="hero"
+      aria-labelledby="hero-heading"
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
+      transition={{ duration: 0.6 }}
     >
       <div className="hero__container">
-        <div className="hero__nav">
+        <header className="hero__top">
           <a className="hero__brand" href="/">
-            <span className="hero__brand-mark" aria-hidden="true">ƒ</span>
-            <span className="hero__brand-text">FixEasy</span>
+            <span className="hero__mark" aria-hidden="true">
+              ƒ
+            </span>
+            <span className="hero__name">FixEasy</span>
           </a>
-          <nav className="hero__nav-links" aria-label="Primary">
+          <nav aria-label="Primary" className="hero__nav">
             {navLinks.map((link) => (
               <a key={link.label} href={link.href} className="hero__nav-link">
                 {link.label}
               </a>
             ))}
           </nav>
-          <div className="hero__nav-actions">
-            <a className="hero__nav-link hero__nav-link--muted" href="/book#pro">
+          <div className="hero__actions">
+            <a href="/book#pro" className="hero__action hero__action--ghost">
               Become a pro
             </a>
-            <a className="hero__nav-link hero__nav-link--cta" href="/book">
-              Book now
+            <a href="/book" className="hero__action hero__action--primary">
+              Book a visit
             </a>
           </div>
-        </div>
+        </header>
 
         <div className="hero__body">
           <div className="hero__copy">
-            <span className="hero__eyebrow">Live across Dublin, Cork & Galway</span>
-            <h1 className="hero__headline">Home repairs handled end-to-end in one tap</h1>
-            <p className="hero__text">
-              FixEasy blends instant quoting, verified pros, and greener operations so every project — from leaks to office refits — stays on time and on budget.
+            <p className="hero__eyebrow">Trusted home & workplace fixes across Ireland</p>
+            <h1 className="hero__headline" id="hero-heading">
+              One platform for secure, on-time property care
+            </h1>
+            <p className="hero__summary">
+              FixEasy blends instant quoting, vetted professionals, and greener operations so every repair, install, or deep
+              clean is delivered with full transparency and audit trails.
             </p>
 
-            <div className="hero__search" role="group" aria-labelledby="search-label">
-              <span id="search-label" className="hero__search-label">
-                Preview instant pricing
-              </span>
-              <div className="hero__search-row">
-                <input
-                  type="text"
-                  className="hero__input"
-                  placeholder="e.g. Boiler service in D08"
-                  aria-label="Describe the service you need"
-                />
-                <a className="hero__search-submit" href="/book">
-                  Check availability
-                </a>
-              </div>
-              <p className="hero__search-note">No payment until your pro confirms.</p>
+            <div className="hero__cta-group" role="group" aria-label="Primary actions">
+              <a href="/book" className="hero__primary-btn">
+                Get an instant quote
+              </a>
+              <a href="#services" className="hero__secondary-btn">
+                Explore services
+              </a>
             </div>
 
-            <ul className="hero__trust">
-              {trustPoints.map((point) => (
-                <li key={point}>{point}</li>
+            <ul className="hero__checklist">
+              {heroChecklist.map((item) => (
+                <li key={item}>{item}</li>
               ))}
             </ul>
           </div>
 
-          <div className="hero__media" aria-label="Live FixEasy activity">
-            <motion.div
-              className="hero__panel"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-            >
-              <header className="hero__panel-header">
-                <span className="hero__panel-pill">Live job feed</span>
-                <span className="hero__panel-status">98% on-time arrivals this week</span>
-              </header>
-              <ul className="hero__panel-list">
-                {timeline.map((job) => (
-                  <li key={job.title}>
-                    <span className="hero__panel-time">{job.time}</span>
-                    <div>
-                      <div className="hero__panel-title">{job.title}</div>
-                      <div className="hero__panel-meta">{job.detail}</div>
-                    </div>
-                    <span className="hero__panel-chip">{job.status}</span>
-                  </li>
-                ))}
-              </ul>
-              <footer className="hero__panel-footer">
-                <span className="hero__panel-dot" aria-hidden="true" />
-                Updated moments ago — synced with provider apps
-              </footer>
-            </motion.div>
-
+          <aside className="hero__panel" aria-label="Live FixEasy activity">
+            <div className="hero__panel-header">
+              <span className="hero__panel-title">Live job feed</span>
+              <span className="hero__panel-meta">98% on-time arrivals this week</span>
+            </div>
+            <ul className="hero__panel-list">
+              {jobFeed.map((job) => (
+                <li key={job.title}>
+                  <span className="hero__panel-time">{job.time}</span>
+                  <div>
+                    <div className="hero__panel-job">{job.title}</div>
+                    <span className="hero__panel-status">{job.status}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
             <div className="hero__stats">
-              {highlightStats.map((item) => (
-                <div key={item.label} className="hero__stat-card">
+              {heroStats.map((item) => (
+                <div key={item.label} className="hero__stat">
                   <strong>{item.value}</strong>
                   <span>{item.label}</span>
                   <small>{item.helper}</small>
                 </div>
               ))}
             </div>
-
-            <div className="hero__quote" aria-label="Customer testimonial">
-              <span className="hero__quote-badge">Customer spotlight</span>
-              <p>“FixEasy had our burst pipe resolved in under an hour and shared a sustainability receipt for the visit.”</p>
-              <cite>Sarah • Dublin 8 homeowner</cite>
-            </div>
-          </div>
+            <p className="hero__panel-foot">Synced with pro apps • Carbon impact logged automatically</p>
+          </aside>
         </div>
       </div>
     </motion.section>
