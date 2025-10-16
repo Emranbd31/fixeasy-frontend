@@ -1,5 +1,15 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' width='128' height='128' fill='none'>
-  <rect width='64' height='64' rx='18' fill='#dcfce7'/>
-  <path fill='#16a34a' d='M34 12 20 34h10l-4 18 18-26H34l4-14z'/>
-  <path fill='#bbf7d0' d='m30 34 6-10-2 10h8l-8 12 2-12H30z'/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" fill="none">
+  <defs>
+    <linearGradient id="elec-bg" x1="12" y1="8" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ede9fe" />
+      <stop offset="1" stop-color="#c7d2fe" />
+    </linearGradient>
+    <linearGradient id="elec-bolt" x1="26" y1="14" x2="42" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#818cf8" />
+      <stop offset="1" stop-color="#22d3ee" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#elec-bg)" />
+  <path d="M30.2 12.8c.3-.5 1-.6 1.4-.2l14.2 13.7c.4.4.4 1 0 1.4l-7.9 7.8h7.1c.9 0 1.4 1 .9 1.8L33.8 51c-.6 1-2-.1-1.5-1.1l4.6-9.5H26c-.9 0-1.4-1-.9-1.8l5.1-7.7h-6.3c-1 0-1.5-1.1-.9-1.9l7.2-8.9Z" fill="url(#elec-bolt)" />
+  <circle cx="22" cy="24" r="4" fill="#c4b5fd" opacity=".6" />
 </svg>

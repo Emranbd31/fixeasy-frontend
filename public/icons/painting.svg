@@ -1,5 +1,16 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' width='128' height='128' fill='none'>
-  <rect width='64' height='64' rx='18' fill='#dcfce7'/>
-  <path fill='#16a34a' d='M40 12H24l-2 10h20l-2-10zM23 26h18l-2 12a7 7 0 0 1-14 0l-2-12z'/>
-  <path fill='#bbf7d0' d='M26 26h12l-1.2 7.2a5.8 5.8 0 0 1-9.6 3.2L26 26z'/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" fill="none">
+  <defs>
+    <linearGradient id="paint-bg" x1="12" y1="8" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fee2f2" />
+      <stop offset="1" stop-color="#fbcfe8" />
+    </linearGradient>
+    <linearGradient id="paint-brush" x1="24" y1="18" x2="40" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ec4899" />
+      <stop offset="1" stop-color="#f97316" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#paint-bg)" />
+  <path d="M20 18h24v10c0 1.1-.9 2-2 2H34l-2 8h4c1.1 0 2 .9 2 2 0 5-4 8-8 8s-8-3-8-8c0-1.1.9-2 2-2h4l-2-8h-6c-1.1 0-2-.9-2-2V18Z" fill="url(#paint-brush)" />
+  <path d="M24 18v6c0 1.1.9 2 2 2h4l-1.4-5.4c-.3-1.1.6-2.2 1.8-2.2H38V18H24Z" fill="#fb7185" opacity=".6" />
+  <rect x="20" y="18" width="24" height="4" rx="2" fill="#f9a8d4" opacity=".65" />
 </svg>
