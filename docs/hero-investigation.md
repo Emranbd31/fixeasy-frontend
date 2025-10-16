@@ -1,5 +1,8 @@
 # Hero Rendering Investigation
 
+> **Status Update (October 2025):** The `Hero` component described below has since been removed from the codebase. These notes
+> are preserved for historical reference in case the component or a similar feature returns.
+
 ## Summary of Findings
 - The application only contains a single `Hero` component at `components/Hero.jsx`. There are no duplicate files or alternative component exports that could override the intended implementation.
 - `pages/index.js` imports this `Hero` component and renders it at the top of the home page tree, so the updated JSX is part of the page React tree.
