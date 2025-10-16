@@ -1,5 +1,4 @@
 
-import Hero from '../components/Hero'
 import Image from 'next/image'
 
 export default function Home(){
@@ -13,7 +12,6 @@ export default function Home(){
   ]
   return (
     <div>
-      <Hero />
       <main className="container" id="services">
         <h2 className="section-title">Popular Home Services</h2>
         <div className="grid">
