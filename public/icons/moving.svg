@@ -1,6 +1,16 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' width='128' height='128' fill='none'>
-  <rect width='64' height='64' rx='18' fill='#dcfce7'/>
-  <path fill='#16a34a' d='M18 22h20v14H18zM26 30h20v18H26z'/>
-  <path fill='#bbf7d0' d='M22 26h12v6H22zM30 34h12v10H30z'/>
-  <path fill='#15803d' d='M40 38h6v2h-6zM32 22h6v2h-6z'/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" fill="none">
+  <defs>
+    <linearGradient id="moving-bg" x1="8" y1="12" x2="56" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#cffafe" />
+      <stop offset="1" stop-color="#bae6fd" />
+    </linearGradient>
+    <linearGradient id="moving-box" x1="18" y1="18" x2="46" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38bdf8" />
+      <stop offset="1" stop-color="#0ea5e9" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#moving-bg)" />
+  <path d="M18 22a2 2 0 0 1 2-2h24a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H20a2 2 0 0 1-2-2V22Z" fill="url(#moving-box)" />
+  <path d="M18 30h12v4H18v-4Zm28 0H34v4h12v-4Z" fill="#f8fafc" opacity=".65" />
+  <path d="M26 20v12l6-4 6 4V20" stroke="#f1f5f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
 </svg>
