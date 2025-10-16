@@ -106,6 +106,23 @@ const testimonials = [
   }
 ]
 
+const onboardingPaths = [
+  {
+    title: 'Client registration',
+    description:
+      'Set up a secure FixEasy account with MFA, document verification, and concierge-level scheduling preferences.',
+    link: '/register/client',
+    action: 'Register as a client'
+  },
+  {
+    title: 'Professional onboarding',
+    description:
+      'Submit Irish identity, insurance, and tax documents to access verified jobs, routing, and instant payouts.',
+    link: '/register/pro',
+    action: 'Join as a pro'
+  }
+]
+
 export default function Home() {
   return (
     <div className="landing">
@@ -243,6 +260,31 @@ export default function Home() {
                     <span>{testimonial.location}</span>
                   </figcaption>
                 </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="onboarding">
+          <div className="container">
+            <div className="section__header">
+              <p className="section__eyebrow">Onboarding</p>
+              <h2 className="section__title">Ready when you are</h2>
+              <p className="section__description">
+                Whether you are booking trusted help or bringing your crew onto the FixEasy platform, our onboarding flows
+                guide you through the Irish compliance requirements step by step.
+              </p>
+            </div>
+
+            <div className="services__grid services__grid--onboarding">
+              {onboardingPaths.map((path) => (
+                <article key={path.title} className="service-card service-card--onboarding">
+                  <h3>{path.title}</h3>
+                  <p>{path.description}</p>
+                  <a className="service-card__link" href={path.link}>
+                    {path.action}
+                  </a>
+                </article>
               ))}
             </div>
           </div>

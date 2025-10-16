@@ -4,7 +4,8 @@ const navLinks = [
   { href: '#services', label: 'Services' },
   { href: '#how-it-works', label: 'How it works' },
   { href: '#trust', label: 'Security' },
-  { href: '#testimonials', label: 'Stories' }
+  { href: '#testimonials', label: 'Stories' },
+  { href: '/register/client', label: 'Client sign-up' }
 ]
 
 const heroStats = [
@@ -50,8 +51,11 @@ export default function Hero() {
             ))}
           </nav>
           <div className="hero__actions">
-            <a href="/book#pro" className="hero__action hero__action--ghost">
-              Become a pro
+            <a href="/register/pro" className="hero__action hero__action--ghost">
+              Pro onboarding
+            </a>
+            <a href="/register/client" className="hero__action hero__action--outline">
+              Client registration
             </a>
             <a href="/book" className="hero__action hero__action--primary">
               Book a visit
