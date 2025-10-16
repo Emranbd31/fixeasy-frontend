@@ -1,0 +1,222 @@
+:root {
+  color-scheme: light dark;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --brand-primary: #3b82f6;
+  --brand-secondary: #0f172a;
+  --brand-accent: #22c55e;
+  --brand-surface: #f8fafc;
+  --brand-border: #e2e8f0;
+  --brand-text: #0f172a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--brand-surface);
+  color: var(--brand-text);
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+section {
+  padding: 4rem 0;
+}
+
+.container {
+  width: min(1200px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: none;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--brand-primary), #2563eb);
+  color: white;
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--brand-secondary);
+  border: 1px solid var(--brand-border);
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  border-radius: 1rem;
+  background: white;
+  border: 1px solid var(--brand-border);
+  padding: 1.5rem;
+  box-shadow: 0 16px 40px -24px rgba(15, 23, 42, 0.35);
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+header.site-header {
+  background: white;
+  border-bottom: 1px solid var(--brand-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.site-nav a {
+  color: var(--brand-secondary);
+  margin-left: 1.25rem;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.hero {
+  padding: 6rem 0 5rem;
+}
+
+.hero__headline {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  margin-bottom: 1rem;
+}
+
+.hero__copy {
+  font-size: 1.15rem;
+  max-width: 38rem;
+  margin-bottom: 2rem;
+}
+
+.footer {
+  background: var(--brand-secondary);
+  color: white;
+  padding: 2.5rem 0;
+}
+
+.footer a {
+  color: white;
+  text-decoration: none;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-field label {
+  font-weight: 600;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--brand-border);
+  font-size: 1rem;
+}
+
+.form-error {
+  color: #b91c1c;
+  font-size: 0.925rem;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.checkbox-field input {
+  margin-top: 0.2rem;
+}
+
+.notice {
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.notice strong {
+  color: #1d4ed8;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--brand-border);
+  text-align: left;
+}
+
+.table th {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .site-header__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .site-nav {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+  }
+}
