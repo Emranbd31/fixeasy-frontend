@@ -1,3 +1,7 @@
 import '../styles/globals.css'
 import '../styles/hero.css'
-export default function App({ Component, pageProps }) { return <Component {...pageProps} /> }
+import '../styles/admin.css'
+
+export default function App({ Component, pageProps }) {
+  return <Component {...pageProps} />
+}
