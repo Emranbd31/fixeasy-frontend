@@ -1,0 +1,10 @@
+{
+  "settings": {
+    "rootDirectory": "backend/Backend--main",
+    "framework": "other",
+    "buildCommand": "pip install -r requirements.txt",
+    "installCommand": "pip install -r requirements.txt",
+    "outputDirectory": ".",
+    "devCommand": "uvicorn main:app --host 0.0.0.0 --port 8000"
+  }
+}
