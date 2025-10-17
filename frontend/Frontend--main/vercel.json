@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm ci",
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://wphmhlrttmzsmngysfws.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_KEY": "<Supabase anon/public key>",
+    "NEXT_PUBLIC_API_URL": "https://api.fixeasy.irish",
+    "NEXT_PUBLIC_SITE_URL": "https://fixeasy.irish",
+    "NEXT_PUBLIC_ENV": "production",
+    "NODE_VERSION": "18"
+  }
+}

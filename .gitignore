@@ -1,4 +1,13 @@
-node_modules
-.next
+# Frontend build artifacts
+frontend/Frontend--main/node_modules
+node_modules/
+frontend/Frontend--main/.next
+frontend/Frontend--main/.vercel
+
+# Backend virtual environments and caches
+backend/Backend--main/.venv
+backend/Backend--main/__pycache__
+backend/Backend--main/.pytest_cache
+
+# Project archives
 FixEasy-V4-RealHero.zip
-.vercel
