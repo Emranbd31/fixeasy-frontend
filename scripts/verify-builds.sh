@@ -11,9 +11,12 @@ run_frontend_build() {
   if ! npm ci; then
     echo "⚠️ npm ci failed, attempting npm install"
     if ! npm install; then
-      echo "❌ Unable to install frontend dependencies."
-      popd >/dev/null
-      return 1
+      echo "⚠️ npm install failed, attempting npm install --legacy-peer-deps"
+      if ! npm install --legacy-peer-deps; then
+        echo "❌ Unable to install frontend dependencies."
+        popd >/dev/null
+        return 1
+      fi
     fi
   fi
   echo "🏗️ Building frontend..."

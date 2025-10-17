@@ -19,12 +19,14 @@ backend/
 | --- | --- |
 | Root Directory | `frontend/Frontend--main` |
 | Framework Preset | Next.js |
-| Install Command | `npm ci` *(or `npm install`)* |
+| Install Command | `npm ci` *(falls back to `npm install` or `npm install --legacy-peer-deps`)* |
 | Build Command | `npm run build` |
 | Output Directory | `.next` |
 | Development Command | `npm run dev` |
 
 #### Required environment variables
+Add a project-level `NODE_VERSION` of `18` (or higher) inside the Vercel dashboard to match the runtime expected by Next.js 14.
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://wphmhlrttmzsmngysfws.supabase.co
 NEXT_PUBLIC_SUPABASE_KEY=<Supabase anon/public key>
@@ -64,6 +66,8 @@ Before pushing changes you can verify each project locally.  The repository incl
 ```bash
 ./scripts/verify-builds.sh
 ```
+
+The helper script mirrors Vercel's behaviour by attempting `npm ci` first and progressively falling back to `npm install` and `npm install --legacy-peer-deps`.  This ensures local validation still succeeds if scoped packages are temporarily blocked by a private registry policy.
 
 If you prefer to execute the steps manually:
 

@@ -2,6 +2,9 @@
   "name": "fixeasy-frontend",
   "private": true,
   "version": "1.0.0",
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "scripts": {
     "dev": "node scripts/run-next.js dev -p 3000",
     "build": "node scripts/run-next.js build",

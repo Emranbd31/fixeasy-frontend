@@ -2,7 +2,7 @@
   "version": 2,
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "installCommand": "npm ci || npm install",
+  "installCommand": "npm ci || npm install || npm install --legacy-peer-deps",
   "outputDirectory": ".next",
   "env": {
     "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",

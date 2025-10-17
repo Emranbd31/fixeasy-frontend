@@ -26,6 +26,8 @@
 - [ ] Confirm Sentry placeholder emits warning when DSN provided without SDK.
 
 ## Deployment Sanity
+- [ ] Confirm Vercel project roots point to `frontend/Frontend--main` and `backend/Backend--main`.
+- [ ] Verify required environment variables (including `NODE_VERSION=18`) are present in both Vercel projects.
 - [ ] Run `npm run build` and `npm run start` locally to ensure Next.js compiles with security headers.
 - [ ] Start FastAPI via `cd backend/Backend--main && uvicorn main:app --reload` and smoke-test `/auth/verify` with Supabase JWT.
 - [ ] Execute Supabase SQL migrations (`supabase/schema.sql`, `supabase/policies.sql`) and seed data script (`supabase/seed_services.sql`).
