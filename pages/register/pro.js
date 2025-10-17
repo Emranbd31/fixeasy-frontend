@@ -1,749 +1,789 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
-import {
-  isValidIrishCompanyNumber,
-  isValidIrishPhone,
-  isValidPpsNumber,
-  sanitizePhone,
-  sanitizeText
-} from '../../lib/validation'
+import { useRouter } from 'next/router'
+import { isValidIrishPhone, sanitizePhone, sanitizeText } from '../../lib/validation'
 
-const serviceCategories = [
-  'Plumbing & heating',
+const STORAGE_KEY = 'fixeasy-pro-register-draft-2025'
+
+const stepLabels = ['Info', 'Verification', 'Confirm']
+
+const categoryOptions = [
+  'Plumbing & Heating',
   'Electrical & EV',
-  'Cleaning & facilities',
-  'Carpentry & fit-out',
-  'Landscaping & outdoors',
-  'Painting & finishing',
-  'Appliance repair',
-  'Handyman & general maintenance'
+  'Cleaning & Facilities',
+  'Carpentry & Fit-out',
+  'Landscaping & Outdoors',
+  'Painting & Finishing',
+  'Appliance Repair',
+  'Handyman & Maintenance'
 ]
 
-const identityRequirements = [
-  'Valid Irish passport or EU/EEA passport',
-  'Irish/UK driver licence (front & back) or Irish Residence Permit',
-  'Company or sole trader registration (CRO/RBN)'
+const serviceAreaOptions = [
+  'Dublin City & County',
+  'Leinster',
+  'Munster',
+  'Connacht',
+  'Ulster (ROI)',
+  'Nationwide (Republic of Ireland)'
 ]
 
-const complianceDocuments = [
-  'Public liability insurance (minimum €2m cover)',
-  'Employers liability insurance (if applicable)',
-  'Revenue tax clearance certificate or ROS screenshot (last 12 months)',
-  'Safe Electric, RGI, or equivalent trade certifications where required'
-]
-
-const onboardingMilestones = [
-  {
-    title: 'Document check (same day)',
-    detail: 'Our compliance analysts validate identity, insurance and certifications before activating job access.'
-  },
-  {
-    title: 'Availability sync',
-    detail: 'Upload your service areas and working hours to unlock instant job notifications in the FixEasy pro app.'
-  },
-  {
-    title: 'First secure payout',
-    detail: 'Stripe Connect handles weekly payouts to your Irish bank account with line-item job summaries and VAT breakdowns.'
-  }
-]
+const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png']
 
 const initialState = {
-  businessName: '',
-  tradingName: '',
-  contactName: '',
+  fullName: '',
   email: '',
   phone: '',
-  serviceCounties: '',
+  serviceCategories: [],
+  serviceAreas: [],
   experienceYears: '',
-  staffCount: '',
-  services: [],
-  registrationNumber: '',
-  insuranceExpiry: '',
-  idDocument: null,
-  insuranceDocument: null,
-  taxDocument: null,
-  certifications: null,
-  ppsNumber: '',
-  notes: '',
-  confirmAccuracy: false,
-  acceptTerms: false,
-  marketingConsent: false
+  languages: '',
+  passport: null,
+  licence: null,
+  address: null,
+  consent: false
+}
+
+const fileLabels = {
+  passport: 'Passport or National ID',
+  licence: 'Driving Licence',
+  address: 'Address Proof'
 }
 
 export default function ProfessionalRegistration() {
+  const router = useRouter()
   const [formData, setFormData] = useState(initialState)
   const [errors, setErrors] = useState({})
-  const [submitted, setSubmitted] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1)
+  const [uploadProgress, setUploadProgress] = useState({ passport: 0, licence: 0, address: 0 })
+  const [uploadedDocuments, setUploadedDocuments] = useState({ passport: null, licence: null, address: null })
+  const [previews, setPreviews] = useState({ passport: null, licence: null, address: null })
+  const [savingDraft, setSavingDraft] = useState(false)
+  const [draftSaved, setDraftSaved] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [apiResponse, setApiResponse] = useState(null)
-  const [termsVersion, setTermsVersion] = useState(null)
-  const [termsLoading, setTermsLoading] = useState(true)
-
-  const handleInputChange = (event) => {
-    const { name, value, type, checked, files } = event.target
-
-    if (type === 'checkbox') {
-      setFormData((prev) => ({ ...prev, [name]: checked }))
-      return
-    }
-
-    if (type === 'file') {
-      setFormData((prev) => ({ ...prev, [name]: files?.[0] ?? null }))
-      return
-    }
-
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleServiceToggle = (service) => {
-    setFormData((prev) => {
-      const exists = prev.services.includes(service)
-      return {
-        ...prev,
-        services: exists ? prev.services.filter((item) => item !== service) : [...prev.services, service]
-      }
-    })
-  }
+  const [submissionError, setSubmissionError] = useState('')
 
   useEffect(() => {
-    let isMounted = true
-
-    async function loadTerms() {
-      try {
-        const response = await fetch('/api/legal/terms')
-        if (!response.ok) {
-          throw new Error('Unable to load terms')
-        }
-        const latest = await response.json()
-        if (isMounted && latest?.ok && latest.version) {
-          setTermsVersion(latest.version)
-        }
-      } catch (error) {
-        console.error('Failed to load terms', error)
-      } finally {
-        if (isMounted) {
-          setTermsLoading(false)
-        }
-      }
+    if (typeof window === 'undefined') {
+      return
     }
 
-    loadTerms()
-
-    return () => {
-      isMounted = false
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        setFormData((prev) => ({ ...prev, ...parsed }))
+      }
+    } catch (error) {
+      console.warn('Failed to restore draft', error)
     }
   }, [])
 
-  const validate = () => {
-    const nextErrors = {}
+  useEffect(() => {
+    return () => {
+      Object.values(previews).forEach((url) => {
+        if (url) {
+          URL.revokeObjectURL(url)
+        }
+      })
+    }
+  }, [previews])
 
-    if (!sanitizeText(formData.businessName)) {
-      nextErrors.businessName = 'Enter your registered business or sole trader name.'
+  const serviceCategorySummary = useMemo(() => {
+    if (formData.serviceCategories.length === 0) {
+      return 'No service categories selected yet.'
+    }
+    return formData.serviceCategories.join(', ')
+  }, [formData.serviceCategories])
+
+  const serviceAreaSummary = useMemo(() => {
+    if (formData.serviceAreas.length === 0) {
+      return 'No service areas selected yet.'
+    }
+    return formData.serviceAreas.join(', ')
+  }, [formData.serviceAreas])
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    setErrors((prev) => ({ ...prev, [name]: undefined }))
+  }
+
+  const toggleSelection = (key, value) => {
+    setFormData((prev) => {
+      const exists = prev[key].includes(value)
+      const updated = exists ? prev[key].filter((item) => item !== value) : [...prev[key], value]
+      return { ...prev, [key]: updated }
+    })
+    setErrors((prev) => ({ ...prev, [key]: undefined }))
+  }
+
+  const handleConsentChange = (event) => {
+    const { checked } = event.target
+    setFormData((prev) => ({ ...prev, consent: checked }))
+    setErrors((prev) => ({ ...prev, consent: undefined }))
+  }
+
+  const resetPreview = (field) => {
+    setPreviews((prev) => {
+      if (prev[field]) {
+        URL.revokeObjectURL(prev[field])
+      }
+      return { ...prev, [field]: null }
+    })
+  }
+
+  const uploadDocument = async (field, file) => {
+    setUploadProgress((prev) => ({ ...prev, [field]: 5 }))
+    setErrors((prev) => ({ ...prev, [field]: undefined }))
+
+    try {
+      const signResponse = await fetch('/api/storage/sign-upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          bucket: 'professional-documents',
+          fileName: file.name,
+          contentType: file.type
+        })
+      })
+
+      const signed = await signResponse.json().catch(() => ({}))
+
+      if (!signResponse.ok || !signed?.url) {
+        throw new Error(signed?.error ?? 'Unable to create upload URL')
+      }
+
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('PUT', signed.url)
+        if (signed?.headers) {
+          Object.entries(signed.headers).forEach(([header, headerValue]) => {
+            xhr.setRequestHeader(header, headerValue)
+          })
+        } else if (file.type) {
+          xhr.setRequestHeader('Content-Type', file.type)
+        }
+
+        xhr.upload.onprogress = (event) => {
+          if (!event.lengthComputable) return
+          const percentage = Math.round((event.loaded / event.total) * 100)
+          setUploadProgress((prev) => ({ ...prev, [field]: percentage }))
+        }
+
+        xhr.onerror = () => reject(new Error('Upload failed'))
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve()
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`))
+          }
+        }
+
+        xhr.send(file)
+      })
+
+      setUploadProgress((prev) => ({ ...prev, [field]: 100 }))
+      setUploadedDocuments((prev) => ({
+        ...prev,
+        [field]: {
+          path: signed.path ?? signed.objectName ?? signed.key ?? '',
+          url: signed.publicUrl ?? signed.previewUrl ?? signed.url.split('?')[0],
+          name: file.name,
+          size: file.size,
+          type: file.type
+        }
+      }))
+    } catch (error) {
+      console.error('Upload error', error)
+      setErrors((prev) => ({
+        ...prev,
+        [field]: 'Upload failed. Please try again or contact support if it continues.'
+      }))
+      setUploadProgress((prev) => ({ ...prev, [field]: 0 }))
+      setUploadedDocuments((prev) => ({ ...prev, [field]: null }))
+    }
+  }
+
+  const handleFileChange = (field) => async (event) => {
+    const file = event.target.files?.[0]
+
+    resetPreview(field)
+    setFormData((prev) => ({ ...prev, [field]: file ?? null }))
+    setUploadedDocuments((prev) => ({ ...prev, [field]: null }))
+    setUploadProgress((prev) => ({ ...prev, [field]: 0 }))
+
+    if (!file) {
+      return
     }
 
-    if (!sanitizeText(formData.contactName)) {
-      nextErrors.contactName = 'Provide the primary contact responsible for compliance.'
+    const extension = file.name.split('.').pop()?.toLowerCase()
+    const isValidType = allowedExtensions.includes(extension)
+    const isUnderSizeLimit = file.size <= 5 * 1024 * 1024
+
+    if (!isValidType) {
+      setErrors((prev) => ({ ...prev, [field]: 'Unsupported file type. Upload a PDF, JPG, or PNG.' }))
+      return
     }
 
-    if (!sanitizeText(formData.email) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      nextErrors.email = 'Add a valid email for onboarding updates.'
+    if (!isUnderSizeLimit) {
+      setErrors((prev) => ({ ...prev, [field]: 'Files must be 5MB or smaller.' }))
+      return
     }
 
-    if (!isValidIrishPhone(formData.phone)) {
-      nextErrors.phone = 'Use an Irish mobile or landline in +353 format.'
+    if (file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file)
+      setPreviews((prev) => ({ ...prev, [field]: url }))
     }
 
-    if (!sanitizeText(formData.serviceCounties)) {
-      nextErrors.serviceCounties = 'List the Irish counties or districts you cover.'
+    await uploadDocument(field, file)
+  }
+
+  const runStepValidation = (step) => {
+    const validation = {}
+
+    if (step === 1) {
+      if (!sanitizeText(formData.fullName)) {
+        validation.fullName = 'Enter your full name or business name.'
+      }
+
+      if (!sanitizeText(formData.email) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        validation.email = 'Add a valid email address.'
+      }
+
+      if (!isValidIrishPhone(formData.phone)) {
+        validation.phone = 'Use an Irish phone number in +353 format.'
+      }
+
+      if (formData.serviceCategories.length === 0) {
+        validation.serviceCategories = 'Select at least one service category.'
+      }
+
+      if (formData.serviceAreas.length === 0) {
+        validation.serviceAreas = 'Select at least one service area.'
+      }
     }
 
-    if (!sanitizeText(formData.experienceYears)) {
-      nextErrors.experienceYears = 'Share years of professional experience in your trade.'
+    if (step === 2) {
+      if (!sanitizeText(formData.experienceYears) || Number(formData.experienceYears) < 0) {
+        validation.experienceYears = 'Enter your years of professional experience.'
+      }
+
+      if (!formData.passport || !uploadedDocuments.passport) {
+        validation.passport = 'Upload your passport or national ID.'
+      }
+
+      if (!formData.licence || !uploadedDocuments.licence) {
+        validation.licence = 'Upload your driving licence.'
+      }
+
+      if (!formData.address || !uploadedDocuments.address) {
+        validation.address = 'Upload proof of address.'
+      }
+
+      if (!formData.consent) {
+        validation.consent = 'You must confirm the documents are authentic.'
+      }
     }
 
-    if (formData.services.length === 0) {
-      nextErrors.services = 'Select at least one service category you deliver.'
+    if (step === 3) {
+      if (!formData.consent) {
+        validation.consent = 'Confirm the authenticity of your documents before submitting.'
+      }
     }
 
-    if (!sanitizeText(formData.registrationNumber) || !isValidIrishCompanyNumber(formData.registrationNumber)) {
-      nextErrors.registrationNumber = 'Include a valid CRO, RBN, or VAT number.'
+    return validation
+  }
+
+  const handleNext = () => {
+    const validation = runStepValidation(currentStep)
+    if (Object.keys(validation).length) {
+      setErrors(validation)
+      return
+    }
+    setErrors({})
+    setCurrentStep((step) => Math.min(step + 1, stepLabels.length))
+  }
+
+  const handleBack = () => {
+    setErrors({})
+    setCurrentStep((step) => Math.max(step - 1, 1))
+  }
+
+  const handleSaveDraft = () => {
+    if (typeof window === 'undefined') {
+      return
     }
 
-    if (!sanitizeText(formData.insuranceExpiry)) {
-      nextErrors.insuranceExpiry = 'Confirm when your liability insurance expires.'
+    setSavingDraft(true)
+    setDraftSaved(false)
+
+    const draft = {
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      serviceCategories: formData.serviceCategories,
+      serviceAreas: formData.serviceAreas,
+      experienceYears: formData.experienceYears,
+      languages: formData.languages
     }
 
-    if (!formData.ppsNumber || !isValidPpsNumber(formData.ppsNumber)) {
-      nextErrors.ppsNumber = 'Provide the PPS number for the responsible person.'
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
+      setDraftSaved(true)
+    } catch (error) {
+      console.warn('Unable to save draft', error)
+      setSubmissionError('We could not save the draft locally. Check storage permissions and try again.')
+    } finally {
+      setSavingDraft(false)
     }
-
-    if (!formData.idDocument) {
-      nextErrors.identityDocument = 'Upload the front page of your passport, driver licence or IRP.'
-    }
-
-    if (!formData.insuranceDocument) {
-      nextErrors.insuranceEvidence = 'Upload proof of insurance coverage (PDF or image).'
-    }
-
-    if (!formData.taxDocument) {
-      nextErrors.taxClearance = 'Upload a current Revenue tax clearance certificate or ROS screenshot.'
-    }
-
-    if (!formData.confirmAccuracy) {
-      nextErrors.confirmAccuracy = 'Confirm that submitted documents are valid and up to date.'
-    }
-
-    if (!formData.acceptTerms) {
-      nextErrors.acceptTerms = 'You must accept the FixEasy Terms & Conditions to continue.'
-    }
-
-    if (!termsVersion) {
-      nextErrors.acceptTerms = 'We could not confirm the latest Terms version. Refresh and try again.'
-    }
-
-    return nextErrors
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    setSubmitted(false)
-    setApiResponse(null)
-    const validation = validate()
+    setSubmissionError('')
 
-    if (Object.keys(validation).length > 0) {
+    const validation = {
+      ...runStepValidation(1),
+      ...runStepValidation(2),
+      ...runStepValidation(3)
+    }
+
+    if (Object.keys(validation).length) {
       setErrors(validation)
+      if (currentStep !== 3) {
+        setCurrentStep(1)
+      } else if (validation.passport || validation.licence || validation.address) {
+        setCurrentStep(2)
+      }
       return
     }
 
     setErrors({})
     setSubmitting(true)
 
-    const serviceRegions = formData.serviceCounties
-      .split(',')
-      .map((entry) => sanitizeText(entry))
-      .filter(Boolean)
-
     const payload = {
-      fullName: sanitizeText(formData.contactName),
+      fullName: sanitizeText(formData.fullName),
       email: sanitizeText(formData.email),
       phone: sanitizePhone(formData.phone),
-      companyName: sanitizeText(formData.businessName || formData.tradingName || formData.contactName),
-      registrationNumber: sanitizeText(formData.registrationNumber),
-      ppsNumber: sanitizeText(formData.ppsNumber),
-      serviceRegions,
-      services: formData.services,
-      insuranceExpiry: sanitizeText(formData.insuranceExpiry),
-      staffCount: sanitizeText(formData.staffCount),
-      experienceYears: sanitizeText(formData.experienceYears),
-      identityDocument: formData.idDocument
-        ? { name: formData.idDocument.name, size: formData.idDocument.size }
-        : null,
-      insuranceEvidence: formData.insuranceDocument
-        ? { name: formData.insuranceDocument.name, size: formData.insuranceDocument.size }
-        : null,
-      taxClearance: formData.taxDocument
-        ? { name: formData.taxDocument.name, size: formData.taxDocument.size }
-        : null,
-      certifications: formData.certifications
-        ? { name: formData.certifications.name, size: formData.certifications.size }
-        : null,
-      notes: sanitizeText(formData.notes),
-      confirmAccuracy: formData.confirmAccuracy,
-      marketingConsent: formData.marketingConsent,
-      termsAcceptedAt: new Date().toISOString(),
-      termsVersion: termsVersion
+      serviceCategories: formData.serviceCategories,
+      serviceAreas: formData.serviceAreas,
+      yearsExperience: Number(formData.experienceYears),
+      languages: sanitizeText(formData.languages),
+      status: 'pending_verification',
+      verificationDocuments: {
+        passport_url: uploadedDocuments.passport?.path ?? '',
+        licence_url: uploadedDocuments.licence?.path ?? '',
+        address_url: uploadedDocuments.address?.path ?? ''
+      }
     }
 
     try {
-      const response = await fetch('/api/register', {
+      const response = await fetch('/api/register/pro', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          type: 'professional',
-          payload
-        })
+        body: JSON.stringify(payload)
       })
 
       const result = await response.json().catch(() => ({}))
 
       if (!response.ok) {
-        if (result?.field) {
-          const fieldMap = {
-            serviceRegions: 'serviceCounties'
-          }
-          const fieldKey = fieldMap[result.field] ?? result.field
-          setErrors({ [fieldKey]: result.error })
-        } else {
-          setErrors({ form: result?.error ?? 'We were unable to submit your details. Try again shortly.' })
-        }
-        return
+        throw new Error(result?.error ?? 'Submission failed')
       }
 
-      setApiResponse({ ...result, email: payload.email, contact: payload.fullName })
-      setSubmitted(true)
-      setFormData({ ...initialState })
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(STORAGE_KEY)
+      }
+
+      setFormData(initialState)
+      setUploadedDocuments({ passport: null, licence: null, address: null })
+      setUploadProgress({ passport: 0, licence: 0, address: 0 })
+      setPreviews({ passport: null, licence: null, address: null })
+      setCurrentStep(1)
+
+      router.push({ pathname: '/dashboard/pro', query: { status: 'pending_verification' } })
     } catch (error) {
-      setErrors({ form: 'We could not reach the onboarding service. Check your connection and try again.' })
+      console.error('Submission error', error)
+      setSubmissionError(error.message || 'We could not submit your application. Try again shortly.')
     } finally {
       setSubmitting(false)
     }
   }
 
-  const renderServiceOption = (service) => (
-    <label key={service} className="registration-field registration-field--option">
-      <input
-        type="checkbox"
-        name="services"
-        value={service}
-        checked={formData.services.includes(service)}
-        onChange={() => handleServiceToggle(service)}
-      />
-      {service}
-    </label>
-  )
+  const renderStep = () => {
+    if (currentStep === 1) {
+      return (
+        <div className="registration-step">
+          <fieldset className="registration-fieldset">
+            <legend>Professional details</legend>
+            <div className="registration-field">
+              <label htmlFor="fullName">Full name / Business name</label>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                autoComplete="organization"
+                aria-invalid={Boolean(errors.fullName)}
+              />
+              {errors.fullName ? <p className="registration-hint registration-hint--error">{errors.fullName}</p> : null}
+            </div>
+
+            <div className="registration-two-column">
+              <div className="registration-field">
+                <label htmlFor="email">Email</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  autoComplete="email"
+                  aria-invalid={Boolean(errors.email)}
+                />
+                {errors.email ? <p className="registration-hint registration-hint--error">{errors.email}</p> : null}
+              </div>
+              <div className="registration-field">
+                <label htmlFor="phone">Phone number</label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="+353871234567"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  aria-invalid={Boolean(errors.phone)}
+                />
+                {errors.phone ? <p className="registration-hint registration-hint--error">{errors.phone}</p> : null}
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset className="registration-fieldset">
+            <legend>Services</legend>
+            <div className="registration-field registration-field--group">
+              <span>Select your service categories</span>
+              <div className="registration-chip-group" role="group" aria-label="Service categories">
+                {categoryOptions.map((category) => {
+                  const isActive = formData.serviceCategories.includes(category)
+                  return (
+                    <button
+                      type="button"
+                      key={category}
+                      className={`registration-chip ${isActive ? 'is-active' : ''}`}
+                      onClick={() => toggleSelection('serviceCategories', category)}
+                    >
+                      {category}
+                    </button>
+                  )
+                })}
+              </div>
+              {errors.serviceCategories ? (
+                <p className="registration-hint registration-hint--error">{errors.serviceCategories}</p>
+              ) : null}
+            </div>
+
+            <div className="registration-field registration-field--group">
+              <span>Select your service areas</span>
+              <div className="registration-chip-group" role="group" aria-label="Service areas">
+                {serviceAreaOptions.map((area) => {
+                  const isActive = formData.serviceAreas.includes(area)
+                  return (
+                    <button
+                      type="button"
+                      key={area}
+                      className={`registration-chip ${isActive ? 'is-active' : ''}`}
+                      onClick={() => toggleSelection('serviceAreas', area)}
+                    >
+                      {area}
+                    </button>
+                  )
+                })}
+              </div>
+              {errors.serviceAreas ? (
+                <p className="registration-hint registration-hint--error">{errors.serviceAreas}</p>
+              ) : null}
+            </div>
+
+            <div className="registration-field">
+              <label htmlFor="languages">Languages spoken (optional)</label>
+              <input
+                id="languages"
+                name="languages"
+                type="text"
+                placeholder="English, Gaeilge, Polish"
+                value={formData.languages}
+                onChange={handleInputChange}
+              />
+            </div>
+          </fieldset>
+        </div>
+      )
+    }
+
+    if (currentStep === 2) {
+      return (
+        <div className="registration-step">
+          <fieldset className="registration-fieldset">
+            <legend>Verification documents</legend>
+            <div className="registration-field">
+              <label htmlFor="experienceYears">Years of experience</label>
+              <input
+                id="experienceYears"
+                name="experienceYears"
+                type="number"
+                min="0"
+                value={formData.experienceYears}
+                onChange={handleInputChange}
+                aria-invalid={Boolean(errors.experienceYears)}
+              />
+              {errors.experienceYears ? (
+                <p className="registration-hint registration-hint--error">{errors.experienceYears}</p>
+              ) : null}
+            </div>
+
+            {['passport', 'licence', 'address'].map((field) => (
+              <div key={field} className="registration-field registration-upload">
+                <label htmlFor={`${field}-upload`}>{fileLabels[field]}</label>
+                <input
+                  id={`${field}-upload`}
+                  name={field}
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleFileChange(field)}
+                  aria-invalid={Boolean(errors[field])}
+                />
+                <p className="registration-hint">PDF, JPG, or PNG up to 5MB.</p>
+                {previews[field] ? (
+                  <div className="registration-upload__preview">
+                    <img src={previews[field]} alt={`${fileLabels[field]} preview`} />
+                  </div>
+                ) : null}
+                {uploadProgress[field] > 0 ? (
+                  <div className="registration-progress" role="status" aria-live="polite">
+                    <div className="registration-progress__bar" style={{ width: `${uploadProgress[field]}%` }} />
+                    <span>{uploadProgress[field]}%</span>
+                  </div>
+                ) : null}
+                {uploadedDocuments[field]?.url ? (
+                  <p className="registration-hint">
+                    Uploaded as{' '}
+                    <a href={uploadedDocuments[field].url} target="_blank" rel="noopener noreferrer">
+                      {uploadedDocuments[field].name}
+                    </a>
+                  </p>
+                ) : null}
+                {errors[field] ? <p className="registration-hint registration-hint--error">{errors[field]}</p> : null}
+              </div>
+            ))}
+          </fieldset>
+
+          <div className="registration-consent">
+            <label htmlFor="consent" className="registration-consent__label">
+              <input
+                id="consent"
+                name="consent"
+                type="checkbox"
+                checked={formData.consent}
+                onChange={handleConsentChange}
+                aria-invalid={Boolean(errors.consent)}
+              />
+              I confirm these documents are authentic.
+            </label>
+            {errors.consent ? <p className="registration-hint registration-hint--error">{errors.consent}</p> : null}
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="registration-step">
+        <fieldset className="registration-fieldset">
+          <legend>Review and confirm</legend>
+          <dl className="registration-summary">
+            <div>
+              <dt>Professional</dt>
+              <dd>{formData.fullName || '—'}</dd>
+            </div>
+            <div>
+              <dt>Contact</dt>
+              <dd>
+                {formData.email || '—'}
+                <br />
+                {formData.phone || '—'}
+              </dd>
+            </div>
+            <div>
+              <dt>Service categories</dt>
+              <dd>{serviceCategorySummary}</dd>
+            </div>
+            <div>
+              <dt>Service areas</dt>
+              <dd>{serviceAreaSummary}</dd>
+            </div>
+            <div>
+              <dt>Experience</dt>
+              <dd>{formData.experienceYears ? `${formData.experienceYears} years` : '—'}</dd>
+            </div>
+            <div>
+              <dt>Languages</dt>
+              <dd>{formData.languages ? formData.languages : '—'}</dd>
+            </div>
+            <div>
+              <dt>Documents</dt>
+              <dd>
+                <ul>
+                  {['passport', 'licence', 'address'].map((field) => (
+                    <li key={field}>
+                      {fileLabels[field]} —{' '}
+                      {uploadedDocuments[field]?.name ? (
+                        <a href={uploadedDocuments[field]?.url} target="_blank" rel="noopener noreferrer">
+                          {uploadedDocuments[field]?.name}
+                        </a>
+                      ) : (
+                        'Not uploaded'
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+          </dl>
+        </fieldset>
+
+        <p className="registration-note">
+          Submit to start verification. We will email updates and unlock dashboard access once your documents are approved.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="registration-layout">
       <Head>
-        <title>Professional onboarding — FixEasy</title>
+        <title>FixEasy Professional Registration</title>
         <meta
           name="description"
-          content="Join FixEasy as an Irish professional with secure identity checks, insurance validation, and compliance-ready payouts."
+          content="Apply to join FixEasy as a verified professional. Secure document upload, Irish compliance checks, and fast approval."
         />
       </Head>
 
       <div className="registration-layout__container">
         <header className="registration-header">
           <span className="registration-header__eyebrow">Professional onboarding</span>
-          <h1 className="registration-header__title">Work with FixEasy clients across Ireland</h1>
+          <h1 className="registration-header__title">Step into the FixEasy verified network</h1>
           <p className="registration-header__intro">
-            Submit your compliance pack to unlock verified jobs, instant messaging, digital worksheets, and automatic payouts
-            via Stripe Connect. We only partner with fully credentialed teams who meet Irish safety and insurance standards.
+            Complete the guided steps below to upload your credentials and submit for verification.
           </p>
         </header>
 
         <div className="registration-grid">
-          <section className="registration-card">
-            <div>
-              <h2 className="registration-card__title">Compliance &amp; capability details</h2>
+          <section className="registration-card registration-card--pro" aria-labelledby="pro-register-heading">
+            <div className="registration-card__intro">
+              <h2 id="pro-register-heading" className="registration-card__title">
+                Professional verification
+              </h2>
               <p className="registration-note">
-                FixEasy performs enhanced due diligence with CRO, Revenue, and trade bodies. Upload clear scans and ensure names
-                match across all documents to avoid delays.
+                Secure uploads with Supabase Storage. You can save progress locally and return anytime.
               </p>
             </div>
 
-            {Object.keys(errors).length > 0 && (
+            <ol className="registration-steps" role="list">
+              {stepLabels.map((label, index) => {
+                const stepNumber = index + 1
+                const state = stepNumber === currentStep ? 'current' : stepNumber < currentStep ? 'complete' : 'upcoming'
+                return (
+                  <li key={label} className={`registration-steps__item registration-steps__item--${state}`}>
+                    <span className="registration-steps__number">{stepNumber}</span>
+                    <span>{label}</span>
+                  </li>
+                )
+              })}
+            </ol>
+
+            {submissionError ? (
               <div className="registration-errors" role="alert">
-                <strong>We need a few updates:</strong>
-                <ul>
-                  {Object.values(errors).map((message) => (
-                    <li key={message}>{message}</li>
-                  ))}
-                </ul>
+                {submissionError}
               </div>
-            )}
+            ) : null}
 
-            {submitted && apiResponse && (
-              <div className="registration-success" role="status">
-                <span>Thanks for sharing your credentials.</span>
-                <span>
-                  Reference <strong>{apiResponse.reference}</strong> logged at{' '}
-                  <time dateTime={apiResponse.receivedAt}>
-                    {new Date(apiResponse.receivedAt).toLocaleString('en-IE', {
-                      dateStyle: 'medium',
-                      timeStyle: 'short'
-                    })}
-                  </time>
-                  . We will contact <strong>{apiResponse.contact}</strong> at <strong>{apiResponse.email}</strong> within one
-                  business day to complete onboarding and Stripe Connect setup.
-                </span>
-              </div>
-            )}
+            {draftSaved ? (
+              <p className="registration-success" role="status">
+                Draft saved locally. Return later to continue onboarding.
+              </p>
+            ) : null}
 
-            <form onSubmit={handleSubmit} className="registration-form" noValidate>
-              <fieldset className="registration-fieldset">
-                <legend>Business information</legend>
-                <div className="registration-two-column">
-                  <div className="registration-field">
-                    <label htmlFor="businessName">Registered business / sole trader name</label>
-                    <input
-                      id="businessName"
-                      name="businessName"
-                      type="text"
-                      value={formData.businessName}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.businessName)}
-                    />
-                  </div>
-                  <div className="registration-field">
-                    <label htmlFor="tradingName">Trading name (if different)</label>
-                    <input
-                      id="tradingName"
-                      name="tradingName"
-                      type="text"
-                      value={formData.tradingName}
-                      onChange={handleInputChange}
-                    />
-                  </div>
+            <form className="registration-form" onSubmit={handleSubmit} noValidate>
+              {renderStep()}
+
+              <div className="registration-step-actions">
+                <div className="registration-step-actions__left">
+                  {currentStep > 1 ? (
+                    <button type="button" className="registration-secondary" onClick={handleBack}>
+                      Back
+                    </button>
+                  ) : null}
                 </div>
-
-                <div className="registration-two-column">
-                  <div className="registration-field">
-                    <label htmlFor="contactName">Primary contact name</label>
-                    <input
-                      id="contactName"
-                      name="contactName"
-                      type="text"
-                      value={formData.contactName}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.contactName)}
-                    />
-                  </div>
-                  <div className="registration-field">
-                    <label htmlFor="email">Contact email</label>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.email)}
-                    />
-                  </div>
-                </div>
-
-                <div className="registration-two-column">
-                  <div className="registration-field">
-                    <label htmlFor="phone">Mobile number</label>
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+353861234567"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.phone)}
-                    />
-                  </div>
-                  <div className="registration-field">
-                    <label htmlFor="serviceCounties">Service counties / catchment</label>
-                    <input
-                      id="serviceCounties"
-                      name="serviceCounties"
-                      type="text"
-                      placeholder="Dublin, Meath, Kildare"
-                      value={formData.serviceCounties}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.serviceCounties)}
-                    />
-                    {errors.serviceCounties && (
-                      <p className="registration-hint registration-hint--error">{errors.serviceCounties}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="registration-two-column">
-                  <div className="registration-field">
-                    <label htmlFor="experienceYears">Years in operation</label>
-                    <input
-                      id="experienceYears"
-                      name="experienceYears"
-                      type="number"
-                      min="0"
-                      value={formData.experienceYears}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.experienceYears)}
-                    />
-                  </div>
-                  <div className="registration-field">
-                    <label htmlFor="staffCount">Number of field staff</label>
-                    <input
-                      id="staffCount"
-                      name="staffCount"
-                      type="number"
-                      min="1"
-                      value={formData.staffCount}
-                      onChange={handleInputChange}
-                    />
-                    <p className="registration-hint">Helps us tailor routing and staffing recommendations.</p>
-                  </div>
-                </div>
-              </fieldset>
-
-              <fieldset className="registration-fieldset">
-                <legend>Services offered</legend>
-                <div className="registration-field">
-                  <span className="registration-hint">Select all categories you are qualified and insured to deliver.</span>
-                  <div className="registration-two-column">
-                    {serviceCategories.map((service) => renderServiceOption(service))}
-                  </div>
-                  {errors.services && (
-                    <p className="registration-hint registration-hint--error" role="alert">
-                      {errors.services}
-                    </p>
+                <div className="registration-step-actions__right">
+                  <button
+                    type="button"
+                    className="registration-secondary"
+                    onClick={handleSaveDraft}
+                    disabled={savingDraft}
+                  >
+                    {savingDraft ? 'Saving…' : 'Save draft'}
+                  </button>
+                  {currentStep < stepLabels.length ? (
+                    <button type="button" className="registration-primary" onClick={handleNext}>
+                      Continue
+                    </button>
+                  ) : (
+                    <button type="submit" className="registration-submit" disabled={submitting} aria-busy={submitting}>
+                      {submitting ? 'Submitting…' : 'Submit for Verification'}
+                    </button>
                   )}
                 </div>
-              </fieldset>
-
-              <fieldset className="registration-fieldset">
-                <legend>Compliance uploads</legend>
-                <div className="registration-two-column">
-                  <div className="registration-field">
-                    <label htmlFor="registrationNumber">CRO / RBN / VAT number</label>
-                    <input
-                      id="registrationNumber"
-                      name="registrationNumber"
-                      type="text"
-                      value={formData.registrationNumber}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.registrationNumber)}
-                    />
-                    {errors.registrationNumber && (
-                      <p className="registration-hint registration-hint--error">{errors.registrationNumber}</p>
-                    )}
-                  </div>
-                  <div className="registration-field">
-                    <label htmlFor="ppsNumber">Responsible PPS number</label>
-                    <input
-                      id="ppsNumber"
-                      name="ppsNumber"
-                      type="text"
-                      placeholder="1234567T"
-                      value={formData.ppsNumber}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.ppsNumber)}
-                    />
-                    <p className="registration-hint">Used to meet Revenue due diligence requirements and stored encrypted.</p>
-                    {errors.ppsNumber && (
-                      <p className="registration-hint registration-hint--error">{errors.ppsNumber}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="registration-field">
-                  <label htmlFor="insuranceExpiry">Insurance expiry date</label>
-                  <input
-                    id="insuranceExpiry"
-                    name="insuranceExpiry"
-                    type="date"
-                    value={formData.insuranceExpiry}
-                    onChange={handleInputChange}
-                    aria-invalid={Boolean(errors.insuranceExpiry)}
-                  />
-                  {errors.insuranceExpiry && (
-                    <p className="registration-hint registration-hint--error">{errors.insuranceExpiry}</p>
-                  )}
-                </div>
-
-                <div className="registration-two-column">
-                  <div className="registration-field">
-                    <label htmlFor="idDocument">
-                      Upload identity &amp; registration <span className="registration-required">Required</span>
-                    </label>
-                    <input
-                      id="idDocument"
-                      name="idDocument"
-                      type="file"
-                      accept="application/pdf,image/jpeg,image/png"
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.identityDocument)}
-                    />
-                    <p className="registration-hint">Combine passport/IRP and CRO certificate into one file if needed.</p>
-                    {errors.identityDocument && (
-                      <p className="registration-hint registration-hint--error">{errors.identityDocument}</p>
-                    )}
-                  </div>
-                  <div className="registration-field">
-                    <label htmlFor="insuranceDocument">
-                      Upload insurance certificate <span className="registration-required">Required</span>
-                    </label>
-                    <input
-                      id="insuranceDocument"
-                      name="insuranceDocument"
-                      type="file"
-                      accept="application/pdf,image/jpeg,image/png"
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.insuranceEvidence)}
-                    />
-                    <p className="registration-hint">Ensure the document shows policy number, cover level, and expiry.</p>
-                    {errors.insuranceEvidence && (
-                      <p className="registration-hint registration-hint--error">{errors.insuranceEvidence}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="registration-two-column">
-                  <div className="registration-field">
-                    <label htmlFor="taxDocument">
-                      Upload tax clearance evidence <span className="registration-required">Required</span>
-                    </label>
-                    <input
-                      id="taxDocument"
-                      name="taxDocument"
-                      type="file"
-                      accept="application/pdf,image/jpeg,image/png"
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.taxClearance)}
-                    />
-                    <p className="registration-hint">ROS screenshot must display the verification code and expiry date.</p>
-                    {errors.taxClearance && (
-                      <p className="registration-hint registration-hint--error">{errors.taxClearance}</p>
-                    )}
-                  </div>
-                  <div className="registration-field">
-                    <label htmlFor="certifications">Trade certifications (optional)</label>
-                    <input
-                      id="certifications"
-                      name="certifications"
-                      type="file"
-                      accept="application/pdf,image/jpeg,image/png"
-                      onChange={handleInputChange}
-                    />
-                    <p className="registration-hint">Safe Pass, Safe Electric, RGI or similar credentials.</p>
-                  </div>
-                </div>
-              </fieldset>
-
-              <fieldset className="registration-fieldset">
-                <legend>Operational notes (optional)</legend>
-                <div className="registration-field">
-                  <label htmlFor="notes">Information to help our onboarding team</label>
-                  <textarea
-                    id="notes"
-                    name="notes"
-                    rows={4}
-                    value={formData.notes}
-                    onChange={handleInputChange}
-                    maxLength={1200}
-                  />
-                  <p className="registration-hint">Share details on high-risk works, subcontractors, or regional compliance considerations.</p>
-                </div>
-              </fieldset>
-
-              <div className="registration-actions">
-                <div className="registration-consent">
-                  <label htmlFor="pro-confirm-accuracy">
-                    <input
-                      id="pro-confirm-accuracy"
-                      type="checkbox"
-                      name="confirmAccuracy"
-                      checked={formData.confirmAccuracy}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.confirmAccuracy)}
-                    />
-                    I confirm all uploaded documents are current, accurate, and issued to this business.
-                  </label>
-                  {errors.confirmAccuracy && (
-                    <p className="registration-hint registration-hint--error">{errors.confirmAccuracy}</p>
-                  )}
-                </div>
-
-                <div className="registration-consent">
-                  <label htmlFor="pro-marketing">
-                    <input
-                      id="pro-marketing"
-                      type="checkbox"
-                      name="marketingConsent"
-                      checked={formData.marketingConsent}
-                      onChange={handleInputChange}
-                    />
-                    Keep me updated on FixEasy lead programmes and training (optional).
-                  </label>
-                </div>
-
-                <div className="registration-consent">
-                  <label htmlFor="pro-terms">
-                    <input
-                      id="pro-terms"
-                      type="checkbox"
-                      name="acceptTerms"
-                      checked={formData.acceptTerms}
-                      onChange={handleInputChange}
-                      aria-invalid={Boolean(errors.acceptTerms)}
-                    />
-                    I agree to the{' '}
-                    <a href="/terms" target="_blank" rel="noopener noreferrer">
-                      FixEasy Terms &amp; Conditions
-                    </a>{' '}
-                    {termsVersion ? `(version ${termsVersion})` : ''} and confirm the{' '}
-                    <a href="/privacy" target="_blank" rel="noopener noreferrer">
-                      Privacy Policy
-                    </a>
-                    .
-                  </label>
-                  {errors.acceptTerms && (
-                    <p className="registration-hint registration-hint--error">{errors.acceptTerms}</p>
-                  )}
-                </div>
-
-                {termsLoading && (
-                  <p className="registration-hint">Loading latest Terms &amp; Conditions…</p>
-                )}
-
-                <button
-                  type="submit"
-                  className="registration-submit"
-                  disabled={submitting || termsLoading}
-                  aria-busy={submitting}
-                >
-                  {submitting ? 'Submitting…' : 'Submit compliance pack'}
-                </button>
               </div>
             </form>
           </section>
 
-          <aside className="registration-aside" aria-label="Professional onboarding guidance">
+          <aside className="registration-aside" aria-label="Verification guidance">
             <div className="registration-aside__card">
-              <span className="registration-aside__badge">Identity</span>
-              <h2 className="registration-aside__title">Required Irish documents</h2>
+              <h2 className="registration-aside__title">What happens next?</h2>
               <ul className="registration-aside__list">
-                {identityRequirements.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
+                <li>Documents reviewed within one business day.</li>
+                <li>Status updates sent to your email address.</li>
+                <li>Dashboard unlocks when verification is approved.</li>
               </ul>
             </div>
 
             <div className="registration-aside__card">
-              <span className="registration-aside__badge">Insurance &amp; tax</span>
-              <h2 className="registration-aside__title">Upload clear, current copies</h2>
+              <h2 className="registration-aside__title">Need help?</h2>
+              <p>Reach the FixEasy compliance team:</p>
               <ul className="registration-aside__list">
-                {complianceDocuments.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
+                <li>
+                  Email <a href="mailto:onboarding@fixeasy.irish">onboarding@fixeasy.irish</a>
+                </li>
+                <li>
+                  Call <a href="tel:+35319638020">+353 1 963 8020</a>
+                </li>
               </ul>
             </div>
 
             <div className="registration-aside__card">
-              <span className="registration-aside__badge">Next steps</span>
-              <h2 className="registration-aside__title">Your first 48 hours with FixEasy</h2>
-              <div className="registration-stepper">
-                {onboardingMilestones.map((milestone) => (
-                  <div key={milestone.title} className="registration-step">
-                    <strong>{milestone.title}</strong>
-                    <span>{milestone.detail}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="registration-review">
-              <strong>Need help preparing your pack?</strong>
-              <span>
-                Email pros@fixeasy.ie or call +353 1 963 8120. We can pre-check documents and schedule a video verification call.
-              </span>
+              <h2 className="registration-aside__title">Security reminders</h2>
+              <ul className="registration-aside__list">
+                <li>Uploads are encrypted and scoped to FixEasy admins.</li>
+                <li>Only you and compliance reviewers can access documents.</li>
+                <li>Audit trails are generated for every verification decision.</li>
+              </ul>
             </div>
           </aside>
         </div>
-
-        <footer className="registration-links" aria-label="Back to other areas">
-          <span className="registration-tagline">Looking to book services instead?</span>
-          <a href="/register/client">Go to client registration</a>
-          <a href="/book">Book a FixEasy visit</a>
-          <a href="/">Return to homepage</a>
-        </footer>
       </div>
     </div>
   )
