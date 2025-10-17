@@ -40,7 +40,7 @@ NEXT_PUBLIC_ENV=production
 | Root Directory | `backend/Backend--main` |
 | Framework Preset | Python |
 | Install Command | `pip install -r requirements.txt` |
-| Build Command | *(leave empty)* |
+| Build Command | `pip install -r requirements.txt` *(handled automatically via `vercel.json`)* |
 | Output Directory | *(leave empty)* |
 | Server Start Command | `uvicorn main:app --host 0.0.0.0 --port 8000` |
 
@@ -59,7 +59,13 @@ ENFORCE_HTTPS=true
 
 ## Local verification
 
-Before pushing changes you can verify each project locally:
+Before pushing changes you can verify each project locally.  The repository includes a helper script that will run both builds and smoke test the API:
+
+```bash
+./scripts/verify-builds.sh
+```
+
+If you prefer to execute the steps manually:
 
 ```bash
 # Frontend
@@ -75,4 +81,4 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Once both builds succeed locally, push to `main` and allow the linked Vercel projects to pick up the commit.
+Once both builds succeed locally, push to `main` and allow the linked Vercel projects to pick up the commit.  The `vercel.json` files inside each sub-project pin the correct build commands, environments, and framework detection so Vercel mirrors the local verification process.
