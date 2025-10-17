@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+a {
+  @apply text-brand transition-colors duration-300;
+}
+
+a:hover {
+  @apply text-accent-cyan;
+}
+
+body {
+  @apply font-sans bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased;
+}
+
+.section-spacing {
+  @apply pt-24 pb-24;
+}
+
+.card-surface {
+  @apply rounded-2xl bg-white/90 shadow-lg shadow-brand-soft dark:bg-slate-900/80 backdrop-blur;
+}
+
+.badge {
+  @apply inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm shadow-brand-soft dark:bg-slate-800/60 dark:text-slate-100;
+}
+
+.gradient-divider {
+  @apply h-px w-full bg-gradient-to-r from-brand to-accent-cyan;
+}
+
+.table-wrapper {
+  @apply overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-800;
+}
+
+table {
+  @apply min-w-full divide-y divide-slate-200 dark:divide-slate-800;
+}
+
+thead {
+  @apply bg-slate-50/60 dark:bg-slate-900/60;
+}
+
+thead th {
+  @apply px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400;
+}
+
+tbody tr {
+  @apply bg-white/70 dark:bg-slate-900/70 transition-colors duration-300;
+}
+
+tbody tr:nth-child(even) {
+  @apply bg-slate-100/70 dark:bg-slate-900/40;
+}
+
+td {
+  @apply px-6 py-4 text-sm;
+}
+
+.status-chip {
+  @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide;
+}
+
+.status-pending {
+  @apply status-chip bg-amber-100 text-amber-700 dark:bg-amber-400/20 dark:text-amber-200;
+}
+
+.status-confirmed {
+  @apply status-chip bg-emerald-100 text-emerald-700 dark:bg-emerald-400/20 dark:text-emerald-200;
+}
+
+.status-completed {
+  @apply status-chip bg-sky-100 text-sky-700 dark:bg-sky-400/20 dark:text-sky-100;
+}
+
+.status-rejected {
+  @apply status-chip bg-rose-100 text-rose-700 dark:bg-rose-400/20 dark:text-rose-100;
+}
+
+.section-title {
+  @apply text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100;
+}
+
+.section-subtitle {
+  @apply text-base text-slate-600 dark:text-slate-300;
+}
+
+button {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950;
+}
+
+.dashboard-grid {
+  @apply grid gap-8;
+}
+
+@media (min-width: 768px) {
+  .dashboard-grid {
+    @apply grid-cols-2;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-grid-admin {
+    @apply grid-cols-3;
+  }
+}
