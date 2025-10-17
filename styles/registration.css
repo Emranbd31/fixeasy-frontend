@@ -60,6 +60,15 @@
   gap: 2rem;
 }
 
+.registration-card--pro {
+  border-top: 6px solid #3a6aff;
+}
+
+.registration-card__intro {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .registration-card__title {
   font-size: 1.5rem;
   font-weight: 600;
@@ -84,6 +93,10 @@
 .registration-field {
   display: grid;
   gap: 0.5rem;
+}
+
+.registration-field--group {
+  gap: 0.75rem;
 }
 
 .registration-field--option {
@@ -302,24 +315,56 @@
   color: rgba(248, 250, 252, 0.72);
 }
 
-.registration-stepper {
-  display: grid;
-  gap: 1.25rem;
-}
-
 .registration-step {
   display: grid;
-  gap: 0.4rem;
+  gap: 1.75rem;
 }
 
-.registration-step strong {
-  font-size: 0.95rem;
-  color: #1d2939;
+.registration-steps {
+  display: flex;
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
-.registration-step span {
+.registration-steps__item {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+  text-align: center;
+  font-size: 0.85rem;
   color: #5c6c8c;
-  font-size: 0.9rem;
+}
+
+.registration-steps__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 2px solid rgba(58, 106, 255, 0.4);
+  background: #ffffff;
+  font-weight: 700;
+  color: #3a6aff;
+}
+
+.registration-steps__item--current .registration-steps__number {
+  background: linear-gradient(135deg, #3a6aff 0%, #4f46e5 100%);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.registration-steps__item--complete .registration-steps__number {
+  background: rgba(22, 163, 74, 0.15);
+  color: #047857;
+  border-color: rgba(22, 163, 74, 0.4);
+}
+
+.registration-steps__item--current {
+  color: #1d2939;
+  font-weight: 600;
 }
 
 .registration-required {
@@ -331,10 +376,73 @@
   font-weight: 600;
 }
 
+.registration-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.registration-chip {
+  border: 1px solid rgba(58, 106, 255, 0.3);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  background: #ffffff;
+  color: #1d2939;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.registration-chip.is-active {
+  background: rgba(58, 106, 255, 0.12);
+  border-color: rgba(58, 106, 255, 0.5);
+  color: #1d4ed8;
+}
+
+.registration-login-options {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.registration-login-options__button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 14px;
+  border: 1px solid rgba(58, 106, 255, 0.2);
+  background: #f8faff;
+  color: #1d2939;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.registration-login-options__button:hover,
+.registration-login-options__button:focus-visible {
+  background: rgba(58, 106, 255, 0.12);
+  border-color: rgba(58, 106, 255, 0.4);
+}
+
 .registration-divider {
+  position: relative;
   height: 1px;
-  background: rgba(15, 23, 42, 0.06);
-  margin: 0.5rem 0 1rem;
+  background: rgba(15, 23, 42, 0.08);
+  margin: 0.75rem 0 1.25rem;
+}
+
+.registration-divider span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 0 0.75rem;
+  font-size: 0.85rem;
+  color: #475467;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
 }
 
 .registration-note {
@@ -346,12 +454,124 @@
   color: #101828;
 }
 
+.registration-upload {
+  position: relative;
+}
+
+.registration-upload__preview {
+  margin-top: 0.75rem;
+  border-radius: 14px;
+  overflow: hidden;
+  width: 160px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.registration-upload__preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.registration-progress {
+  margin-top: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: #475467;
+}
+
+.registration-progress__bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #3a6aff 0%, #4f46e5 100%);
+  transition: width 0.2s ease;
+}
+
+.registration-summary {
+  display: grid;
+  gap: 1rem;
+  font-size: 0.95rem;
+  color: #344054;
+}
+
+.registration-summary div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.registration-summary dt {
+  font-weight: 600;
+  color: #1d2939;
+}
+
+.registration-summary dd {
+  margin: 0;
+}
+
 .registration-links {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   font-size: 0.9rem;
   color: #475467;
+}
+
+.registration-step-actions {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.registration-step-actions__left {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.registration-step-actions__right {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.registration-primary,
+.registration-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.85rem 1.6rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.registration-secondary {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: #1d2939;
+}
+
+.registration-secondary:hover,
+.registration-secondary:focus-visible {
+  border-color: rgba(58, 106, 255, 0.4);
+  color: #1d4ed8;
+}
+
+.registration-primary {
+  background: linear-gradient(135deg, #3a6aff 0%, #4f46e5 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 12px 24px rgba(58, 106, 255, 0.25);
+}
+
+.registration-primary:hover,
+.registration-primary:focus-visible {
+  box-shadow: 0 16px 32px rgba(58, 106, 255, 0.28);
 }
 
 .registration-links a {
