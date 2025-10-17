@@ -58,7 +58,7 @@ async def read_root() -> JSONResponse:
     return JSONResponse(message)
 
 
-@app.get("/healthz")
+@app.get("/health")
 async def health_check() -> JSONResponse:
     """Basic health endpoint to aid deployment diagnostics."""
     return JSONResponse({"status": "ok"})

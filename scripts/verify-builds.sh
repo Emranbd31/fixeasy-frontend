@@ -8,7 +8,7 @@ BACKEND_DIR="$ROOT_DIR/backend/Backend--main"
 printf '\n==> Building FixEasy frontend (Next.js)\n'
 (
   cd "$FRONTEND_DIR"
-  npm install --legacy-peer-deps
+  npm ci
   npm run build
 )
 
@@ -23,9 +23,9 @@ from main import app
 from fastapi.testclient import TestClient
 
 client = TestClient(app)
-response = client.get("/healthz")
+response = client.get("/health")
 response.raise_for_status()
-print("Backend healthz response:", response.json())
+print("Backend health response:", response.json())
 PY
 )
 

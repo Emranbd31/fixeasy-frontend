@@ -21,7 +21,7 @@ No manual `npm install -g vercel`, `vercel link`, or `vercel --prod` commands ar
 If you need to verify a build locally before pushing:
 
 ```bash
-npm install --legacy-peer-deps
+npm ci
 npm run build
 ```
 

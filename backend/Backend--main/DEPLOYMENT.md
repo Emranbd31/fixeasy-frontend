@@ -9,9 +9,11 @@ the backend by using the `backend/Backend--main` directory as the project root.
 - `SUPABASE_URL`
 - `SUPABASE_JWT_SECRET`
 - `SUPABASE_SERVICE_ROLE`
+- `SUPABASE_SERVICE_KEY`
 - `CORS_ALLOWED_ORIGINS`
 - `ENVIRONMENT`
 - `ENFORCE_HTTPS`
+- `PYTHON_VERSION`
 
 These values can be configured in the Vercel dashboard or stored as encrypted
 environment variables in Git.

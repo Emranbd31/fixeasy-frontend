@@ -1,5 +1,6 @@
 # Frontend build artifacts
 frontend/Frontend--main/node_modules
+node_modules/
 frontend/Frontend--main/.next
 frontend/Frontend--main/.vercel
 

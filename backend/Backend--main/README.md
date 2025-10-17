@@ -14,5 +14,5 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-The root endpoint (`/`) returns a welcome message, while `/healthz` can be used
+The root endpoint (`/`) returns a welcome message, while `/health` can be used
 for health checks.
