@@ -7,6 +7,8 @@ const STORAGE_KEY = 'fixeasy-pro-register-draft-2025'
 
 const stepLabels = ['Info', 'Verification', 'Confirm']
 
+const OTHER_CATEGORY_OPTION = 'Other (please specify)'
+
 const categoryOptions = [
   'Plumbing & Heating',
   'Electrical & EV',
@@ -15,7 +17,8 @@ const categoryOptions = [
   'Landscaping & Outdoors',
   'Painting & Finishing',
   'Appliance Repair',
-  'Handyman & Maintenance'
+  'Handyman & Maintenance',
+  OTHER_CATEGORY_OPTION
 ]
 
 const serviceAreaOptions = [
@@ -37,6 +40,8 @@ const initialState = {
   serviceAreas: [],
   experienceYears: '',
   languages: '',
+  otherCategoryDetail: '',
+  verificationNotes: '',
   passport: null,
   licence: null,
   address: null,
@@ -88,12 +93,22 @@ export default function ProfessionalRegistration() {
     }
   }, [previews])
 
+  const otherCategorySelected = useMemo(
+    () => formData.serviceCategories.includes(OTHER_CATEGORY_OPTION),
+    [formData.serviceCategories]
+  )
+
   const serviceCategorySummary = useMemo(() => {
     if (formData.serviceCategories.length === 0) {
       return 'No service categories selected yet.'
     }
-    return formData.serviceCategories.join(', ')
-  }, [formData.serviceCategories])
+    const selections = [...formData.serviceCategories]
+    if (otherCategorySelected && formData.otherCategoryDetail) {
+      const index = selections.indexOf(OTHER_CATEGORY_OPTION)
+      selections.splice(index, 1, `${OTHER_CATEGORY_OPTION} — ${formData.otherCategoryDetail}`)
+    }
+    return selections.join(', ')
+  }, [formData.otherCategoryDetail, formData.serviceCategories, otherCategorySelected])
 
   const serviceAreaSummary = useMemo(() => {
     if (formData.serviceAreas.length === 0) {
@@ -107,6 +122,12 @@ export default function ProfessionalRegistration() {
     setFormData((prev) => ({ ...prev, [name]: value }))
     setErrors((prev) => ({ ...prev, [name]: undefined }))
   }
+
+  useEffect(() => {
+    if (!otherCategorySelected && formData.otherCategoryDetail) {
+      setFormData((prev) => ({ ...prev, otherCategoryDetail: '' }))
+    }
+  }, [formData.otherCategoryDetail, otherCategorySelected])
 
   const toggleSelection = (key, value) => {
     setFormData((prev) => {
@@ -260,6 +281,10 @@ export default function ProfessionalRegistration() {
         validation.serviceCategories = 'Select at least one service category.'
       }
 
+      if (formData.serviceCategories.includes(OTHER_CATEGORY_OPTION) && !sanitizeText(formData.otherCategoryDetail)) {
+        validation.otherCategoryDetail = 'Describe the additional service you offer.'
+      }
+
       if (formData.serviceAreas.length === 0) {
         validation.serviceAreas = 'Select at least one service area.'
       }
@@ -280,6 +305,10 @@ export default function ProfessionalRegistration() {
 
       if (!formData.address || !uploadedDocuments.address) {
         validation.address = 'Upload proof of address.'
+      }
+
+      if (formData.verificationNotes && sanitizeText(formData.verificationNotes).length > 800) {
+        validation.verificationNotes = 'Keep verification notes under 800 characters.'
       }
 
       if (!formData.consent) {
@@ -324,6 +353,7 @@ export default function ProfessionalRegistration() {
       email: formData.email,
       phone: formData.phone,
       serviceCategories: formData.serviceCategories,
+      otherCategoryDetail: formData.otherCategoryDetail,
       serviceAreas: formData.serviceAreas,
       experienceYears: formData.experienceYears,
       languages: formData.languages
@@ -368,9 +398,11 @@ export default function ProfessionalRegistration() {
       email: sanitizeText(formData.email),
       phone: sanitizePhone(formData.phone),
       serviceCategories: formData.serviceCategories,
+      otherCategoryDetail: sanitizeText(formData.otherCategoryDetail),
       serviceAreas: formData.serviceAreas,
       yearsExperience: Number(formData.experienceYears),
       languages: sanitizeText(formData.languages),
+      verificationNotes: sanitizeText(formData.verificationNotes),
       status: 'pending_verification',
       verificationDocuments: {
         passport_url: uploadedDocuments.passport?.path ?? '',
@@ -487,6 +519,26 @@ export default function ProfessionalRegistration() {
               ) : null}
             </div>
 
+            {otherCategorySelected ? (
+              <div className="registration-field">
+                <label htmlFor="otherCategoryDetail">Describe the additional service</label>
+                <input
+                  id="otherCategoryDetail"
+                  name="otherCategoryDetail"
+                  type="text"
+                  value={formData.otherCategoryDetail}
+                  onChange={handleInputChange}
+                  aria-invalid={Boolean(errors.otherCategoryDetail)}
+                  placeholder="e.g. Heritage masonry conservation"
+                />
+                {errors.otherCategoryDetail ? (
+                  <p className="registration-hint registration-hint--error">{errors.otherCategoryDetail}</p>
+                ) : (
+                  <p className="registration-hint">Helps us route your onboarding to the correct specialist team.</p>
+                )}
+              </div>
+            ) : null}
+
             <div className="registration-field registration-field--group">
               <span>Select your service areas</span>
               <div className="registration-chip-group" role="group" aria-label="Service areas">
@@ -581,6 +633,24 @@ export default function ProfessionalRegistration() {
               </div>
             ))}
           </fieldset>
+
+          <div className="registration-field">
+            <label htmlFor="verificationNotes">Verification notes (optional)</label>
+            <textarea
+              id="verificationNotes"
+              name="verificationNotes"
+              rows={4}
+              value={formData.verificationNotes}
+              onChange={handleInputChange}
+              aria-invalid={Boolean(errors.verificationNotes)}
+              placeholder="Share anything the compliance team should review during onboarding."
+            />
+            {errors.verificationNotes ? (
+              <p className="registration-hint registration-hint--error">{errors.verificationNotes}</p>
+            ) : (
+              <p className="registration-hint">Examples: specialist licences, client references, or context for your documents.</p>
+            )}
+          </div>
 
           <div className="registration-consent">
             <label htmlFor="consent" className="registration-consent__label">

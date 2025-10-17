@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
-
-const ADMIN_EMAIL = 'emranbd31@gmail.com'
-const ADMIN_PASSWORD = 'Shuki@112'
+import { useRouter } from 'next/router'
+import { decodeSession, SESSION_COOKIE } from '../../lib/admin-session'
 
 const summaryCards = [
   {
@@ -105,11 +104,10 @@ const quickActions = [
   'Add feature flag override'
 ]
 
-export default function AdminDashboard() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+export default function AdminDashboard({ initialSession }) {
+  const router = useRouter()
+  const [session, setSession] = useState(initialSession)
   const [error, setError] = useState('')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [reviewItems, setReviewItems] = useState([])
   const [reviewLoading, setReviewLoading] = useState(false)
   const [reviewError, setReviewError] = useState('')
@@ -117,6 +115,13 @@ export default function AdminDashboard() {
   const [actionLoading, setActionLoading] = useState(false)
 
   const nextAction = useMemo(() => quickActions[0], [])
+  const adminName = useMemo(() => session?.email?.split('@')?.[0] ?? 'Admin', [session?.email])
+
+  useEffect(() => {
+    if (!session) {
+      router.replace('/auth/admin')
+    }
+  }, [router, session])
 
   const normaliseDocuments = useCallback((entry) => {
     if (Array.isArray(entry?.documents) && entry.documents.length > 0) {
@@ -159,7 +164,7 @@ export default function AdminDashboard() {
   }, [])
 
   const loadReviewItems = useCallback(async () => {
-    if (!isAuthenticated) return
+    if (!session) return
 
     setReviewLoading(true)
     setReviewError('')
@@ -189,31 +194,19 @@ export default function AdminDashboard() {
     } finally {
       setReviewLoading(false)
     }
-  }, [isAuthenticated, normaliseDocuments])
+  }, [session, normaliseDocuments])
 
   useEffect(() => {
     loadReviewItems()
   }, [loadReviewItems])
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-
-    if (email.trim().toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      setError('')
-      return
-    }
-
-    setError('Invalid credentials. Please check the email and password and try again.')
-  }
-
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!session) {
       return
     }
 
     loadReviewItems()
-  }, [isAuthenticated, loadReviewItems])
+  }, [session, loadReviewItems])
 
   const handleViewDocuments = (item) => {
     setModalItem(item)
@@ -270,6 +263,22 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/admin/logout', { method: 'POST' })
+      if (!response.ok) {
+        throw new Error('Unable to log out. Please try again.')
+      }
+      setSession(null)
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem('fixeasy_role')
+      }
+      router.push('/auth/admin')
+    } catch (logoutError) {
+      setError(logoutError.message)
+    }
+  }
+
   return (
     <div className="admin-page">
       <Head>
@@ -277,43 +286,11 @@ export default function AdminDashboard() {
         <meta name="robots" content="noindex, nofollow" />
       </Head>
 
-      {!isAuthenticated ? (
+      {!session ? (
         <div className="admin-login">
-          <div className="admin-login__card" role="dialog" aria-modal="true">
-            <h1>Admin access</h1>
-            <p>Use your FixEasy admin credentials to continue.</p>
-            <form className="admin-login__form" onSubmit={handleSubmit}>
-              <label htmlFor="admin-email">Email</label>
-              <input
-                id="admin-email"
-                name="email"
-                type="email"
-                autoComplete="username"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="admin@example.com"
-                required
-              />
-
-              <label htmlFor="admin-password">Password</label>
-              <input
-                id="admin-password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="••••••••"
-                required
-              />
-
-              {error ? <p className="admin-login__error">{error}</p> : null}
-
-              <button type="submit" className="admin-login__submit">
-                Sign in
-              </button>
-            </form>
-            <p className="admin-login__hint">Demo account: {ADMIN_EMAIL}</p>
+          <div className="admin-login__card" role="alert" aria-live="assertive">
+            <h1>Session expired</h1>
+            <p>Your admin session has ended. Redirecting to secure login…</p>
           </div>
         </div>
       ) : (
@@ -321,15 +298,26 @@ export default function AdminDashboard() {
           <header className="admin-dashboard__header">
             <div>
               <p className="admin-dashboard__eyebrow">Dashboard</p>
-              <h1>Welcome back, Emran</h1>
+              <h1>Welcome back, {adminName}</h1>
               <p className="admin-dashboard__subtitle">
                 Here’s an overview of today’s operations, escalations, and security posture across FixEasy.
               </p>
             </div>
-            <button type="button" className="admin-dashboard__primary">
-              Create update
-            </button>
+            <div className="admin-dashboard__cta-group">
+              <button type="button" className="admin-dashboard__primary">
+                Create update
+              </button>
+              <button type="button" className="admin-dashboard__secondary" onClick={handleLogout}>
+                Sign out
+              </button>
+            </div>
           </header>
+
+          {error ? (
+            <div className="admin-alert admin-alert--error" role="alert">
+              {error}
+            </div>
+          ) : null}
 
           <section className="admin-review" aria-labelledby="admin-review-heading">
             <div className="admin-panel admin-panel--wide admin-review__panel">
@@ -568,4 +556,24 @@ export default function AdminDashboard() {
 
     </div>
   )
+}
+
+export async function getServerSideProps({ req, resolvedUrl }) {
+  const cookie = req.cookies?.[SESSION_COOKIE] ?? ''
+  const session = await decodeSession(cookie)
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: `/auth/admin?redirect=${encodeURIComponent(resolvedUrl)}`,
+        permanent: false
+      }
+    }
+  }
+
+  return {
+    props: {
+      initialSession: session
+    }
+  }
 }

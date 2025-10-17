@@ -872,6 +872,16 @@ main {
   gap: 1.5rem;
 }
 
+.service-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.service-card-link:focus-visible .service-card {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
 .service-card {
   display: flex;
   gap: 1rem;
@@ -889,6 +899,11 @@ main {
   box-shadow: 0 22px 44px rgba(14, 116, 144, 0.12);
 }
 
+.service-card-link:hover .service-card__icon,
+.service-card-link:focus-visible .service-card__icon {
+  transform: scale(1.08) rotate(-2deg);
+}
+
 .service-card__icon {
   font-size: 1.8rem;
   width: 52px;
@@ -898,6 +913,7 @@ main {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(15, 118, 110, 0.18));
+  transition: transform 0.2s ease;
 }
 
 .service-card__body h4 {
