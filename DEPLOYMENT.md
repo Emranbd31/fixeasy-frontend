@@ -1,28 +1,78 @@
-# FixEasy Frontend Deployment
+# FixEasy Deployment Guide
 
-This project now uses the [Vercel GitHub Integration](https://vercel.com/docs/integrations/git/github) to automatically deploy the production site at [https://fixeasy.irish](https://fixeasy.irish).
+FixEasy is deployed as two separate Vercel projects that track the same GitHub repository.  Each project must be pointed at the correct sub-directory and provided with the required environment variables for a successful build.
 
-## Prerequisites
+## Repository layout
 
-1. The repository [`Emranbd31/fixeasy-frontend`](https://github.com/Emranbd31/fixeasy-frontend) must be linked to the existing Vercel project **fixeasy-frontend**.
-2. The production branch should remain `main` so that Vercel can build from each push.
-3. The project settings in Vercel should specify `/workspace/master/frontend` (or the corresponding folder inside the repo) as the root directory if the default root does not contain the Next.js app.
-
-## Deployment Flow
-
-1. Commit your changes locally.
-2. Push to the `main` branch.
-3. Vercel receives the GitHub webhook, builds the Next.js app, and promotes the deployment to production once the build succeeds.
-
-No manual `npm install -g vercel`, `vercel link`, or `vercel --prod` commands are required.
-
-## Manual Production Builds (Optional)
-
-If you need to verify a build locally before pushing:
-
-```bash
-npm install
-npm run build
+```
+frontend/
+  Frontend--main/   # Next.js 14 application
+backend/
+  Backend--main/    # FastAPI application
 ```
 
-Then push to `main` when you are ready.
+## Vercel project configuration
+
+### Frontend (`fixeasy-frontend`)
+
+| Setting | Value |
+| --- | --- |
+| Root Directory | `frontend/Frontend--main` |
+| Framework Preset | Next.js |
+| Install Command | `npm ci` *(or `npm install`)* |
+| Build Command | `npm run build` |
+| Output Directory | `.next` |
+| Development Command | `npm run dev` |
+
+#### Required environment variables
+```
+NEXT_PUBLIC_SUPABASE_URL=https://wphmhlrttmzsmngysfws.supabase.co
+NEXT_PUBLIC_SUPABASE_KEY=<Supabase anon/public key>
+NEXT_PUBLIC_API_URL=https://api.fixeasy.irish
+NEXT_PUBLIC_SITE_URL=https://fixeasy.irish
+NEXT_PUBLIC_ENV=production
+```
+
+### Backend (`fixeasy-backend`)
+
+| Setting | Value |
+| --- | --- |
+| Root Directory | `backend/Backend--main` |
+| Framework Preset | Python |
+| Install Command | `pip install -r requirements.txt` |
+| Build Command | *(leave empty)* |
+| Output Directory | *(leave empty)* |
+| Server Start Command | `uvicorn main:app --host 0.0.0.0 --port 8000` |
+
+Add a `PYTHON_VERSION` environment variable (e.g. `3.11`) if the Vercel project does not already define one.
+
+#### Required environment variables
+```
+SUPABASE_URL=https://wphmhlrttmzsmngysfws.supabase.co
+SUPABASE_JWT_SECRET=<Supabase JWT secret>
+SUPABASE_SERVICE_ROLE=<Supabase service role key>
+# Optional alias also supported: SUPABASE_SERVICE_KEY
+CORS_ALLOWED_ORIGINS=https://fixeasy.irish,https://www.fixeasy.irish
+ENVIRONMENT=production
+ENFORCE_HTTPS=true
+```
+
+## Local verification
+
+Before pushing changes you can verify each project locally:
+
+```bash
+# Frontend
+cd frontend/Frontend--main
+npm install
+npm run build
+
+# Backend
+cd backend/Backend--main
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+Once both builds succeed locally, push to `main` and allow the linked Vercel projects to pick up the commit.
