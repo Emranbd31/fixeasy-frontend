@@ -4,6 +4,8 @@ import { motion } from 'framer-motion'
 
 const HERO_IMAGE =
   'https://images.pexels.com/photos/5588496/pexels-photo-5588496.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=1600'
+const HERO_BLUR_DATA_URL =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9YV2UaoAAAAASUVORK5CYII='
 
 const badges = [
   { label: '⭐ 4.9 Rating' },
@@ -19,7 +21,9 @@ export function Hero() {
           src={HERO_IMAGE}
           alt="Verified FixEasy professional"
           placeholder="blur"
+          blurDataURL={HERO_BLUR_DATA_URL}
           fill
+          sizes="100vw"
           className="object-cover opacity-40"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-brand/90 via-slate-900/90 to-accent-cyan/60" />
@@ -108,7 +112,16 @@ export function Hero() {
           className="relative hidden h-[520px] overflow-hidden rounded-2xl border border-white/20 bg-white/5 shadow-brand-card lg:block"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-brand/30" />
-          <Image src={HERO_IMAGE} alt="Verified FixEasy professional" fill className="object-cover" priority />
+          <Image
+            src={HERO_IMAGE}
+            alt="Verified FixEasy professional"
+            fill
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            placeholder="blur"
+            blurDataURL={HERO_BLUR_DATA_URL}
+            className="object-cover"
+            priority
+          />
           <div className="absolute bottom-6 left-6 right-6 space-y-3 rounded-2xl bg-slate-950/80 p-6 text-sm shadow-lg">
             <p className="font-semibold text-white">Why customers choose FixEasy</p>
             <ul className="space-y-2 text-slate-200/80">
