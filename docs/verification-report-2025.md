@@ -10,6 +10,12 @@
 - ✅ Confirmed multi-step professional onboarding validates required inputs and enforces document upload rules (type and size checks).
 - ⚠️ Unable to capture required UI screenshots (`/docs/screenshots/*.png`) because a headless browser environment is not available in the container.
 
+### Implementation snapshots (2025-10-17)
+- Client onboarding now displays the streamlined field set (full name, email, Irish phone, address/Eircode, password, and terms consent) with prominent quick-login buttons for Google, Apple, and email alongside the encrypted-data trust message. Form validation covers each field and ensures payload submission to `/api/register` with the `type: "client"` marker.
+- Professional registration runs across three explicit steps (Info → Verification → Confirm) with multi-select chips for service categories/areas, experience capture, optional languages, Supabase-signed uploads for passport/licence/address documents (≤5 MB, limited to PDF/JPG/PNG), progress bars, preview handling, and consent enforcement before POSTing to `/api/register/pro`.
+- The admin dashboard requires email/password authentication before showing the verification queue. Once authenticated it fetches `pending_verification` entries, normalises document metadata for modal previews/downloads, and offers approve/reject actions that call the appropriate admin APIs while highlighting operational metrics in the refreshed layout.
+- The homepage hero presents the new premium banner (“Trusted Professionals. Verified for Your Peace of Mind.”) with dual CTAs (“Book a Service”, “Join as Professional”) and adjacent trust cards for Verified IDs, Secure Payments, and Irish Support 24/7.
+
 ## Backend & Security Notes
 - ⚠️ Supabase RLS policy tests could not be executed — Supabase CLI and project credentials are not available in the offline container.
 - ⚠️ FastAPI backend endpoints (`/api/storage/sign-upload`, `/api/register/pro`, `/api/admin/approve-pro/:id`, `/api/admin/reject-pro/:id`) were exercised through mocked fetch calls only; end-to-end verification requires a connected staging environment.
