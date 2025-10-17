@@ -26,3 +26,20 @@ npm run build
 ```
 
 Then push to `main` when you are ready.
+
+## Environment Variables
+
+Ensure the following values are configured in your deployment environment (e.g. Vercel project settings or `.env.local`):
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `ADMIN_DASHBOARD_SECRET` | ✅ | Password used by `/auth/admin` to create secure admin sessions. |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL for OAuth and Storage uploads. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Public anon key used for OAuth redirects and direct Storage uploads. |
+| `NEXT_PUBLIC_SUPABASE_CLIENT_BUCKET` | ⚙️ (optional) | Overrides the default `client-uploads` bucket for client issue photos. |
+| `SUPABASE_URL` | ⚙️ (optional) | Server-side Supabase URL if it differs from the public URL. |
+| `SUPABASE_SERVICE_ROLE_KEY` | ⚙️ (optional) | Enables the `/api/uploads` endpoint to mint upload instructions. |
+| `SUPABASE_AUTH_GOOGLE_CLIENT_ID` / `SUPABASE_AUTH_GOOGLE_SECRET` | ⚙️ | Configure Google OAuth in Supabase. |
+| `SUPABASE_AUTH_APPLE_CLIENT_ID` / `SUPABASE_AUTH_APPLE_SECRET` | ⚙️ | Configure Apple OAuth in Supabase. |
+
+After changing authentication provider credentials, rebuild the frontend so the new environment variables are included in the deployed bundle.

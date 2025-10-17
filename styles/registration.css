@@ -472,6 +472,19 @@
   display: block;
 }
 
+.registration-field--upload {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.registration-field--upload input[type='file'] {
+  padding: 0.6rem;
+  border-radius: 0.75rem;
+  border: 1px dashed rgba(148, 163, 184, 0.55);
+  background: rgba(148, 163, 184, 0.08);
+  cursor: pointer;
+}
+
 .registration-progress {
   margin-top: 0.6rem;
   display: flex;

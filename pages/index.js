@@ -1,19 +1,35 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 
 const trustHighlights = [
   {
     title: 'Verified IDs',
-    description: 'Every professional completes multi-document identity checks.'
+    description: 'Multi-step identity, insurance, and compliance reviews before any booking goes live.'
   },
   {
     title: 'Secure Payments',
-    description: 'Escrow-backed transactions with automatic invoicing and receipts.'
+    description: 'Escrow-backed transactions with automated invoicing and instant payout tracking.'
   },
   {
     title: 'Irish Support 24/7',
-    description: 'Always-on Dublin based team for booking updates and emergencies.'
+    description: 'Dublin-based operations team with encrypted messaging and on-call escalation.'
+  }
+]
+
+const heroStats = [
+  {
+    label: '1,200+ verified tradespeople',
+    description: 'Across Dublin city & county'
+  },
+  {
+    label: 'Same-day response',
+    description: 'Guaranteed for priority jobs'
+  },
+  {
+    label: '4.9★ average rating',
+    description: 'From over 18k completed visits'
   }
 ]
 
@@ -47,6 +63,21 @@ const serviceSections = [
         name: 'Furniture Assembler',
         icon: '🪑',
         description: 'Flat-pack builds, workspace fit-outs, and on-site adjustments for a perfect finish.'
+      },
+      {
+        name: 'Appliance Repairs',
+        icon: '🧯',
+        description: 'Emergency fixes and preventative maintenance for kitchen and laundry appliances.'
+      },
+      {
+        name: 'Window Cleaning',
+        icon: '🪟',
+        description: 'Crystal clear results inside and out with water-fed reach systems.'
+      },
+      {
+        name: 'Gutter Maintenance',
+        icon: '🪣',
+        description: 'Deep cleans, leaf-guard installs, and drainage repairs ready for Irish weather.'
       }
     ]
   },
@@ -145,6 +176,21 @@ const serviceSections = [
         name: 'Pest Control',
         icon: '🐜',
         description: 'Rapid identification, humane treatments, and preventative monitoring.'
+      },
+      {
+        name: 'Security & CCTV Installation',
+        icon: '🛡️',
+        description: 'Full perimeter coverage with monitored CCTV, alarms, and smart locks.'
+      },
+      {
+        name: 'Flooring & Tiling',
+        icon: '🧱',
+        description: 'Precision tiling, hardwood installation, and acoustic underlay solutions.'
+      },
+      {
+        name: 'Smart Home Automation',
+        icon: '🏠',
+        description: 'Lighting, climate, and security automation tailored to modern Irish homes.'
       }
     ]
   }
@@ -210,12 +256,38 @@ export default function Home() {
     }
   }, [])
 
+  useEffect(() => {
+    let isActive = true
+    const checkAdmin = async () => {
+      try {
+        const response = await fetch('/api/auth/admin/session')
+        if (!isActive) return
+        if (response.ok) {
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem('fixeasy_role', 'admin')
+          }
+          setUserRole('admin')
+        }
+      } catch (error) {
+        console.warn('Failed to verify admin session', error)
+      } finally {
+        // no-op
+      }
+    }
+
+    checkAdmin()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
   const isLoggedIn = useMemo(() => Boolean(userRole), [userRole])
   const dashboardHref = useMemo(() => {
-    if (!userRole) return '/admin'
-    if (userRole === 'pro') return '/admin?view=pro'
-    if (userRole === 'client') return '/admin?view=client'
-    return '/admin'
+    if (userRole === 'admin') return '/dashboard/admin'
+    if (userRole === 'pro') return '/dashboard/pro'
+    if (userRole === 'client') return '/dashboard/client'
+    return '/signup'
   }, [userRole])
 
   return (
@@ -250,11 +322,11 @@ export default function Home() {
               </Link>
             ) : (
               <>
-                <Link href="/admin" className="nav-btn nav-btn--ghost">
-                  Login
+                <Link href="/signup" className="nav-btn nav-btn--ghost">
+                  Sign in / Sign up
                 </Link>
                 <Link href="/register/client" className="nav-btn nav-btn--primary">
-                  Create Account
+                  Book a Service
                 </Link>
               </>
             )}
@@ -267,12 +339,34 @@ export default function Home() {
           <div className="premium-hero__gradient" aria-hidden="true" />
           <div className="premium-hero__inner container">
             <div className="premium-hero__copy">
-              <p className="hero__eyebrow">FixEasy Enterprise</p>
-              <h1 id="hero-heading">Trusted Professionals. Verified for Your Peace of Mind.</h1>
+              <div className="premium-hero__brand" aria-label="FixEasy premium experience">
+                <span className="premium-hero__mark" aria-hidden="true">
+                  ƒ
+                </span>
+                <span className="premium-hero__name">FixEasy</span>
+                <span className="premium-hero__pulse" aria-hidden="true" />
+              </div>
+              <h1 id="hero-heading">Ireland’s Trusted Platform for Home Services — Fast, Verified, and Secure.</h1>
               <p className="hero__summary">
-                Every FixEasy professional is ID-verified and background checked. Enjoy transparent pricing, encrypted
-                communication, and same-day availability across Ireland.
+                Book insured experts in minutes with proactive updates, encrypted communication, and compliance-ready
+                documentation for every visit.
               </p>
+              <div className="premium-hero__stats" role="list">
+                {heroStats.map((stat) => (
+                  <motion.div
+                    key={stat.label}
+                    className="premium-hero__stat"
+                    role="listitem"
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.6 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <strong>{stat.label}</strong>
+                    <span>{stat.description}</span>
+                  </motion.div>
+                ))}
+              </div>
               <div className="premium-hero__actions" role="group" aria-label="Primary actions">
                 <Link href="/register/client" className="premium-hero__cta premium-hero__cta--primary">
                   Book a Service
@@ -283,13 +377,24 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="trust-section" role="list" aria-label="FixEasy trust commitments">
-              {trustHighlights.map((item) => (
-                <div key={item.title} className="trust-section__card" role="listitem">
-                  <h2>{item.title}</h2>
-                  <p>{item.description}</p>
+            <div className="premium-hero__visual" aria-label="Why Ireland trusts FixEasy">
+              <div className="premium-hero__card">
+                <p className="premium-hero__tagline">
+                  “Ireland’s Trusted Platform for Home Services — Fast, Verified, and Secure.”
+                </p>
+                <ul className="premium-hero__highlights">
+                  <li>Over 1,200 verified tradespeople across Dublin.</li>
+                  <li>Guaranteed same-day response on urgent requests.</li>
+                </ul>
+                <div className="trust-section" role="list" aria-label="FixEasy trust commitments">
+                  {trustHighlights.map((item) => (
+                    <div key={item.title} className="trust-section__card" role="listitem">
+                      <h2>{item.title}</h2>
+                      <p>{item.description}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </section>
@@ -312,16 +417,33 @@ export default function Home() {
                     <p>{group.blurb}</p>
                   </div>
                   <div className="services-grid">
-                    {group.services.map((service) => (
-                      <article key={service.name} className="service-card">
-                        <span className="service-card__icon" aria-hidden="true">
-                          {service.icon}
-                        </span>
-                        <div className="service-card__body">
-                          <h4>{service.name}</h4>
-                          <p>{service.description}</p>
-                        </div>
-                      </article>
+                    {group.services.map((service, index) => (
+                      <Link
+                        key={service.name}
+                        href={{ pathname: '/register/client', query: { service: service.name } }}
+                        className="service-card-link"
+                      >
+                        <motion.article
+                          className="service-card"
+                          initial={{ opacity: 0, y: 16 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          whileHover={{ y: -6 }}
+                          transition={{ duration: 0.35, delay: index * 0.05 }}
+                          viewport={{ once: true, amount: 0.6 }}
+                        >
+                          <motion.span
+                            className="service-card__icon"
+                            aria-hidden="true"
+                            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                          >
+                            {service.icon}
+                          </motion.span>
+                          <div className="service-card__body">
+                            <h4>{service.name}</h4>
+                            <p>{service.description}</p>
+                          </div>
+                        </motion.article>
+                      </Link>
                     ))}
                   </div>
                 </section>
