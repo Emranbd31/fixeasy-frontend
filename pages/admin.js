@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 
 const ADMIN_EMAIL = 'emranbd31@gmail.com'
@@ -110,8 +110,90 @@ export default function AdminDashboard() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [reviewItems, setReviewItems] = useState([])
+  const [reviewLoading, setReviewLoading] = useState(false)
+  const [reviewError, setReviewError] = useState('')
+  const [modalItem, setModalItem] = useState(null)
+  const [actionLoading, setActionLoading] = useState(false)
 
   const nextAction = useMemo(() => quickActions[0], [])
+
+  const normaliseDocuments = useCallback((entry) => {
+    if (Array.isArray(entry?.documents) && entry.documents.length > 0) {
+      return entry.documents.map((document) => ({
+        key: document.key ?? document.type ?? document.label ?? document.name,
+        label: document.label ?? document.type ?? 'Document',
+        url: document.downloadUrl ?? document.url ?? document.publicUrl,
+        previewUrl: document.previewUrl ?? document.thumbnailUrl ?? null,
+        updatedAt: document.updatedAt ?? entry.submittedAt
+      }))
+    }
+
+    const verificationDocs = entry?.verificationDocuments ?? {}
+    return [
+      verificationDocs.passport_url
+        ? {
+            key: 'passport',
+            label: 'Passport or National ID',
+            url: verificationDocs.passport_url,
+            previewUrl: verificationDocs.passport_preview ?? null
+          }
+        : null,
+      verificationDocs.licence_url
+        ? {
+            key: 'licence',
+            label: 'Driving Licence',
+            url: verificationDocs.licence_url,
+            previewUrl: verificationDocs.licence_preview ?? null
+          }
+        : null,
+      verificationDocs.address_url
+        ? {
+            key: 'address',
+            label: 'Address Proof',
+            url: verificationDocs.address_url,
+            previewUrl: verificationDocs.address_preview ?? null
+          }
+        : null
+    ].filter(Boolean)
+  }, [])
+
+  const loadReviewItems = useCallback(async () => {
+    if (!isAuthenticated) return
+
+    setReviewLoading(true)
+    setReviewError('')
+
+    try {
+      const response = await fetch('/api/admin/professionals?status=pending_verification')
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        throw new Error(data?.error ?? 'Unable to load pending verifications')
+      }
+
+      const items = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : []
+
+      setReviewItems(
+        items.map((entry) => ({
+          id: entry.id ?? entry.uuid ?? entry.reference,
+          name: entry.fullName ?? entry.businessName ?? entry.contactName ?? 'Professional',
+          submittedAt: entry.submittedAt ?? entry.createdAt ?? entry.created_at ?? new Date().toISOString(),
+          status: entry.status ?? 'pending_verification',
+          documents: normaliseDocuments(entry)
+        }))
+      )
+    } catch (fetchError) {
+      setReviewError(fetchError.message || 'Could not load professional documents.')
+      setReviewItems([])
+    } finally {
+      setReviewLoading(false)
+    }
+  }, [isAuthenticated, normaliseDocuments])
+
+  useEffect(() => {
+    loadReviewItems()
+  }, [loadReviewItems])
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -123,6 +205,69 @@ export default function AdminDashboard() {
     }
 
     setError('Invalid credentials. Please check the email and password and try again.')
+  }
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return
+    }
+
+    loadReviewItems()
+  }, [isAuthenticated, loadReviewItems])
+
+  const handleViewDocuments = (item) => {
+    setModalItem(item)
+    setReviewError('')
+  }
+
+  const handleCloseModal = () => {
+    setModalItem(null)
+  }
+
+  const handleApprove = async (item) => {
+    setActionLoading(true)
+    setReviewError('')
+    try {
+      const response = await fetch(`/api/admin/approve-pro/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(result?.error ?? 'Unable to approve professional')
+      }
+      await loadReviewItems()
+    } catch (approveError) {
+      setReviewError(approveError.message || 'Approval failed. Try again shortly.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleReject = async (item) => {
+    const reason = typeof window !== 'undefined' ? window.prompt('Enter rejection reason (included in email):') : ''
+    if (!reason) {
+      return
+    }
+
+    setActionLoading(true)
+    setReviewError('')
+    try {
+      const response = await fetch(`/api/admin/reject-pro/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason })
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(result?.error ?? 'Unable to reject professional')
+      }
+      await loadReviewItems()
+    } catch (rejectError) {
+      setReviewError(rejectError.message || 'Rejection failed. Try again shortly.')
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   return (
@@ -185,6 +330,94 @@ export default function AdminDashboard() {
               Create update
             </button>
           </header>
+
+          <section className="admin-review" aria-labelledby="admin-review-heading">
+            <div className="admin-panel admin-panel--wide admin-review__panel">
+              <header className="admin-panel__header">
+                <div>
+                  <p className="admin-panel__eyebrow">Verification queue</p>
+                  <h2 id="admin-review-heading">Professional document reviews</h2>
+                </div>
+                <div className="admin-review__actions">
+                  <button type="button" onClick={loadReviewItems} disabled={reviewLoading}>
+                    Refresh
+                  </button>
+                </div>
+              </header>
+
+              {reviewError ? (
+                <div className="admin-alert admin-alert--error" role="alert">
+                  {reviewError}
+                </div>
+              ) : null}
+
+              {reviewLoading ? (
+                <p className="admin-review__empty" role="status">
+                  Loading pending verifications…
+                </p>
+              ) : reviewItems.length === 0 ? (
+                <p className="admin-review__empty" role="status">
+                  All professional submissions are up to date.
+                </p>
+              ) : (
+                <table className="admin-table admin-review__table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Professional</th>
+                      <th scope="col">Docs uploaded</th>
+                      <th scope="col">Submitted</th>
+                      <th scope="col">Status</th>
+                      <th scope="col" className="admin-review__actions-column">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reviewItems.map((item) => (
+                      <tr key={item.id}>
+                        <td>{item.name}</td>
+                        <td>{item.documents.length}</td>
+                        <td>
+                          <time dateTime={item.submittedAt}>
+                            {new Date(item.submittedAt).toLocaleString('en-IE', {
+                              dateStyle: 'medium',
+                              timeStyle: 'short'
+                            })}
+                          </time>
+                        </td>
+                        <td>
+                          <span className="admin-status-chip">{item.status.replace('_', ' ')}</span>
+                        </td>
+                        <td>
+                          <div className="admin-review__table-actions">
+                            <button type="button" onClick={() => handleViewDocuments(item)}>
+                              View documents
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleApprove(item)}
+                              disabled={actionLoading}
+                              className="admin-review__approve"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReject(item)}
+                              disabled={actionLoading}
+                              className="admin-review__reject"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </section>
 
           <section className="admin-dashboard__grid">
             {summaryCards.map((card) => (
@@ -284,6 +517,55 @@ export default function AdminDashboard() {
           </section>
         </main>
       )}
+
+      {modalItem ? (
+        <div className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+          <div className="admin-modal__content">
+            <header className="admin-modal__header">
+              <div>
+                <p className="admin-modal__eyebrow">Documents</p>
+                <h2 id="admin-modal-title">{modalItem.name}</h2>
+              </div>
+              <button type="button" className="admin-modal__close" onClick={handleCloseModal}>
+                Close
+              </button>
+            </header>
+
+            <ul className="admin-modal__documents">
+              {modalItem.documents.map((document) => (
+                <li key={document.key}>
+                  <div className="admin-modal__thumbnail" aria-hidden={document.previewUrl ? 'false' : 'true'}>
+                    {document.previewUrl ? (
+                      <img src={document.previewUrl} alt={`${document.label} preview`} />
+                    ) : (
+                      <span>{document.label.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div className="admin-modal__meta">
+                    <p>{document.label}</p>
+                    <a href={document.url} target="_blank" rel="noopener noreferrer">
+                      Download
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <footer className="admin-modal__footer">
+              <button type="button" className="admin-review__approve" onClick={() => handleApprove(modalItem)}>
+                Approve
+              </button>
+              <button type="button" className="admin-review__reject" onClick={() => handleReject(modalItem)}>
+                Reject
+              </button>
+              <button type="button" className="admin-secondary" onClick={handleCloseModal}>
+                Close
+              </button>
+            </footer>
+          </div>
+        </div>
+      ) : null}
+
     </div>
   )
 }
