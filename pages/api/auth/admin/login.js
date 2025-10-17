@@ -2,7 +2,7 @@ import { createSessionCookie } from '../../../../lib/admin-session'
 
 const ADMIN_DOMAIN = '@fixeasy.irish'
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
     return res.status(405).json({ ok: false, error: 'Method not allowed' })
@@ -27,8 +27,12 @@ export default function handler(req, res) {
     return res.status(401).json({ ok: false, error: 'Invalid credentials.' })
   }
 
-  const { header, session } = createSessionCookie(normalisedEmail)
-  res.setHeader('Set-Cookie', header)
-
-  return res.status(200).json({ ok: true, session })
+  try {
+    const { header, session } = await createSessionCookie(normalisedEmail)
+    res.setHeader('Set-Cookie', header)
+    return res.status(200).json({ ok: true, session })
+  } catch (error) {
+    console.error('Failed to issue admin session cookie', error)
+    return res.status(500).json({ ok: false, error: 'Admin authentication is not configured.' })
+  }
 }

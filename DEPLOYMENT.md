@@ -34,6 +34,7 @@ Ensure the following values are configured in your deployment environment (e.g. 
 | Variable | Required | Description |
 | --- | --- | --- |
 | `ADMIN_DASHBOARD_SECRET` | ✅ | Password used by `/auth/admin` to create secure admin sessions. |
+| `ADMIN_SESSION_SECRET` | ✅ | 32+ character random string used to sign the admin session cookie. |
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL for OAuth and Storage uploads. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Public anon key used for OAuth redirects and direct Storage uploads. |
 | `NEXT_PUBLIC_SUPABASE_CLIENT_BUCKET` | ⚙️ (optional) | Overrides the default `client-uploads` bucket for client issue photos. |

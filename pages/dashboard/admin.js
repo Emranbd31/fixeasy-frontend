@@ -560,7 +560,7 @@ export default function AdminDashboard({ initialSession }) {
 
 export async function getServerSideProps({ req, resolvedUrl }) {
   const cookie = req.cookies?.[SESSION_COOKIE] ?? ''
-  const session = decodeSession(cookie)
+  const session = await decodeSession(cookie)
 
   if (!session) {
     return {
