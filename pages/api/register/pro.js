@@ -17,24 +17,7 @@ export default async function handler(req, res) {
     serviceCategories,
     otherCategoryDetail,
     serviceAreas,
- codex/implement-v5-update-plan-for-fixeasy-o20fcx
     consent,
-    verificationDocuments
-  } = req.body ?? {}
-
-  const normalizedFullName = sanitizeText(fullName)
-  const normalizedEmail = sanitizeText(email).toLowerCase()
-  const normalizedOtherCategory = sanitizeText(otherCategoryDetail)
-
-  if (!normalizedFullName) {
-    return res.status(400).json(error('Enter your full name or business name.', 'fullName'))
-  }
-
-  if (!normalizedEmail || !/^([^\s@]+)@([^\s@]+)\.([\w-]{2,})$/.test(normalizedEmail)) {
-
-    yearsExperience,
-    languages,
-    verificationNotes,
     verificationDocuments
   } = req.body ?? {}
 
@@ -43,7 +26,6 @@ export default async function handler(req, res) {
   }
 
   if (!sanitizeText(email) || !/^([^\s@]+)@([^\s@]+)\.([\w-]{2,})$/.test(email)) {
- main
     return res.status(400).json(error('Provide a valid contact email.', 'email'))
   }
 
@@ -55,14 +37,10 @@ export default async function handler(req, res) {
     return res.status(400).json(error('Select at least one service category.', 'serviceCategories'))
   }
 
- codex/implement-v5-update-plan-for-fixeasy-o20fcx
-  if (serviceCategories.includes('Other (please specify)') && !normalizedOtherCategory) {
-
   if (
     serviceCategories.includes('Other (please specify)') &&
     !sanitizeText(otherCategoryDetail)
   ) {
-main
     return res.status(400).json(error('Describe the additional service you offer.', 'otherCategoryDetail'))
   }
 
@@ -70,7 +48,6 @@ main
     return res.status(400).json(error('Select at least one service area.', 'serviceAreas'))
   }
 
-codex/implement-v5-update-plan-for-fixeasy-o20fcx
   if (!verificationDocuments || typeof verificationDocuments !== 'object') {
     return res.status(400).json(error('Upload verification documents.', 'verificationDocuments'))
   }
@@ -85,14 +62,6 @@ codex/implement-v5-update-plan-for-fixeasy-o20fcx
 
   if (!consent) {
     return res.status(400).json(error('Confirm authenticity of the supplied documents.', 'consent'))
-
-  if (typeof yearsExperience !== 'number' || Number.isNaN(yearsExperience) || yearsExperience < 0) {
-    return res.status(400).json(error('Provide your years of experience.', 'yearsExperience'))
-  }
-
-  if (!verificationDocuments || typeof verificationDocuments !== 'object') {
-    return res.status(400).json(error('Upload verification documents.', 'verificationDocuments'))
- main
   }
 
   const reference = `PRO-${Date.now().toString(36).toUpperCase()}`
@@ -102,12 +71,11 @@ codex/implement-v5-update-plan-for-fixeasy-o20fcx
     reference,
     receivedAt: new Date().toISOString(),
     normalized: {
-codex/implement-v5-update-plan-for-fixeasy-o20fcx
-      fullName: normalizedFullName,
-      email: normalizedEmail,
+      fullName: sanitizeText(fullName),
+      email: sanitizeText(email).toLowerCase(),
       phone: sanitizePhone(phone),
       serviceCategories,
-      otherCategoryDetail: normalizedOtherCategory,
+      otherCategoryDetail: sanitizeText(otherCategoryDetail),
       serviceAreas,
       consent: Boolean(consent),
       verificationDocuments: {
@@ -115,17 +83,6 @@ codex/implement-v5-update-plan-for-fixeasy-o20fcx
         selfie_url: sanitizeText(verificationDocuments.selfie_url),
         insurance_url: sanitizeText(verificationDocuments.insurance_url)
       }
-      fullName: sanitizeText(fullName),
-      email: sanitizeText(email).toLowerCase(),
-      phone: sanitizePhone(phone),
-      serviceCategories,
-      otherCategoryDetail: sanitizeText(otherCategoryDetail),
-      serviceAreas,
-      yearsExperience,
-      languages: sanitizeText(languages),
-      verificationNotes: sanitizeText(verificationNotes),
-      verificationDocuments
- main
     }
   })
 }
