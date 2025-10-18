@@ -1,159 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import ServiceIcon from '../components/icons/ServiceIcon'
+import { SERVICE_GROUPS } from '../data/services'
 
-const trustHighlights = [
-  {
-    title: 'Verified IDs',
-    description: 'Every professional completes multi-document identity checks.'
-  },
-  {
-    title: 'Secure Payments',
-    description: 'Escrow-backed transactions with automatic invoicing and receipts.'
-  },
-  {
-    title: 'Irish Support 24/7',
-    description: 'Always-on Dublin based team for booking updates and emergencies.'
-  }
+const HERO_TRUST_POINTS = [
+  { icon: '✅', label: 'Verified Professionals' },
+  { icon: '💳', label: 'Secure Payments' },
+  { icon: '🇮🇪', label: 'Irish Support 24/7' }
 ]
 
-const serviceSections = [
-  {
-    id: 'home-maintenance',
-    title: 'Home Maintenance',
-    blurb: 'Keep every room running smoothly with responsive specialists for everyday fixes.',
-    services: [
-      {
-        name: 'Handyman',
-        icon: '🛠️',
-        description: 'General repairs, door adjustments, fixture replacements, and quick home fixes.'
-      },
-      {
-        name: 'Helping Hand',
-        icon: '🤝',
-        description: 'Extra support for move-in days, furniture moves, and around-the-home assistance.'
-      },
-      {
-        name: 'Locksmith',
-        icon: '🔐',
-        description: '24/7 lockouts, smart lock installs, and secure rekeying for your property.'
-      },
-      {
-        name: 'Appliance Installer',
-        icon: '🔌',
-        description: 'Manufacturer-approved installs with safety testing for kitchen and laundry appliances.'
-      },
-      {
-        name: 'Furniture Assembler',
-        icon: '🪑',
-        description: 'Flat-pack builds, workspace fit-outs, and on-site adjustments for a perfect finish.'
-      }
-    ]
-  },
-  {
-    id: 'cleaning-hygiene',
-    title: 'Cleaning & Hygiene',
-    blurb: 'Healthy homes and workplaces maintained by vetted cleaning experts.',
-    services: [
-      {
-        name: 'Cleaner',
-        icon: '🧽',
-        description: 'Recurring or one-off cleans with eco-friendly products and careful detail.'
-      },
-      {
-        name: 'Carpet Cleaner',
-        icon: '🧼',
-        description: 'Hot-water extraction and stain treatments that revive carpets and rugs.'
-      },
-      {
-        name: 'Window Cleaner',
-        icon: '🪟',
-        description: 'Interior and exterior window care using purified water systems.'
-      },
-      {
-        name: 'Floor Polisher',
-        icon: '✨',
-        description: 'Professional polishing for hardwood, stone, and specialty flooring.'
-      }
-    ]
-  },
-  {
-    id: 'electrical-smart-home',
-    title: 'Electrical & Smart Home',
-    blurb: 'Certified electricians and smart-home specialists keep your systems running.',
-    services: [
-      {
-        name: 'Electrician',
-        icon: '⚡',
-        description: 'Consumer unit checks, rewiring, EV charger installs, and safety inspections.'
-      },
-      {
-        name: 'CCTV & Smart Home',
-        icon: '📹',
-        description: 'Security cameras, smart lighting, thermostats, and whole-home automation.'
-      }
-    ]
-  },
-  {
-    id: 'outdoor-garden',
-    title: 'Outdoor & Garden',
-    blurb: 'Exterior specialists who protect kerb appeal and keep outdoor spaces tidy.',
-    services: [
-      {
-        name: 'Gardener',
-        icon: '🌿',
-        description: 'Seasonal tidy-ups, lawn care, planting, and biodiversity-friendly maintenance.'
-      },
-      {
-        name: 'Roof Cleaner',
-        icon: '🧗',
-        description: 'Safe moss removal, soft washing, and gutter line treatments for every roof type.'
-      },
-      {
-        name: 'Gutter Repair',
-        icon: '🪣',
-        description: 'Repairs, realignments, and full replacements to keep drainage flowing.'
-      }
-    ]
-  },
-  {
-    id: 'specialized-trades',
-    title: 'Specialized Trades',
-    blurb: 'Trade professionals ready for complex projects and regulated works.',
-    services: [
-      {
-        name: 'Plumber',
-        icon: '🚰',
-        description: 'Emergency leaks, boiler care, bathroom installs, and heating upgrades.'
-      },
-      {
-        name: 'Carpenter',
-        icon: '🪚',
-        description: 'Bespoke carpentry, storage builds, and structural repairs with precision.'
-      },
-      {
-        name: 'Painter',
-        icon: '🎨',
-        description: 'Interior and exterior finishes with colour consultations and tidy execution.'
-      },
-      {
-        name: 'Welder',
-        icon: '⚙️',
-        description: 'On-site welding, metal fabrication, and safety-certified repairs.'
-      },
-      {
-        name: 'Pest Control',
-        icon: '🐜',
-        description: 'Rapid identification, humane treatments, and preventative monitoring.'
-      }
-    ]
-  }
+const HERO_STATS = [
+  { headline: '1,200+', subline: 'Tradespeople vetted across Dublin' },
+  { headline: 'Same-day', subline: 'Rapid response for urgent jobs' },
+  { headline: '4.9★', subline: 'Average rating from Irish households' }
 ]
 
-const contactOptions = [
+const CONTACT_OPTIONS = [
   {
     title: 'Talk to support',
-    description: 'Need help planning a job? Our Dublin-based team is on hand Monday to Saturday.',
+    description: 'Need help planning a job? Our Dublin-based team is available Monday to Saturday.',
     href: 'mailto:support@fixeasy.irish',
     action: 'support@fixeasy.irish'
   },
@@ -210,12 +77,36 @@ export default function Home() {
     }
   }, [])
 
+  useEffect(() => {
+    let isActive = true
+    const checkAdmin = async () => {
+      try {
+        const response = await fetch('/api/auth/admin/session')
+        if (!isActive) return
+        if (response.ok) {
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem('fixeasy_role', 'admin')
+          }
+          setUserRole('admin')
+        }
+      } catch (error) {
+        console.warn('Failed to verify admin session', error)
+      }
+    }
+
+    checkAdmin()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
   const isLoggedIn = useMemo(() => Boolean(userRole), [userRole])
   const dashboardHref = useMemo(() => {
-    if (!userRole) return '/admin'
-    if (userRole === 'pro') return '/admin?view=pro'
-    if (userRole === 'client') return '/admin?view=client'
-    return '/admin'
+    if (userRole === 'admin') return '/dashboard/admin'
+    if (userRole === 'pro') return '/dashboard/pro'
+    if (userRole === 'client') return '/dashboard/client'
+    return '/signup'
   }, [userRole])
 
   return (
@@ -250,11 +141,11 @@ export default function Home() {
               </Link>
             ) : (
               <>
-                <Link href="/admin" className="nav-btn nav-btn--ghost">
-                  Login
+                <Link href="/signup" className="nav-btn nav-btn--ghost">
+                  Sign in / Sign up
                 </Link>
                 <Link href="/register/client" className="nav-btn nav-btn--primary">
-                  Create Account
+                  Book a Service
                 </Link>
               </>
             )}
@@ -263,65 +154,108 @@ export default function Home() {
       </header>
 
       <main>
-        <section className="premium-hero" aria-labelledby="hero-heading">
-          <div className="premium-hero__gradient" aria-hidden="true" />
-          <div className="premium-hero__inner container">
-            <div className="premium-hero__copy">
-              <p className="hero__eyebrow">FixEasy Enterprise</p>
+        <section className="hero-2025" aria-labelledby="hero-heading">
+          <div className="hero-2025__gradient" aria-hidden="true" />
+          <div className="container hero-2025__grid">
+            <div className="hero-2025__content">
+              <span className="hero-2025__eyebrow">Ireland’s trusted home services platform</span>
               <h1 id="hero-heading">Trusted Professionals. Verified for Your Peace of Mind.</h1>
-              <p className="hero__summary">
-                Every FixEasy professional is ID-verified and background checked. Enjoy transparent pricing, encrypted
-                communication, and same-day availability across Ireland.
+              <p className="hero-2025__lead">
+                Book FixEasy services with transparent pricing, secure payments, and same-day availability. Every professional is
+                ID-checked, insured, and ready to help.
               </p>
-              <div className="premium-hero__actions" role="group" aria-label="Primary actions">
-                <Link href="/register/client" className="premium-hero__cta premium-hero__cta--primary">
+              <div className="hero-2025__actions" role="group" aria-label="Primary actions">
+                <Link href="/register/client" className="hero-2025__cta hero-2025__cta--primary">
                   Book a Service
                 </Link>
-                <Link href="/register/pro" className="premium-hero__cta premium-hero__cta--secondary">
+                <Link href="/register/pro" className="hero-2025__cta hero-2025__cta--secondary">
                   Join as Professional
                 </Link>
               </div>
+              <div className="hero-2025__trust-card">
+                <ul>
+                  {HERO_TRUST_POINTS.map((point) => (
+                    <li key={point.label}>
+                      <span aria-hidden="true">{point.icon}</span>
+                      {point.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="hero-2025__stats" role="list">
+                {HERO_STATS.map((stat) => (
+                  <motion.div
+                    key={stat.headline}
+                    className="hero-2025__stat"
+                    role="listitem"
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.6 }}
+                    transition={{ duration: 0.35 }}
+                  >
+                    <strong>{stat.headline}</strong>
+                    <span>{stat.subline}</span>
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
-            <div className="trust-section" role="list" aria-label="FixEasy trust commitments">
-              {trustHighlights.map((item) => (
-                <div key={item.title} className="trust-section__card" role="listitem">
-                  <h2>{item.title}</h2>
-                  <p>{item.description}</p>
-                </div>
-              ))}
+            <div className="hero-2025__visual">
+              <div className="hero-2025__image-frame">
+                <img
+                  src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=80"
+                  alt="FixEasy professionals completing home repairs"
+                  loading="lazy"
+                />
+              </div>
+              <div className="hero-2025__badge">
+                <span>Over 1,200 verified tradespeople</span>
+                <span>Guaranteed same-day response</span>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="services-section" id="services" aria-labelledby="services-heading">
+        <section className="service-showcase section section--light" id="services" aria-labelledby="services-heading">
           <div className="container">
-            <div className="section-header">
-              <p className="section-eyebrow">Services</p>
-              <h2 id="services-heading">Every service you need, grouped for easy booking</h2>
-              <p className="section-summary">
-                Select the category that fits your job and we will match you with insured, ID-verified professionals with the
-                right skills and local coverage.
+            <header className="section__header">
+              <span className="section__eyebrow">Services</span>
+              <h2 id="services-heading">Choose a service and book in seconds</h2>
+              <p className="section__description">
+                Explore FixEasy categories inspired by Ireland’s most requested jobs. Tap any tile to start a booking with the
+                service pre-filled.
               </p>
-            </div>
-            <div className="services-groups">
-              {serviceSections.map((group) => (
-                <section key={group.id} className="services-group" aria-labelledby={`${group.id}-title`}>
-                  <div className="services-group__intro">
+            </header>
+
+            <div className="service-showcase__groups">
+              {SERVICE_GROUPS.map((group) => (
+                <section key={group.id} className="service-showcase__group" aria-labelledby={`${group.id}-title`}>
+                  <div className="service-showcase__group-header">
                     <h3 id={`${group.id}-title`}>{group.title}</h3>
-                    <p>{group.blurb}</p>
+                    <p>{group.description}</p>
                   </div>
-                  <div className="services-grid">
-                    {group.services.map((service) => (
-                      <article key={service.name} className="service-card">
-                        <span className="service-card__icon" aria-hidden="true">
-                          {service.icon}
-                        </span>
-                        <div className="service-card__body">
-                          <h4>{service.name}</h4>
-                          <p>{service.description}</p>
-                        </div>
-                      </article>
+                  <div className="service-showcase__tiles" role="list">
+                    {group.services.map((service, index) => (
+                      <motion.div
+                        key={service.id}
+                        role="listitem"
+                        className="service-tile-wrapper"
+                        initial={{ opacity: 0, y: 18 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.4 }}
+                        transition={{ duration: 0.35, delay: index * 0.05 }}
+                      >
+                        <Link
+                          href={{ pathname: '/register/client', query: { service: service.name } }}
+                          className="service-tile"
+                        >
+                          <ServiceIcon type={service.icon} className="service-tile__icon" />
+                          <div className="service-tile__copy">
+                            <h4>{service.name}</h4>
+                            <p>{service.summary}</p>
+                          </div>
+                        </Link>
+                      </motion.div>
                     ))}
                   </div>
                 </section>
@@ -333,11 +267,11 @@ export default function Home() {
         <section className="cta-section" aria-labelledby="cta-heading">
           <div className="container cta-container">
             <div className="cta-text">
-              <p className="section-eyebrow">Book with confidence</p>
+              <span className="section__eyebrow">Book with confidence</span>
               <h2 id="cta-heading">Ready for your next repair or refresh?</h2>
               <p>
-                Create a FixEasy account to track every visit, receive arrival notifications, and rebook your favourite pros in
-                seconds.
+                Submit a booking request in minutes to receive verified professionals, live updates, and protected payments
+                under one secure FixEasy account.
               </p>
             </div>
             <div className="cta-actions">
@@ -353,15 +287,15 @@ export default function Home() {
 
         <section className="contact-section" id="contact" aria-labelledby="contact-heading">
           <div className="container">
-            <div className="section-header">
-              <p className="section-eyebrow">Contact</p>
+            <header className="section__header">
+              <span className="section__eyebrow">Contact</span>
               <h2 id="contact-heading">We are here when you need us</h2>
-              <p className="section-summary">
+              <p className="section__description">
                 Reach out to the FixEasy team for booking support, partnership enquiries, or to check live platform status.
               </p>
-            </div>
+            </header>
             <div className="contact-grid">
-              {contactOptions.map((item) => (
+              {CONTACT_OPTIONS.map((item) => (
                 <article key={item.title} className="contact-card">
                   <h3>{item.title}</h3>
                   <p>{item.description}</p>

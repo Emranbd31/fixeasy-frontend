@@ -1,22 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
-import { useRouter } from 'next/router'
+import { SERVICE_OPTIONS } from '../../data/services'
 import { isValidIrishPhone, sanitizePhone, sanitizeText } from '../../lib/validation'
 
-const STORAGE_KEY = 'fixeasy-pro-register-draft-2025'
-
-const stepLabels = ['Info', 'Verification', 'Confirm']
-
-const categoryOptions = [
-  'Plumbing & Heating',
-  'Electrical & EV',
-  'Cleaning & Facilities',
-  'Carpentry & Fit-out',
-  'Landscaping & Outdoors',
-  'Painting & Finishing',
-  'Appliance Repair',
-  'Handyman & Maintenance'
-]
+const OTHER_CATEGORY_OPTION = 'Other (please specify)'
+const categoryOptions = SERVICE_OPTIONS
 
 const serviceAreaOptions = [
   'Dublin City & County',
@@ -28,6 +16,10 @@ const serviceAreaOptions = [
 ]
 
 const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png']
+const uploadFields = ['photoId', 'selfie', 'insurance']
+const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '')
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const SUPABASE_PRO_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_PRO_BUCKET || 'professional-documents'
 
 const initialState = {
   fullName: '',
@@ -35,48 +27,42 @@ const initialState = {
   phone: '',
   serviceCategories: [],
   serviceAreas: [],
-  experienceYears: '',
-  languages: '',
-  passport: null,
-  licence: null,
-  address: null,
+  otherCategoryDetail: '',
   consent: false
 }
 
-const fileLabels = {
-  passport: 'Passport or National ID',
-  licence: 'Driving Licence',
-  address: 'Address Proof'
+const initialUploads = {
+  photoId: 0,
+  selfie: 0,
+  insurance: 0
 }
 
+const initialUploadedDocuments = {
+  photoId: null,
+  selfie: null,
+  insurance: null
+}
+
+const stepLabels = ['Info', 'Verification', 'Confirmation']
+
+const fileLabels = {
+  photoId: 'Photo ID (passport or driving licence)',
+  selfie: 'Selfie for verification',
+  insurance: 'Insurance certificate (optional)'
+}
+
+const optionalFields = new Set(['insurance'])
+
 export default function ProfessionalRegistration() {
-  const router = useRouter()
   const [formData, setFormData] = useState(initialState)
   const [errors, setErrors] = useState({})
   const [currentStep, setCurrentStep] = useState(1)
-  const [uploadProgress, setUploadProgress] = useState({ passport: 0, licence: 0, address: 0 })
-  const [uploadedDocuments, setUploadedDocuments] = useState({ passport: null, licence: null, address: null })
-  const [previews, setPreviews] = useState({ passport: null, licence: null, address: null })
-  const [savingDraft, setSavingDraft] = useState(false)
-  const [draftSaved, setDraftSaved] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState({ ...initialUploads })
+  const [uploadedDocuments, setUploadedDocuments] = useState({ ...initialUploadedDocuments })
+  const [previews, setPreviews] = useState({ photoId: null, selfie: null, insurance: null })
   const [submitting, setSubmitting] = useState(false)
   const [submissionError, setSubmissionError] = useState('')
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        setFormData((prev) => ({ ...prev, ...parsed }))
-      }
-    } catch (error) {
-      console.warn('Failed to restore draft', error)
-    }
-  }, [])
+  const [submissionSuccess, setSubmissionSuccess] = useState(false)
 
   useEffect(() => {
     return () => {
@@ -88,19 +74,16 @@ export default function ProfessionalRegistration() {
     }
   }, [previews])
 
-  const serviceCategorySummary = useMemo(() => {
-    if (formData.serviceCategories.length === 0) {
-      return 'No service categories selected yet.'
-    }
-    return formData.serviceCategories.join(', ')
-  }, [formData.serviceCategories])
+  const otherCategorySelected = useMemo(
+    () => formData.serviceCategories.includes(OTHER_CATEGORY_OPTION),
+    [formData.serviceCategories]
+  )
 
-  const serviceAreaSummary = useMemo(() => {
-    if (formData.serviceAreas.length === 0) {
-      return 'No service areas selected yet.'
+  useEffect(() => {
+    if (!otherCategorySelected && formData.otherCategoryDetail) {
+      setFormData((prev) => ({ ...prev, otherCategoryDetail: '' }))
     }
-    return formData.serviceAreas.join(', ')
-  }, [formData.serviceAreas])
+  }, [otherCategorySelected, formData.otherCategoryDetail])
 
   const handleInputChange = (event) => {
     const { name, value } = event.target
@@ -137,59 +120,51 @@ export default function ProfessionalRegistration() {
     setErrors((prev) => ({ ...prev, [field]: undefined }))
 
     try {
-      const signResponse = await fetch('/api/storage/sign-upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          bucket: 'professional-documents',
-          fileName: file.name,
-          contentType: file.type
-        })
-      })
-
-      const signed = await signResponse.json().catch(() => ({}))
-
-      if (!signResponse.ok || !signed?.url) {
-        throw new Error(signed?.error ?? 'Unable to create upload URL')
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        throw new Error('Supabase Storage is not configured for professional uploads.')
       }
 
-      await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open('PUT', signed.url)
-        if (signed?.headers) {
-          Object.entries(signed.headers).forEach(([header, headerValue]) => {
-            xhr.setRequestHeader(header, headerValue)
+      const safeName = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_')
+      const path = `verification/${Date.now()}-${safeName}`
+
+      const body = new FormData()
+      body.append('file', file)
+      body.append('path', path)
+
+      const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${SUPABASE_PRO_BUCKET}`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'x-upsert': 'true',
+          'x-metadata': JSON.stringify({
+            document_type: field,
+            professional: sanitizeText(formData.fullName) || 'unknown',
+            submitted_at: new Date().toISOString()
           })
-        } else if (file.type) {
-          xhr.setRequestHeader('Content-Type', file.type)
-        }
-
-        xhr.upload.onprogress = (event) => {
-          if (!event.lengthComputable) return
-          const percentage = Math.round((event.loaded / event.total) * 100)
-          setUploadProgress((prev) => ({ ...prev, [field]: percentage }))
-        }
-
-        xhr.onerror = () => reject(new Error('Upload failed'))
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve()
-          } else {
-            reject(new Error(`Upload failed with status ${xhr.status}`))
-          }
-        }
-
-        xhr.send(file)
+        },
+        body
       })
+
+      if (!response.ok) {
+        let message = 'Upload failed. Please try again shortly.'
+        try {
+          const errorPayload = await response.json()
+          if (errorPayload?.message) {
+            message = errorPayload.message
+          }
+        } catch (err) {
+          // ignore parse errors
+        }
+        throw new Error(message)
+      }
 
       setUploadProgress((prev) => ({ ...prev, [field]: 100 }))
       setUploadedDocuments((prev) => ({
         ...prev,
         [field]: {
-          path: signed.path ?? signed.objectName ?? signed.key ?? '',
-          url: signed.publicUrl ?? signed.previewUrl ?? signed.url.split('?')[0],
+          path,
+          url: `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_PRO_BUCKET}/${path}`,
           name: file.name,
           size: file.size,
           type: file.type
@@ -210,16 +185,18 @@ export default function ProfessionalRegistration() {
     const file = event.target.files?.[0]
 
     resetPreview(field)
-    setFormData((prev) => ({ ...prev, [field]: file ?? null }))
     setUploadedDocuments((prev) => ({ ...prev, [field]: null }))
     setUploadProgress((prev) => ({ ...prev, [field]: 0 }))
 
     if (!file) {
+      if (!optionalFields.has(field)) {
+        setErrors((prev) => ({ ...prev, [field]: `Please upload your ${fileLabels[field].toLowerCase()}.` }))
+      }
       return
     }
 
     const extension = file.name.split('.').pop()?.toLowerCase()
-    const isValidType = allowedExtensions.includes(extension)
+    const isValidType = extension ? allowedExtensions.includes(extension) : false
     const isUnderSizeLimit = file.size <= 5 * 1024 * 1024
 
     if (!isValidType) {
@@ -260,36 +237,28 @@ export default function ProfessionalRegistration() {
         validation.serviceCategories = 'Select at least one service category.'
       }
 
+      if (formData.serviceCategories.includes(OTHER_CATEGORY_OPTION) && !sanitizeText(formData.otherCategoryDetail)) {
+        validation.otherCategoryDetail = 'Describe the additional service you offer.'
+      }
+
       if (formData.serviceAreas.length === 0) {
         validation.serviceAreas = 'Select at least one service area.'
       }
     }
 
     if (step === 2) {
-      if (!sanitizeText(formData.experienceYears) || Number(formData.experienceYears) < 0) {
-        validation.experienceYears = 'Enter your years of professional experience.'
+      if (!uploadedDocuments.photoId) {
+        validation.photoId = 'Upload your passport or driving licence.'
       }
 
-      if (!formData.passport || !uploadedDocuments.passport) {
-        validation.passport = 'Upload your passport or national ID.'
-      }
-
-      if (!formData.licence || !uploadedDocuments.licence) {
-        validation.licence = 'Upload your driving licence.'
-      }
-
-      if (!formData.address || !uploadedDocuments.address) {
-        validation.address = 'Upload proof of address.'
-      }
-
-      if (!formData.consent) {
-        validation.consent = 'You must confirm the documents are authentic.'
+      if (!uploadedDocuments.selfie) {
+        validation.selfie = 'Upload a selfie so we can match your ID.'
       }
     }
 
     if (step === 3) {
       if (!formData.consent) {
-        validation.consent = 'Confirm the authenticity of your documents before submitting.'
+        validation.consent = 'Confirm the documents are authentic before submitting.'
       }
     }
 
@@ -302,6 +271,7 @@ export default function ProfessionalRegistration() {
       setErrors(validation)
       return
     }
+
     setErrors({})
     setCurrentStep((step) => Math.min(step + 1, stepLabels.length))
   }
@@ -309,35 +279,6 @@ export default function ProfessionalRegistration() {
   const handleBack = () => {
     setErrors({})
     setCurrentStep((step) => Math.max(step - 1, 1))
-  }
-
-  const handleSaveDraft = () => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    setSavingDraft(true)
-    setDraftSaved(false)
-
-    const draft = {
-      fullName: formData.fullName,
-      email: formData.email,
-      phone: formData.phone,
-      serviceCategories: formData.serviceCategories,
-      serviceAreas: formData.serviceAreas,
-      experienceYears: formData.experienceYears,
-      languages: formData.languages
-    }
-
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
-      setDraftSaved(true)
-    } catch (error) {
-      console.warn('Unable to save draft', error)
-      setSubmissionError('We could not save the draft locally. Check storage permissions and try again.')
-    } finally {
-      setSavingDraft(false)
-    }
   }
 
   const handleSubmit = async (event) => {
@@ -352,11 +293,13 @@ export default function ProfessionalRegistration() {
 
     if (Object.keys(validation).length) {
       setErrors(validation)
-      if (currentStep !== 3) {
-        setCurrentStep(1)
-      } else if (validation.passport || validation.licence || validation.address) {
-        setCurrentStep(2)
+      let targetStep = 1
+      if (validation.photoId || validation.selfie) {
+        targetStep = 2
+      } else if (validation.consent) {
+        targetStep = 3
       }
+      setCurrentStep(targetStep)
       return
     }
 
@@ -368,14 +311,13 @@ export default function ProfessionalRegistration() {
       email: sanitizeText(formData.email),
       phone: sanitizePhone(formData.phone),
       serviceCategories: formData.serviceCategories,
+      otherCategoryDetail: sanitizeText(formData.otherCategoryDetail),
       serviceAreas: formData.serviceAreas,
-      yearsExperience: Number(formData.experienceYears),
-      languages: sanitizeText(formData.languages),
-      status: 'pending_verification',
+      consent: formData.consent,
       verificationDocuments: {
-        passport_url: uploadedDocuments.passport?.path ?? '',
-        licence_url: uploadedDocuments.licence?.path ?? '',
-        address_url: uploadedDocuments.address?.path ?? ''
+        photo_id_url: uploadedDocuments.photoId?.path ?? '',
+        selfie_url: uploadedDocuments.selfie?.path ?? '',
+        insurance_url: uploadedDocuments.insurance?.path ?? ''
       }
     }
 
@@ -394,17 +336,12 @@ export default function ProfessionalRegistration() {
         throw new Error(result?.error ?? 'Submission failed')
       }
 
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(STORAGE_KEY)
-      }
-
       setFormData(initialState)
-      setUploadedDocuments({ passport: null, licence: null, address: null })
-      setUploadProgress({ passport: 0, licence: 0, address: 0 })
-      setPreviews({ passport: null, licence: null, address: null })
-      setCurrentStep(1)
-
-      router.push({ pathname: '/dashboard/pro', query: { status: 'pending_verification' } })
+      setUploadedDocuments({ ...initialUploadedDocuments })
+      setUploadProgress({ ...initialUploads })
+      setPreviews({ photoId: null, selfie: null, insurance: null })
+      setCurrentStep(3)
+      setSubmissionSuccess(true)
     } catch (error) {
       console.error('Submission error', error)
       setSubmissionError(error.message || 'We could not submit your application. Try again shortly.')
@@ -412,6 +349,26 @@ export default function ProfessionalRegistration() {
       setSubmitting(false)
     }
   }
+
+  const serviceCategorySummary = useMemo(() => {
+    if (formData.serviceCategories.length === 0) {
+      return 'No service categories selected yet.'
+    }
+
+    const selections = [...formData.serviceCategories]
+    if (otherCategorySelected && formData.otherCategoryDetail) {
+      const index = selections.indexOf(OTHER_CATEGORY_OPTION)
+      selections.splice(index, 1, `${OTHER_CATEGORY_OPTION} — ${formData.otherCategoryDetail}`)
+    }
+    return selections.join(', ')
+  }, [formData.serviceCategories, otherCategorySelected, formData.otherCategoryDetail])
+
+  const serviceAreaSummary = useMemo(() => {
+    if (formData.serviceAreas.length === 0) {
+      return 'No service areas selected yet.'
+    }
+    return formData.serviceAreas.join(', ')
+  }, [formData.serviceAreas])
 
   const renderStep = () => {
     if (currentStep === 1) {
@@ -487,8 +444,28 @@ export default function ProfessionalRegistration() {
               ) : null}
             </div>
 
+            {otherCategorySelected ? (
+              <div className="registration-field">
+                <label htmlFor="otherCategoryDetail">Describe other services</label>
+                <input
+                  id="otherCategoryDetail"
+                  name="otherCategoryDetail"
+                  type="text"
+                  value={formData.otherCategoryDetail}
+                  onChange={handleInputChange}
+                  aria-invalid={Boolean(errors.otherCategoryDetail)}
+                  placeholder="e.g. Heritage conservation specialist"
+                />
+                {errors.otherCategoryDetail ? (
+                  <p className="registration-hint registration-hint--error">{errors.otherCategoryDetail}</p>
+                ) : (
+                  <p className="registration-hint">Add a short line about the bespoke work you offer.</p>
+                )}
+              </div>
+            ) : null}
+
             <div className="registration-field registration-field--group">
-              <span>Select your service areas</span>
+              <span>Service areas</span>
               <div className="registration-chip-group" role="group" aria-label="Service areas">
                 {serviceAreaOptions.map((area) => {
                   const isActive = formData.serviceAreas.includes(area)
@@ -508,18 +485,6 @@ export default function ProfessionalRegistration() {
                 <p className="registration-hint registration-hint--error">{errors.serviceAreas}</p>
               ) : null}
             </div>
-
-            <div className="registration-field">
-              <label htmlFor="languages">Languages spoken (optional)</label>
-              <input
-                id="languages"
-                name="languages"
-                type="text"
-                placeholder="English, Gaeilge, Polish"
-                value={formData.languages}
-                onChange={handleInputChange}
-              />
-            </div>
           </fieldset>
         </div>
       )
@@ -529,73 +494,39 @@ export default function ProfessionalRegistration() {
       return (
         <div className="registration-step">
           <fieldset className="registration-fieldset">
-            <legend>Verification documents</legend>
-            <div className="registration-field">
-              <label htmlFor="experienceYears">Years of experience</label>
-              <input
-                id="experienceYears"
-                name="experienceYears"
-                type="number"
-                min="0"
-                value={formData.experienceYears}
-                onChange={handleInputChange}
-                aria-invalid={Boolean(errors.experienceYears)}
-              />
-              {errors.experienceYears ? (
-                <p className="registration-hint registration-hint--error">{errors.experienceYears}</p>
-              ) : null}
-            </div>
-
-            {['passport', 'licence', 'address'].map((field) => (
-              <div key={field} className="registration-field registration-upload">
-                <label htmlFor={`${field}-upload`}>{fileLabels[field]}</label>
+            <legend>Upload your verification documents</legend>
+            {uploadFields.map((field) => (
+              <div key={field} className="registration-field registration-field--upload">
+                <label htmlFor={field}>{fileLabels[field]}</label>
                 <input
-                  id={`${field}-upload`}
+                  id={field}
                   name={field}
                   type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
+                  accept="image/png,image/jpeg,image/webp,application/pdf"
                   onChange={handleFileChange(field)}
                   aria-invalid={Boolean(errors[field])}
                 />
-                <p className="registration-hint">PDF, JPG, or PNG up to 5MB.</p>
+                {uploadProgress[field] > 0 ? (
+                  <progress value={uploadProgress[field]} max="100">
+                    {uploadProgress[field]}%
+                  </progress>
+                ) : null}
                 {previews[field] ? (
                   <div className="registration-upload__preview">
-                    <img src={previews[field]} alt={`${fileLabels[field]} preview`} />
+                    <img src={previews[field] ?? ''} alt="Uploaded preview" />
                   </div>
                 ) : null}
-                {uploadProgress[field] > 0 ? (
-                  <div className="registration-progress" role="status" aria-live="polite">
-                    <div className="registration-progress__bar" style={{ width: `${uploadProgress[field]}%` }} />
-                    <span>{uploadProgress[field]}%</span>
-                  </div>
-                ) : null}
-                {uploadedDocuments[field]?.url ? (
+                {uploadedDocuments[field]?.name ? (
                   <p className="registration-hint">
-                    Uploaded as{' '}
-                    <a href={uploadedDocuments[field].url} target="_blank" rel="noopener noreferrer">
-                      {uploadedDocuments[field].name}
-                    </a>
+                    Uploaded: <strong>{uploadedDocuments[field]?.name}</strong>
                   </p>
                 ) : null}
-                {errors[field] ? <p className="registration-hint registration-hint--error">{errors[field]}</p> : null}
+                {errors[field] ? (
+                  <p className="registration-hint registration-hint--error">{errors[field]}</p>
+                ) : null}
               </div>
             ))}
           </fieldset>
-
-          <div className="registration-consent">
-            <label htmlFor="consent" className="registration-consent__label">
-              <input
-                id="consent"
-                name="consent"
-                type="checkbox"
-                checked={formData.consent}
-                onChange={handleConsentChange}
-                aria-invalid={Boolean(errors.consent)}
-              />
-              I confirm these documents are authentic.
-            </label>
-            {errors.consent ? <p className="registration-hint registration-hint--error">{errors.consent}</p> : null}
-          </div>
         </div>
       )
     }
@@ -603,8 +534,8 @@ export default function ProfessionalRegistration() {
     return (
       <div className="registration-step">
         <fieldset className="registration-fieldset">
-          <legend>Review and confirm</legend>
-          <dl className="registration-summary">
+          <legend>Review &amp; confirm</legend>
+          <dl className="registration-review">
             <div>
               <dt>Professional</dt>
               <dd>{formData.fullName || '—'}</dd>
@@ -626,18 +557,10 @@ export default function ProfessionalRegistration() {
               <dd>{serviceAreaSummary}</dd>
             </div>
             <div>
-              <dt>Experience</dt>
-              <dd>{formData.experienceYears ? `${formData.experienceYears} years` : '—'}</dd>
-            </div>
-            <div>
-              <dt>Languages</dt>
-              <dd>{formData.languages ? formData.languages : '—'}</dd>
-            </div>
-            <div>
               <dt>Documents</dt>
               <dd>
                 <ul>
-                  {['passport', 'licence', 'address'].map((field) => (
+                  {uploadFields.map((field) => (
                     <li key={field}>
                       {fileLabels[field]} —{' '}
                       {uploadedDocuments[field]?.name ? (
@@ -645,7 +568,7 @@ export default function ProfessionalRegistration() {
                           {uploadedDocuments[field]?.name}
                         </a>
                       ) : (
-                        'Not uploaded'
+                        optionalFields.has(field) ? 'Optional (not supplied)' : 'Missing'
                       )}
                     </li>
                   ))}
@@ -653,11 +576,25 @@ export default function ProfessionalRegistration() {
               </dd>
             </div>
           </dl>
-        </fieldset>
 
-        <p className="registration-note">
-          Submit to start verification. We will email updates and unlock dashboard access once your documents are approved.
-        </p>
+          <label className="registration-consent">
+            <input
+              type="checkbox"
+              name="consent"
+              checked={formData.consent}
+              onChange={handleConsentChange}
+              aria-invalid={Boolean(errors.consent)}
+            />
+            <span>I confirm the details and documents supplied are accurate.</span>
+          </label>
+          {errors.consent ? <p className="registration-hint registration-hint--error">{errors.consent}</p> : null}
+
+          {submissionSuccess ? (
+            <div className="registration-success" role="status">
+              <p>Your verification is under review — we’ll contact you soon.</p>
+            </div>
+          ) : null}
+        </fieldset>
       </div>
     )
   }
@@ -665,19 +602,20 @@ export default function ProfessionalRegistration() {
   return (
     <div className="registration-layout">
       <Head>
-        <title>FixEasy Professional Registration</title>
+        <title>Join FixEasy as a Professional</title>
         <meta
           name="description"
-          content="Apply to join FixEasy as a verified professional. Secure document upload, Irish compliance checks, and fast approval."
+          content="Apply to join FixEasy as a verified professional. Upload your ID, selfie, and insurance to complete verification."
         />
       </Head>
 
       <div className="registration-layout__container">
         <header className="registration-header">
-          <span className="registration-header__eyebrow">Professional onboarding</span>
-          <h1 className="registration-header__title">Step into the FixEasy verified network</h1>
+          <span className="registration-header__eyebrow">Join as a professional</span>
+          <h1 className="registration-header__title">Become part of Ireland’s trusted FixEasy network</h1>
           <p className="registration-header__intro">
-            Complete the guided steps below to upload your credentials and submit for verification.
+            Follow the guided steps to submit your services, service areas, and verification documents. Our team will review
+            everything quickly and activate your dashboard.
           </p>
         </header>
 
@@ -685,11 +623,9 @@ export default function ProfessionalRegistration() {
           <section className="registration-card registration-card--pro" aria-labelledby="pro-register-heading">
             <div className="registration-card__intro">
               <h2 id="pro-register-heading" className="registration-card__title">
-                Professional verification
+                Professional onboarding
               </h2>
-              <p className="registration-note">
-                Secure uploads with Supabase Storage. You can save progress locally and return anytime.
-              </p>
+              <p className="registration-note">Secure uploads with Supabase Storage. Three quick steps and you’re ready.</p>
             </div>
 
             <ol className="registration-steps" role="list">
@@ -711,12 +647,6 @@ export default function ProfessionalRegistration() {
               </div>
             ) : null}
 
-            {draftSaved ? (
-              <p className="registration-success" role="status">
-                Draft saved locally. Return later to continue onboarding.
-              </p>
-            ) : null}
-
             <form className="registration-form" onSubmit={handleSubmit} noValidate>
               {renderStep()}
 
@@ -728,59 +658,42 @@ export default function ProfessionalRegistration() {
                     </button>
                   ) : null}
                 </div>
+
                 <div className="registration-step-actions__right">
-                  <button
-                    type="button"
-                    className="registration-secondary"
-                    onClick={handleSaveDraft}
-                    disabled={savingDraft}
-                  >
-                    {savingDraft ? 'Saving…' : 'Save draft'}
-                  </button>
                   {currentStep < stepLabels.length ? (
-                    <button type="button" className="registration-primary" onClick={handleNext}>
+                    <button type="button" className="registration-secondary" onClick={handleNext}>
                       Continue
                     </button>
-                  ) : (
-                    <button type="submit" className="registration-submit" disabled={submitting} aria-busy={submitting}>
-                      {submitting ? 'Submitting…' : 'Submit for Verification'}
-                    </button>
-                  )}
+                  ) : null}
+                  <button
+                    type="submit"
+                    className="registration-submit"
+                    disabled={submitting || submissionSuccess}
+                    aria-busy={submitting}
+                  >
+                    {submitting ? 'Submitting…' : submissionSuccess ? 'Submitted' : 'Submit for review'}
+                  </button>
                 </div>
               </div>
             </form>
           </section>
 
-          <aside className="registration-aside" aria-label="Verification guidance">
+          <aside className="registration-aside" aria-label="FixEasy partner benefits">
             <div className="registration-aside__card">
-              <h2 className="registration-aside__title">What happens next?</h2>
+              <h2 className="registration-aside__title">Why professionals choose FixEasy</h2>
               <ul className="registration-aside__list">
-                <li>Documents reviewed within one business day.</li>
-                <li>Status updates sent to your email address.</li>
-                <li>Dashboard unlocks when verification is approved.</li>
+                <li>Guaranteed payments with transparent pricing.</li>
+                <li>Priority access to vetted residential and commercial leads.</li>
+                <li>Dedicated Irish support for scheduling and compliance.</li>
               </ul>
             </div>
 
-            <div className="registration-aside__card">
-              <h2 className="registration-aside__title">Need help?</h2>
-              <p>Reach the FixEasy compliance team:</p>
-              <ul className="registration-aside__list">
-                <li>
-                  Email <a href="mailto:onboarding@fixeasy.irish">onboarding@fixeasy.irish</a>
-                </li>
-                <li>
-                  Call <a href="tel:+35319638020">+353 1 963 8020</a>
-                </li>
-              </ul>
-            </div>
-
-            <div className="registration-aside__card">
-              <h2 className="registration-aside__title">Security reminders</h2>
-              <ul className="registration-aside__list">
-                <li>Uploads are encrypted and scoped to FixEasy admins.</li>
-                <li>Only you and compliance reviewers can access documents.</li>
-                <li>Audit trails are generated for every verification decision.</li>
-              </ul>
+            <div className="registration-aside__card registration-helpline">
+              <strong>Need onboarding help?</strong>
+              <span>
+                Email <a href="mailto:partners@fixeasy.irish">partners@fixeasy.irish</a> or call{' '}
+                <a href="tel:+35319638020">+353 1 963 8020</a>.
+              </span>
             </div>
           </aside>
         </div>
