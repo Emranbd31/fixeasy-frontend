@@ -1,25 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
-import { useRouter } from 'next/router'
+import { SERVICE_OPTIONS } from '../../data/services'
 import { isValidIrishPhone, sanitizePhone, sanitizeText } from '../../lib/validation'
 
-const STORAGE_KEY = 'fixeasy-pro-register-draft-2025'
-
-const stepLabels = ['Info', 'Verification', 'Confirm']
-
 const OTHER_CATEGORY_OPTION = 'Other (please specify)'
-
-const categoryOptions = [
-  'Plumbing & Heating',
-  'Electrical & EV',
-  'Cleaning & Facilities',
-  'Carpentry & Fit-out',
-  'Landscaping & Outdoors',
-  'Painting & Finishing',
-  'Appliance Repair',
-  'Handyman & Maintenance',
-  OTHER_CATEGORY_OPTION
-]
+const categoryOptions = SERVICE_OPTIONS
 
 const serviceAreaOptions = [
   'Dublin City & County',
@@ -31,6 +16,10 @@ const serviceAreaOptions = [
 ]
 
 const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png']
+const uploadFields = ['photoId', 'selfie', 'insurance']
+const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '')
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const SUPABASE_PRO_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_PRO_BUCKET || 'professional-documents'
 
 const initialState = {
   fullName: '',
@@ -38,57 +27,39 @@ const initialState = {
   phone: '',
   serviceCategories: [],
   serviceAreas: [],
-  experienceYears: '',
-  languages: '',
   otherCategoryDetail: '',
-  verificationNotes: '',
-  passport: null,
-  licence: null,
-  address: null,
   consent: false
 }
 
+const initialUploads = { photoId: 0, selfie: 0, insurance: 0 }
+const initialUploadedDocuments = { photoId: null, selfie: null, insurance: null }
+
+const stepLabels = ['Info', 'Verification', 'Confirmation']
+
 const fileLabels = {
-  passport: 'Passport or National ID',
-  licence: 'Driving Licence',
-  address: 'Address Proof'
+  photoId: 'Photo ID (passport or driving licence)',
+  selfie: 'Selfie for verification',
+  insurance: 'Insurance certificate (optional)'
 }
 
+const optionalFields = new Set(['insurance'])
+
 export default function ProfessionalRegistration() {
-  const router = useRouter()
   const [formData, setFormData] = useState(initialState)
   const [errors, setErrors] = useState({})
   const [currentStep, setCurrentStep] = useState(1)
-  const [uploadProgress, setUploadProgress] = useState({ passport: 0, licence: 0, address: 0 })
-  const [uploadedDocuments, setUploadedDocuments] = useState({ passport: null, licence: null, address: null })
-  const [previews, setPreviews] = useState({ passport: null, licence: null, address: null })
-  const [savingDraft, setSavingDraft] = useState(false)
-  const [draftSaved, setDraftSaved] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState({ ...initialUploads })
+  const [uploadedDocuments, setUploadedDocuments] = useState({ ...initialUploadedDocuments })
+  const [previews, setPreviews] = useState({ photoId: null, selfie: null, insurance: null })
   const [submitting, setSubmitting] = useState(false)
   const [submissionError, setSubmissionError] = useState('')
+  const [submissionSuccess, setSubmissionSuccess] = useState(false)
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        setFormData((prev) => ({ ...prev, ...parsed }))
-      }
-    } catch (error) {
-      console.warn('Failed to restore draft', error)
-    }
-  }, [])
-
+  // Clean up image previews
   useEffect(() => {
     return () => {
       Object.values(previews).forEach((url) => {
-        if (url) {
-          URL.revokeObjectURL(url)
-        }
+        if (url) URL.revokeObjectURL(url)
       })
     }
   }, [previews])
@@ -98,36 +69,18 @@ export default function ProfessionalRegistration() {
     [formData.serviceCategories]
   )
 
-  const serviceCategorySummary = useMemo(() => {
-    if (formData.serviceCategories.length === 0) {
-      return 'No service categories selected yet.'
+  // Reset "Other service" when deselected
+  useEffect(() => {
+    if (!otherCategorySelected && formData.otherCategoryDetail) {
+      setFormData((prev) => ({ ...prev, otherCategoryDetail: '' }))
     }
-    const selections = [...formData.serviceCategories]
-    if (otherCategorySelected && formData.otherCategoryDetail) {
-      const index = selections.indexOf(OTHER_CATEGORY_OPTION)
-      selections.splice(index, 1, `${OTHER_CATEGORY_OPTION} — ${formData.otherCategoryDetail}`)
-    }
-    return selections.join(', ')
-  }, [formData.otherCategoryDetail, formData.serviceCategories, otherCategorySelected])
-
-  const serviceAreaSummary = useMemo(() => {
-    if (formData.serviceAreas.length === 0) {
-      return 'No service areas selected yet.'
-    }
-    return formData.serviceAreas.join(', ')
-  }, [formData.serviceAreas])
+  }, [formData.otherCategoryDetail, otherCategorySelected])
 
   const handleInputChange = (event) => {
     const { name, value } = event.target
     setFormData((prev) => ({ ...prev, [name]: value }))
     setErrors((prev) => ({ ...prev, [name]: undefined }))
   }
-
-  useEffect(() => {
-    if (!otherCategorySelected && formData.otherCategoryDetail) {
-      setFormData((prev) => ({ ...prev, otherCategoryDetail: '' }))
-    }
-  }, [formData.otherCategoryDetail, otherCategorySelected])
 
   const toggleSelection = (key, value) => {
     setFormData((prev) => {
@@ -146,9 +99,7 @@ export default function ProfessionalRegistration() {
 
   const resetPreview = (field) => {
     setPreviews((prev) => {
-      if (prev[field]) {
-        URL.revokeObjectURL(prev[field])
-      }
+      if (prev[field]) URL.revokeObjectURL(prev[field])
       return { ...prev, [field]: null }
     })
   }
@@ -158,97 +109,62 @@ export default function ProfessionalRegistration() {
     setErrors((prev) => ({ ...prev, [field]: undefined }))
 
     try {
-      const signResponse = await fetch('/api/storage/sign-upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          bucket: 'professional-documents',
-          fileName: file.name,
-          contentType: file.type
-        })
-      })
-
-      const signed = await signResponse.json().catch(() => ({}))
-
-      if (!signResponse.ok || !signed?.url) {
-        throw new Error(signed?.error ?? 'Unable to create upload URL')
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        throw new Error('Supabase Storage is not configured.')
       }
 
-      await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open('PUT', signed.url)
-        if (signed?.headers) {
-          Object.entries(signed.headers).forEach(([header, headerValue]) => {
-            xhr.setRequestHeader(header, headerValue)
-          })
-        } else if (file.type) {
-          xhr.setRequestHeader('Content-Type', file.type)
-        }
+      const safeName = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_')
+      const path = `verification/${Date.now()}-${safeName}`
 
-        xhr.upload.onprogress = (event) => {
-          if (!event.lengthComputable) return
-          const percentage = Math.round((event.loaded / event.total) * 100)
-          setUploadProgress((prev) => ({ ...prev, [field]: percentage }))
-        }
+      const body = new FormData()
+      body.append('file', file)
+      body.append('path', path)
 
-        xhr.onerror = () => reject(new Error('Upload failed'))
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve()
-          } else {
-            reject(new Error(`Upload failed with status ${xhr.status}`))
-          }
-        }
-
-        xhr.send(file)
+      const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${SUPABASE_PRO_BUCKET}`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'x-upsert': 'true'
+        },
+        body
       })
+
+      if (!response.ok) throw new Error('Upload failed. Please try again.')
 
       setUploadProgress((prev) => ({ ...prev, [field]: 100 }))
       setUploadedDocuments((prev) => ({
         ...prev,
         [field]: {
-          path: signed.path ?? signed.objectName ?? signed.key ?? '',
-          url: signed.publicUrl ?? signed.previewUrl ?? signed.url.split('?')[0],
-          name: file.name,
-          size: file.size,
-          type: file.type
+          path,
+          url: `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_PRO_BUCKET}/${path}`,
+          name: file.name
         }
       }))
     } catch (error) {
-      console.error('Upload error', error)
-      setErrors((prev) => ({
-        ...prev,
-        [field]: 'Upload failed. Please try again or contact support if it continues.'
-      }))
+      console.error('Upload error:', error)
+      setErrors((prev) => ({ ...prev, [field]: error.message }))
       setUploadProgress((prev) => ({ ...prev, [field]: 0 }))
-      setUploadedDocuments((prev) => ({ ...prev, [field]: null }))
     }
   }
 
   const handleFileChange = (field) => async (event) => {
     const file = event.target.files?.[0]
-
     resetPreview(field)
-    setFormData((prev) => ({ ...prev, [field]: file ?? null }))
     setUploadedDocuments((prev) => ({ ...prev, [field]: null }))
     setUploadProgress((prev) => ({ ...prev, [field]: 0 }))
 
-    if (!file) {
-      return
-    }
+    if (!file) return
 
     const extension = file.name.split('.').pop()?.toLowerCase()
-    const isValidType = allowedExtensions.includes(extension)
-    const isUnderSizeLimit = file.size <= 5 * 1024 * 1024
+    const validType = allowedExtensions.includes(extension)
+    const validSize = file.size <= 5 * 1024 * 1024
 
-    if (!isValidType) {
-      setErrors((prev) => ({ ...prev, [field]: 'Unsupported file type. Upload a PDF, JPG, or PNG.' }))
+    if (!validType) {
+      setErrors((prev) => ({ ...prev, [field]: 'Upload a PDF, JPG, or PNG.' }))
       return
     }
-
-    if (!isUnderSizeLimit) {
+    if (!validSize) {
       setErrors((prev) => ({ ...prev, [field]: 'Files must be 5MB or smaller.' }))
       return
     }
@@ -265,134 +181,44 @@ export default function ProfessionalRegistration() {
     const validation = {}
 
     if (step === 1) {
-      if (!sanitizeText(formData.fullName)) {
-        validation.fullName = 'Enter your full name or business name.'
-      }
-
-      if (!sanitizeText(formData.email) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        validation.email = 'Add a valid email address.'
-      }
-
-      if (!isValidIrishPhone(formData.phone)) {
-        validation.phone = 'Use an Irish phone number in +353 format.'
-      }
-
-      if (formData.serviceCategories.length === 0) {
+      if (!sanitizeText(formData.fullName)) validation.fullName = 'Enter your full name or business name.'
+      if (!sanitizeText(formData.email) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+        validation.email = 'Add a valid email.'
+      if (!isValidIrishPhone(formData.phone)) validation.phone = 'Use an Irish phone number in +353 format.'
+      if (formData.serviceCategories.length === 0)
         validation.serviceCategories = 'Select at least one service category.'
-      }
-
-      if (formData.serviceCategories.includes(OTHER_CATEGORY_OPTION) && !sanitizeText(formData.otherCategoryDetail)) {
-        validation.otherCategoryDetail = 'Describe the additional service you offer.'
-      }
-
-      if (formData.serviceAreas.length === 0) {
-        validation.serviceAreas = 'Select at least one service area.'
-      }
+      if (otherCategorySelected && !sanitizeText(formData.otherCategoryDetail))
+        validation.otherCategoryDetail = 'Describe the additional service.'
+      if (formData.serviceAreas.length === 0) validation.serviceAreas = 'Select at least one service area.'
     }
 
     if (step === 2) {
-      if (!sanitizeText(formData.experienceYears) || Number(formData.experienceYears) < 0) {
-        validation.experienceYears = 'Enter your years of professional experience.'
-      }
-
-      if (!formData.passport || !uploadedDocuments.passport) {
-        validation.passport = 'Upload your passport or national ID.'
-      }
-
-      if (!formData.licence || !uploadedDocuments.licence) {
-        validation.licence = 'Upload your driving licence.'
-      }
-
-      if (!formData.address || !uploadedDocuments.address) {
-        validation.address = 'Upload proof of address.'
-      }
-
-      if (formData.verificationNotes && sanitizeText(formData.verificationNotes).length > 800) {
-        validation.verificationNotes = 'Keep verification notes under 800 characters.'
-      }
-
-      if (!formData.consent) {
-        validation.consent = 'You must confirm the documents are authentic.'
-      }
+      if (!uploadedDocuments.photoId) validation.photoId = 'Upload your ID.'
+      if (!uploadedDocuments.selfie) validation.selfie = 'Upload a selfie for verification.'
     }
 
-    if (step === 3) {
-      if (!formData.consent) {
-        validation.consent = 'Confirm the authenticity of your documents before submitting.'
-      }
-    }
+    if (step === 3 && !formData.consent)
+      validation.consent = 'Confirm the authenticity of your documents.'
 
     return validation
   }
 
   const handleNext = () => {
     const validation = runStepValidation(currentStep)
-    if (Object.keys(validation).length) {
-      setErrors(validation)
-      return
-    }
+    if (Object.keys(validation).length) return setErrors(validation)
     setErrors({})
-    setCurrentStep((step) => Math.min(step + 1, stepLabels.length))
+    setCurrentStep((s) => Math.min(s + 1, stepLabels.length))
   }
 
-  const handleBack = () => {
-    setErrors({})
-    setCurrentStep((step) => Math.max(step - 1, 1))
-  }
+  const handleBack = () => setCurrentStep((s) => Math.max(s - 1, 1))
 
-  const handleSaveDraft = () => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    setSavingDraft(true)
-    setDraftSaved(false)
-
-    const draft = {
-      fullName: formData.fullName,
-      email: formData.email,
-      phone: formData.phone,
-      serviceCategories: formData.serviceCategories,
-      otherCategoryDetail: formData.otherCategoryDetail,
-      serviceAreas: formData.serviceAreas,
-      experienceYears: formData.experienceYears,
-      languages: formData.languages
-    }
-
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
-      setDraftSaved(true)
-    } catch (error) {
-      console.warn('Unable to save draft', error)
-      setSubmissionError('We could not save the draft locally. Check storage permissions and try again.')
-    } finally {
-      setSavingDraft(false)
-    }
-  }
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     setSubmissionError('')
+    const validation = { ...runStepValidation(1), ...runStepValidation(2), ...runStepValidation(3) }
+    if (Object.keys(validation).length) return setErrors(validation)
 
-    const validation = {
-      ...runStepValidation(1),
-      ...runStepValidation(2),
-      ...runStepValidation(3)
-    }
-
-    if (Object.keys(validation).length) {
-      setErrors(validation)
-      if (currentStep !== 3) {
-        setCurrentStep(1)
-      } else if (validation.passport || validation.licence || validation.address) {
-        setCurrentStep(2)
-      }
-      return
-    }
-
-    setErrors({})
     setSubmitting(true)
-
     const payload = {
       fullName: sanitizeText(formData.fullName),
       email: sanitizeText(formData.email),
@@ -400,460 +226,171 @@ export default function ProfessionalRegistration() {
       serviceCategories: formData.serviceCategories,
       otherCategoryDetail: sanitizeText(formData.otherCategoryDetail),
       serviceAreas: formData.serviceAreas,
-      yearsExperience: Number(formData.experienceYears),
-      languages: sanitizeText(formData.languages),
-      verificationNotes: sanitizeText(formData.verificationNotes),
-      status: 'pending_verification',
+      consent: formData.consent,
       verificationDocuments: {
-        passport_url: uploadedDocuments.passport?.path ?? '',
-        licence_url: uploadedDocuments.licence?.path ?? '',
-        address_url: uploadedDocuments.address?.path ?? ''
+        photo_id_url: uploadedDocuments.photoId?.path ?? '',
+        selfie_url: uploadedDocuments.selfie?.path ?? '',
+        insurance_url: uploadedDocuments.insurance?.path ?? ''
       }
     }
 
     try {
-      const response = await fetch('/api/register/pro', {
+      const res = await fetch('/api/register/pro', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-
-      const result = await response.json().catch(() => ({}))
-
-      if (!response.ok) {
-        throw new Error(result?.error ?? 'Submission failed')
-      }
-
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(STORAGE_KEY)
-      }
-
+      if (!res.ok) throw new Error('Submission failed.')
+      setSubmissionSuccess(true)
       setFormData(initialState)
-      setUploadedDocuments({ passport: null, licence: null, address: null })
-      setUploadProgress({ passport: 0, licence: 0, address: 0 })
-      setPreviews({ passport: null, licence: null, address: null })
-      setCurrentStep(1)
-
-      router.push({ pathname: '/dashboard/pro', query: { status: 'pending_verification' } })
-    } catch (error) {
-      console.error('Submission error', error)
-      setSubmissionError(error.message || 'We could not submit your application. Try again shortly.')
+      setUploadedDocuments(initialUploadedDocuments)
+      setUploadProgress(initialUploads)
+      setPreviews({ photoId: null, selfie: null, insurance: null })
+      setCurrentStep(3)
+    } catch (err) {
+      console.error(err)
+      setSubmissionError('Could not submit your registration. Try again shortly.')
     } finally {
       setSubmitting(false)
     }
   }
 
-  const renderStep = () => {
-    if (currentStep === 1) {
-      return (
-        <div className="registration-step">
-          <fieldset className="registration-fieldset">
-            <legend>Professional details</legend>
-            <div className="registration-field">
-              <label htmlFor="fullName">Full name / Business name</label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                autoComplete="organization"
-                aria-invalid={Boolean(errors.fullName)}
-              />
-              {errors.fullName ? <p className="registration-hint registration-hint--error">{errors.fullName}</p> : null}
-            </div>
-
-            <div className="registration-two-column">
-              <div className="registration-field">
-                <label htmlFor="email">Email</label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  autoComplete="email"
-                  aria-invalid={Boolean(errors.email)}
-                />
-                {errors.email ? <p className="registration-hint registration-hint--error">{errors.email}</p> : null}
-              </div>
-              <div className="registration-field">
-                <label htmlFor="phone">Phone number</label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="+353871234567"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  aria-invalid={Boolean(errors.phone)}
-                />
-                {errors.phone ? <p className="registration-hint registration-hint--error">{errors.phone}</p> : null}
-              </div>
-            </div>
-          </fieldset>
-
-          <fieldset className="registration-fieldset">
-            <legend>Services</legend>
-            <div className="registration-field registration-field--group">
-              <span>Select your service categories</span>
-              <div className="registration-chip-group" role="group" aria-label="Service categories">
-                {categoryOptions.map((category) => {
-                  const isActive = formData.serviceCategories.includes(category)
-                  return (
-                    <button
-                      type="button"
-                      key={category}
-                      className={`registration-chip ${isActive ? 'is-active' : ''}`}
-                      onClick={() => toggleSelection('serviceCategories', category)}
-                    >
-                      {category}
-                    </button>
-                  )
-                })}
-              </div>
-              {errors.serviceCategories ? (
-                <p className="registration-hint registration-hint--error">{errors.serviceCategories}</p>
-              ) : null}
-            </div>
-
-            {otherCategorySelected ? (
-              <div className="registration-field">
-                <label htmlFor="otherCategoryDetail">Describe the additional service</label>
-                <input
-                  id="otherCategoryDetail"
-                  name="otherCategoryDetail"
-                  type="text"
-                  value={formData.otherCategoryDetail}
-                  onChange={handleInputChange}
-                  aria-invalid={Boolean(errors.otherCategoryDetail)}
-                  placeholder="e.g. Heritage masonry conservation"
-                />
-                {errors.otherCategoryDetail ? (
-                  <p className="registration-hint registration-hint--error">{errors.otherCategoryDetail}</p>
-                ) : (
-                  <p className="registration-hint">Helps us route your onboarding to the correct specialist team.</p>
-                )}
-              </div>
-            ) : null}
-
-            <div className="registration-field registration-field--group">
-              <span>Select your service areas</span>
-              <div className="registration-chip-group" role="group" aria-label="Service areas">
-                {serviceAreaOptions.map((area) => {
-                  const isActive = formData.serviceAreas.includes(area)
-                  return (
-                    <button
-                      type="button"
-                      key={area}
-                      className={`registration-chip ${isActive ? 'is-active' : ''}`}
-                      onClick={() => toggleSelection('serviceAreas', area)}
-                    >
-                      {area}
-                    </button>
-                  )
-                })}
-              </div>
-              {errors.serviceAreas ? (
-                <p className="registration-hint registration-hint--error">{errors.serviceAreas}</p>
-              ) : null}
-            </div>
-
-            <div className="registration-field">
-              <label htmlFor="languages">Languages spoken (optional)</label>
-              <input
-                id="languages"
-                name="languages"
-                type="text"
-                placeholder="English, Gaeilge, Polish"
-                value={formData.languages}
-                onChange={handleInputChange}
-              />
-            </div>
-          </fieldset>
-        </div>
-      )
-    }
-
-    if (currentStep === 2) {
-      return (
-        <div className="registration-step">
-          <fieldset className="registration-fieldset">
-            <legend>Verification documents</legend>
-            <div className="registration-field">
-              <label htmlFor="experienceYears">Years of experience</label>
-              <input
-                id="experienceYears"
-                name="experienceYears"
-                type="number"
-                min="0"
-                value={formData.experienceYears}
-                onChange={handleInputChange}
-                aria-invalid={Boolean(errors.experienceYears)}
-              />
-              {errors.experienceYears ? (
-                <p className="registration-hint registration-hint--error">{errors.experienceYears}</p>
-              ) : null}
-            </div>
-
-            {['passport', 'licence', 'address'].map((field) => (
-              <div key={field} className="registration-field registration-upload">
-                <label htmlFor={`${field}-upload`}>{fileLabels[field]}</label>
-                <input
-                  id={`${field}-upload`}
-                  name={field}
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={handleFileChange(field)}
-                  aria-invalid={Boolean(errors[field])}
-                />
-                <p className="registration-hint">PDF, JPG, or PNG up to 5MB.</p>
-                {previews[field] ? (
-                  <div className="registration-upload__preview">
-                    <img src={previews[field]} alt={`${fileLabels[field]} preview`} />
-                  </div>
-                ) : null}
-                {uploadProgress[field] > 0 ? (
-                  <div className="registration-progress" role="status" aria-live="polite">
-                    <div className="registration-progress__bar" style={{ width: `${uploadProgress[field]}%` }} />
-                    <span>{uploadProgress[field]}%</span>
-                  </div>
-                ) : null}
-                {uploadedDocuments[field]?.url ? (
-                  <p className="registration-hint">
-                    Uploaded as{' '}
-                    <a href={uploadedDocuments[field].url} target="_blank" rel="noopener noreferrer">
-                      {uploadedDocuments[field].name}
-                    </a>
-                  </p>
-                ) : null}
-                {errors[field] ? <p className="registration-hint registration-hint--error">{errors[field]}</p> : null}
-              </div>
-            ))}
-          </fieldset>
-
-          <div className="registration-field">
-            <label htmlFor="verificationNotes">Verification notes (optional)</label>
-            <textarea
-              id="verificationNotes"
-              name="verificationNotes"
-              rows={4}
-              value={formData.verificationNotes}
-              onChange={handleInputChange}
-              aria-invalid={Boolean(errors.verificationNotes)}
-              placeholder="Share anything the compliance team should review during onboarding."
-            />
-            {errors.verificationNotes ? (
-              <p className="registration-hint registration-hint--error">{errors.verificationNotes}</p>
-            ) : (
-              <p className="registration-hint">Examples: specialist licences, client references, or context for your documents.</p>
-            )}
-          </div>
-
-          <div className="registration-consent">
-            <label htmlFor="consent" className="registration-consent__label">
-              <input
-                id="consent"
-                name="consent"
-                type="checkbox"
-                checked={formData.consent}
-                onChange={handleConsentChange}
-                aria-invalid={Boolean(errors.consent)}
-              />
-              I confirm these documents are authentic.
-            </label>
-            {errors.consent ? <p className="registration-hint registration-hint--error">{errors.consent}</p> : null}
-          </div>
-        </div>
-      )
-    }
-
-    return (
-      <div className="registration-step">
-        <fieldset className="registration-fieldset">
-          <legend>Review and confirm</legend>
-          <dl className="registration-summary">
-            <div>
-              <dt>Professional</dt>
-              <dd>{formData.fullName || '—'}</dd>
-            </div>
-            <div>
-              <dt>Contact</dt>
-              <dd>
-                {formData.email || '—'}
-                <br />
-                {formData.phone || '—'}
-              </dd>
-            </div>
-            <div>
-              <dt>Service categories</dt>
-              <dd>{serviceCategorySummary}</dd>
-            </div>
-            <div>
-              <dt>Service areas</dt>
-              <dd>{serviceAreaSummary}</dd>
-            </div>
-            <div>
-              <dt>Experience</dt>
-              <dd>{formData.experienceYears ? `${formData.experienceYears} years` : '—'}</dd>
-            </div>
-            <div>
-              <dt>Languages</dt>
-              <dd>{formData.languages ? formData.languages : '—'}</dd>
-            </div>
-            <div>
-              <dt>Documents</dt>
-              <dd>
-                <ul>
-                  {['passport', 'licence', 'address'].map((field) => (
-                    <li key={field}>
-                      {fileLabels[field]} —{' '}
-                      {uploadedDocuments[field]?.name ? (
-                        <a href={uploadedDocuments[field]?.url} target="_blank" rel="noopener noreferrer">
-                          {uploadedDocuments[field]?.name}
-                        </a>
-                      ) : (
-                        'Not uploaded'
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </dd>
-            </div>
-          </dl>
-        </fieldset>
-
-        <p className="registration-note">
-          Submit to start verification. We will email updates and unlock dashboard access once your documents are approved.
-        </p>
-      </div>
-    )
-  }
-
+  // --- UI RENDER ---
   return (
     <div className="registration-layout">
       <Head>
-        <title>FixEasy Professional Registration</title>
-        <meta
-          name="description"
-          content="Apply to join FixEasy as a verified professional. Secure document upload, Irish compliance checks, and fast approval."
-        />
+        <title>Join FixEasy as a Professional</title>
+        <meta name="description" content="Apply to join FixEasy as a verified professional." />
       </Head>
 
       <div className="registration-layout__container">
         <header className="registration-header">
-          <span className="registration-header__eyebrow">Professional onboarding</span>
-          <h1 className="registration-header__title">Step into the FixEasy verified network</h1>
-          <p className="registration-header__intro">
-            Complete the guided steps below to upload your credentials and submit for verification.
-          </p>
+          <span className="registration-header__eyebrow">Join as a professional</span>
+          <h1 className="registration-header__title">Become part of Ireland’s trusted FixEasy network</h1>
         </header>
 
-        <div className="registration-grid">
-          <section className="registration-card registration-card--pro" aria-labelledby="pro-register-heading">
-            <div className="registration-card__intro">
-              <h2 id="pro-register-heading" className="registration-card__title">
-                Professional verification
-              </h2>
-              <p className="registration-note">
-                Secure uploads with Supabase Storage. You can save progress locally and return anytime.
-              </p>
-            </div>
-
-            <ol className="registration-steps" role="list">
-              {stepLabels.map((label, index) => {
-                const stepNumber = index + 1
-                const state = stepNumber === currentStep ? 'current' : stepNumber < currentStep ? 'complete' : 'upcoming'
-                return (
-                  <li key={label} className={`registration-steps__item registration-steps__item--${state}`}>
-                    <span className="registration-steps__number">{stepNumber}</span>
-                    <span>{label}</span>
-                  </li>
-                )
-              })}
-            </ol>
-
-            {submissionError ? (
-              <div className="registration-errors" role="alert">
-                {submissionError}
+        <form className="registration-form" onSubmit={handleSubmit}>
+          {/* STEP 1: Info */}
+          {currentStep === 1 && (
+            <>
+              <div className="registration-field">
+                <label>Full Name / Business Name</label>
+                <input name="fullName" value={formData.fullName} onChange={handleInputChange} />
               </div>
-            ) : null}
 
-            {draftSaved ? (
-              <p className="registration-success" role="status">
-                Draft saved locally. Return later to continue onboarding.
-              </p>
-            ) : null}
+              <div className="registration-field">
+                <label>Email</label>
+                <input name="email" type="email" value={formData.email} onChange={handleInputChange} />
+              </div>
 
-            <form className="registration-form" onSubmit={handleSubmit} noValidate>
-              {renderStep()}
+              <div className="registration-field">
+                <label>Phone</label>
+                <input name="phone" value={formData.phone} onChange={handleInputChange} />
+              </div>
 
-              <div className="registration-step-actions">
-                <div className="registration-step-actions__left">
-                  {currentStep > 1 ? (
-                    <button type="button" className="registration-secondary" onClick={handleBack}>
-                      Back
+              <div className="registration-field">
+                <label>Service Categories</label>
+                <div className="registration-chip-group">
+                  {categoryOptions.map((cat) => (
+                    <button
+                      type="button"
+                      key={cat}
+                      className={`registration-chip ${formData.serviceCategories.includes(cat) ? 'is-active' : ''}`}
+                      onClick={() => toggleSelection('serviceCategories', cat)}
+                    >
+                      {cat}
                     </button>
-                  ) : null}
+                  ))}
                 </div>
-                <div className="registration-step-actions__right">
-                  <button
-                    type="button"
-                    className="registration-secondary"
-                    onClick={handleSaveDraft}
-                    disabled={savingDraft}
-                  >
-                    {savingDraft ? 'Saving…' : 'Save draft'}
-                  </button>
-                  {currentStep < stepLabels.length ? (
-                    <button type="button" className="registration-primary" onClick={handleNext}>
-                      Continue
+              </div>
+
+              {otherCategorySelected && (
+                <div className="registration-field">
+                  <label>Other Category Details</label>
+                  <input
+                    name="otherCategoryDetail"
+                    value={formData.otherCategoryDetail}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Heritage restoration"
+                  />
+                </div>
+              )}
+
+              <div className="registration-field">
+                <label>Service Areas</label>
+                <div className="registration-chip-group">
+                  {serviceAreaOptions.map((area) => (
+                    <button
+                      type="button"
+                      key={area}
+                      className={`registration-chip ${formData.serviceAreas.includes(area) ? 'is-active' : ''}`}
+                      onClick={() => toggleSelection('serviceAreas', area)}
+                    >
+                      {area}
                     </button>
-                  ) : (
-                    <button type="submit" className="registration-submit" disabled={submitting} aria-busy={submitting}>
-                      {submitting ? 'Submitting…' : 'Submit for Verification'}
-                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* STEP 2: Verification */}
+          {currentStep === 2 && (
+            <>
+              {uploadFields.map((field) => (
+                <div key={field} className="registration-field">
+                  <label>{fileLabels[field]}</label>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={handleFileChange(field)}
+                  />
+                  {previews[field] && <img src={previews[field]} alt="Preview" style={{ maxWidth: '150px' }} />}
+                  {uploadedDocuments[field]?.name && (
+                    <p>Uploaded: {uploadedDocuments[field].name}</p>
                   )}
                 </div>
-              </div>
-            </form>
-          </section>
+              ))}
+            </>
+          )}
 
-          <aside className="registration-aside" aria-label="Verification guidance">
-            <div className="registration-aside__card">
-              <h2 className="registration-aside__title">What happens next?</h2>
-              <ul className="registration-aside__list">
-                <li>Documents reviewed within one business day.</li>
-                <li>Status updates sent to your email address.</li>
-                <li>Dashboard unlocks when verification is approved.</li>
-              </ul>
-            </div>
+          {/* STEP 3: Confirm */}
+          {currentStep === 3 && (
+            <>
+              <h3>Review & Confirm</h3>
+              <p>{formData.fullName}</p>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={formData.consent}
+                  onChange={handleConsentChange}
+                />
+                I confirm all details are correct.
+              </label>
+            </>
+          )}
 
-            <div className="registration-aside__card">
-              <h2 className="registration-aside__title">Need help?</h2>
-              <p>Reach the FixEasy compliance team:</p>
-              <ul className="registration-aside__list">
-                <li>
-                  Email <a href="mailto:onboarding@fixeasy.irish">onboarding@fixeasy.irish</a>
-                </li>
-                <li>
-                  Call <a href="tel:+35319638020">+353 1 963 8020</a>
-                </li>
-              </ul>
-            </div>
+          <div className="registration-step-actions">
+            {currentStep > 1 && (
+              <button type="button" onClick={handleBack}>
+                Back
+              </button>
+            )}
+            {currentStep < 3 && (
+              <button type="button" onClick={handleNext}>
+                Continue
+              </button>
+            )}
+            {currentStep === 3 && (
+              <button type="submit" disabled={submitting}>
+                {submitting ? 'Submitting…' : 'Submit'}
+              </button>
+            )}
+          </div>
 
-            <div className="registration-aside__card">
-              <h2 className="registration-aside__title">Security reminders</h2>
-              <ul className="registration-aside__list">
-                <li>Uploads are encrypted and scoped to FixEasy admins.</li>
-                <li>Only you and compliance reviewers can access documents.</li>
-                <li>Audit trails are generated for every verification decision.</li>
-              </ul>
-            </div>
-          </aside>
-        </div>
+          {submissionError && <p className="error">{submissionError}</p>}
+          {submissionSuccess && <p className="success">Submitted successfully ✅</p>}
+        </form>
       </div>
     </div>
   )
