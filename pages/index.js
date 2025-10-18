@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
 import ServiceIcon from '../components/icons/ServiceIcon'
 import { SERVICE_GROUPS } from '../data/services'
+import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 
 /* === HERO DATA === */
 const HERO_FLAIR = [
@@ -25,6 +26,130 @@ const HERO_RIBBON = [
   'Roofing and gutter experts',
   'Heating & boiler maintenance'
 ]
+
+const HERO_SERVICE_CARDS = [
+  {
+    title: 'Emergency Electricians',
+    subtitle: 'Rewiring, EV chargers & safety inspections',
+    image: '/images/hero-electrician.svg',
+    alt: 'Electrician testing a residential fuse board',
+    accent: 'Electrician response',
+    layout: 'tall',
+    parallax: [32, -16]
+  },
+  {
+    title: 'Luxury Cleaning Crews',
+    subtitle: 'Deep cleans, tenancy changeovers, eco-friendly products',
+    image: '/images/hero-cleaner.svg',
+    alt: 'Professional cleaner preparing supplies in a modern kitchen',
+    accent: 'Cleaning specialists',
+    layout: 'standard',
+    parallax: [22, -12]
+  },
+  {
+    title: 'Garden & Outdoor Care',
+    subtitle: 'Landscaping, seasonal tidy-ups & pressure washing',
+    image: '/images/hero-gardener.svg',
+    alt: 'Gardener trimming hedges in a landscaped garden',
+    accent: 'Gardeners',
+    layout: 'wide',
+    parallax: [26, -14]
+  },
+  {
+    title: 'Precision Carpentry',
+    subtitle: 'Custom storage, flooring installs & bespoke fit-outs',
+    image: '/images/hero-carpenter.svg',
+    alt: 'Carpenter marking timber for custom cabinetry',
+    accent: 'Carpenters',
+    layout: 'standard',
+    parallax: [18, -10]
+  },
+  {
+    title: 'Roof & Gutter Response',
+    subtitle: 'Storm damage surveys, leak repairs & protective coatings',
+    image: '/images/hero-roofer.svg',
+    alt: 'Roofing specialist inspecting exterior cladding',
+    accent: 'Roofing teams',
+    layout: 'standard',
+    parallax: [24, -12]
+  },
+  {
+    title: 'On-Demand Tech Support',
+    subtitle: 'Home office, WiFi optimisation & smart home setup',
+    image: '/images/hero-tech.svg',
+    alt: 'IT support specialist configuring home office equipment',
+    accent: 'Tech support',
+    layout: 'wide',
+    parallax: [20, -18]
+  }
+]
+
+const heroSectionVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: 'easeOut', when: 'beforeChildren', staggerChildren: 0.2 }
+  }
+}
+
+const heroCopyVariants = {
+  hidden: { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } }
+}
+
+const heroGridVariants = {
+  hidden: { opacity: 0, y: 32 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.9, ease: 'easeOut', staggerChildren: 0.12, delayChildren: 0.2 }
+  }
+}
+
+const heroCardVariants = {
+  hidden: { opacity: 0, scale: 0.96 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.7, ease: 'easeOut' } }
+}
+
+function HeroServiceCard({ card, index }) {
+  const cardRef = useRef(null)
+  const isInView = useInView(cardRef, { once: true, margin: '-12% 0px' })
+  const { scrollYProgress } = useScroll({ target: cardRef, offset: ['start end', 'end start'] })
+  const parallaxY = useTransform(scrollYProgress, [0, 1], card.parallax)
+  const classNames = ['clean-hero__card']
+  if (card.layout) classNames.push(`clean-hero__card--${card.layout}`)
+
+  return (
+    <motion.article
+      ref={cardRef}
+      className={classNames.join(' ')}
+      variants={heroCardVariants}
+      initial="hidden"
+      animate={isInView ? 'visible' : 'hidden'}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ delay: index * 0.08 }}
+    >
+      <motion.div className="clean-hero__card-media" style={{ y: parallaxY }}>
+        <Image
+          src={card.image}
+          alt={card.alt}
+          fill
+          priority={index < 2}
+          sizes="(max-width: 600px) 92vw, (max-width: 1024px) 44vw, 320px"
+          className="clean-hero__card-image"
+        />
+        <div className="clean-hero__card-overlay" />
+      </motion.div>
+      <div className="clean-hero__card-content">
+        <span className="clean-hero__card-accent">{card.accent}</span>
+        <h3>{card.title}</h3>
+        <p>{card.subtitle}</p>
+      </div>
+    </motion.article>
+  )
+}
 
 /* === WHY FIXEASY === */
 const EXPERIENCE_CARDS = [
@@ -247,19 +372,23 @@ export default function Home() {
 
       {/* === HERO === */}
       <main>
-        <section className="clean-hero">
+        <motion.section
+          className="clean-hero"
+          variants={heroSectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.25 }}
+        >
           <div className="clean-hero__background" />
           <div className="container clean-hero__layout">
-            <div className="clean-hero__copy">
-              <span className="clean-hero__eyebrow">
-                Ireland’s trusted home-service marketplace
-              </span>
+            <motion.div className="clean-hero__copy" variants={heroCopyVariants}>
+              <span className="clean-hero__eyebrow">Ireland’s trusted home-service marketplace</span>
               <h1>Trusted Professionals. Verified for Your Peace of Mind.</h1>
               <p className="clean-hero__lead">
-                Transparent pricing, secure payments, and same-day availability.
-                FixEasy connects Irish homes with vetted experts.
+                Transparent pricing, secure payments, and same-day availability. FixEasy connects Irish homes with vetted
+                experts.
               </p>
-              <div className="clean-hero__cta-group">
+              <motion.div className="clean-hero__cta-group" variants={heroCopyVariants}>
                 <Link href="/register/client" className="clean-hero__cta clean-hero__cta--primary">
                   Book a Service
                 </Link>
@@ -269,7 +398,7 @@ export default function Home() {
                 <Link href="/plan" className="clean-hero__cta clean-hero__cta--ghost">
                   View rollout plan
                 </Link>
-              </div>
+              </motion.div>
               <div className="clean-hero__metrics">
                 {HERO_METRICS.map((stat) => (
                   <div key={stat.headline} className="clean-hero__stat">
@@ -278,34 +407,23 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            </div>
+              <ul className="clean-hero__flair">
+                {HERO_FLAIR.map((item) => (
+                  <li key={item.label}>
+                    <span aria-hidden="true">{item.icon}</span>
+                    {item.label}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
 
-            <div className="clean-hero__visual">
-              <div className="clean-hero__image-frame">
-                <Image
-                  src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80"
-                  alt="FixEasy professional assisting a homeowner"
-                  width={520}
-                  height={400}
-                  priority
-                  className="clean-hero__image"
-                />
-              </div>
-              <div className="clean-hero__ticket">
-                <span className="clean-hero__ticket-label">Live concierge</span>
-                <p>“We’ll confirm your specialist and arrival window within minutes.”</p>
-                <ul className="clean-hero__ticket-list">
-                  {HERO_FLAIR.map((item) => (
-                    <li key={item.label}>
-                      <span>{item.icon}</span>
-                      {item.label}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            <motion.div className="clean-hero__grid" variants={heroGridVariants}>
+              {HERO_SERVICE_CARDS.map((card, index) => (
+                <HeroServiceCard key={card.title} card={card} index={index} />
+              ))}
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
         {/* === RIBBON === */}
         <section className="clean-ribbon" aria-hidden="true">
