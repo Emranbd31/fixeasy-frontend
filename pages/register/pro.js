@@ -4,15 +4,39 @@ import { SERVICE_OPTIONS } from '../../data/services'
 import { isValidIrishPhone, sanitizePhone, sanitizeText } from '../../lib/validation'
 
 const OTHER_CATEGORY_OPTION = 'Other (please specify)'
+const OTHER_SERVICE_AREA_OPTION = 'Other area (please specify)'
 const categoryOptions = SERVICE_OPTIONS
 
 const serviceAreaOptions = [
+  'Carlow',
+  'Cavan',
+  'Clare',
+  'Cork',
+  'Donegal',
   'Dublin City & County',
-  'Leinster',
-  'Munster',
-  'Connacht',
-  'Ulster (ROI)',
-  'Nationwide (Republic of Ireland)'
+  'Galway',
+  'Kerry',
+  'Kildare',
+  'Kilkenny',
+  'Laois',
+  'Leitrim',
+  'Limerick',
+  'Longford',
+  'Louth',
+  'Mayo',
+  'Meath',
+  'Monaghan',
+  'Offaly',
+  'Roscommon',
+  'Sligo',
+  'Tipperary',
+  'Waterford',
+  'Westmeath',
+  'Wexford',
+  'Wicklow',
+  'Nationwide (Republic of Ireland)',
+  'Northern Ireland (on request)',
+  OTHER_SERVICE_AREA_OPTION
 ]
 
 const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png']
@@ -28,6 +52,7 @@ const initialState = {
   serviceCategories: [],
   serviceAreas: [],
   otherCategoryDetail: '',
+  otherServiceAreaDetail: '',
   consent: false
 }
 
@@ -69,12 +94,23 @@ export default function ProfessionalRegistration() {
     [formData.serviceCategories]
   )
 
+  const otherAreaSelected = useMemo(
+    () => formData.serviceAreas.includes(OTHER_SERVICE_AREA_OPTION),
+    [formData.serviceAreas]
+  )
+
   // Reset "Other service" when deselected
   useEffect(() => {
     if (!otherCategorySelected && formData.otherCategoryDetail) {
       setFormData((prev) => ({ ...prev, otherCategoryDetail: '' }))
     }
   }, [formData.otherCategoryDetail, otherCategorySelected])
+
+  useEffect(() => {
+    if (!otherAreaSelected && formData.otherServiceAreaDetail) {
+      setFormData((prev) => ({ ...prev, otherServiceAreaDetail: '' }))
+    }
+  }, [formData.otherServiceAreaDetail, otherAreaSelected])
 
   const handleInputChange = (event) => {
     const { name, value } = event.target
@@ -190,6 +226,8 @@ export default function ProfessionalRegistration() {
       if (otherCategorySelected && !sanitizeText(formData.otherCategoryDetail))
         validation.otherCategoryDetail = 'Describe the additional service.'
       if (formData.serviceAreas.length === 0) validation.serviceAreas = 'Select at least one service area.'
+      if (otherAreaSelected && !sanitizeText(formData.otherServiceAreaDetail))
+        validation.otherServiceAreaDetail = 'Share the locations you cover.'
     }
 
     if (step === 2) {
@@ -226,6 +264,7 @@ export default function ProfessionalRegistration() {
       serviceCategories: formData.serviceCategories,
       otherCategoryDetail: sanitizeText(formData.otherCategoryDetail),
       serviceAreas: formData.serviceAreas,
+      otherServiceAreaDetail: sanitizeText(formData.otherServiceAreaDetail),
       consent: formData.consent,
       verificationDocuments: {
         photo_id_url: uploadedDocuments.photoId?.path ?? '',
@@ -331,6 +370,18 @@ export default function ProfessionalRegistration() {
                   ))}
                 </div>
               </div>
+
+              {otherAreaSelected && (
+                <div className="registration-field">
+                  <label>Other Service Areas</label>
+                  <input
+                    name="otherServiceAreaDetail"
+                    value={formData.otherServiceAreaDetail}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Cross-border projects, seasonal work"
+                  />
+                </div>
+              )}
             </>
           )}
 
