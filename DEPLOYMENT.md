@@ -81,6 +81,9 @@ before considering the deployment complete:
    without build errors.
 3. Visit the production URLs for both the web frontend and backend health check to
    ensure they load successfully after the deployment promotion.
+4. Open the latest Vercel build logs to double-check that the Supabase keys and
+   new admin session secrets from the Codex update set are detected during the
+   build; redeploy immediately if any environment variable is missing.
 
 ## Environment Variables
 
