@@ -58,6 +58,7 @@ const initialState = {
 
 const initialUploads = { photoId: 0, selfie: 0, insurance: 0 }
 const initialUploadedDocuments = { photoId: null, selfie: null, insurance: null }
+const initialDragStates = { photoId: false, selfie: false, insurance: false }
 
 const stepLabels = ['Info', 'Verification', 'Confirmation']
 
@@ -76,6 +77,7 @@ export default function ProfessionalRegistration() {
   const [uploadProgress, setUploadProgress] = useState({ ...initialUploads })
   const [uploadedDocuments, setUploadedDocuments] = useState({ ...initialUploadedDocuments })
   const [previews, setPreviews] = useState({ photoId: null, selfie: null, insurance: null })
+  const [dragStates, setDragStates] = useState({ ...initialDragStates })
   const [submitting, setSubmitting] = useState(false)
   const [submissionError, setSubmissionError] = useState('')
   const [submissionSuccess, setSubmissionSuccess] = useState(false)
@@ -144,6 +146,8 @@ export default function ProfessionalRegistration() {
     setUploadProgress((prev) => ({ ...prev, [field]: 5 }))
     setErrors((prev) => ({ ...prev, [field]: undefined }))
 
+    let progressInterval
+
     try {
       if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
         throw new Error('Supabase Storage is not configured.')
@@ -155,6 +159,17 @@ export default function ProfessionalRegistration() {
       const body = new FormData()
       body.append('file', file)
       body.append('path', path)
+
+      progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          const current = prev[field]
+          if (current >= 90) {
+            clearInterval(progressInterval)
+            return prev
+          }
+          return { ...prev, [field]: Math.min(current + 8, 90) }
+        })
+      }, 350)
 
       const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${SUPABASE_PRO_BUCKET}`, {
         method: 'POST',
@@ -169,6 +184,7 @@ export default function ProfessionalRegistration() {
       if (!response.ok) throw new Error('Upload failed. Please try again.')
 
       setUploadProgress((prev) => ({ ...prev, [field]: 100 }))
+      setErrors((prev) => ({ ...prev, [field]: undefined }))
       setUploadedDocuments((prev) => ({
         ...prev,
         [field]: {
@@ -181,11 +197,12 @@ export default function ProfessionalRegistration() {
       console.error('Upload error:', error)
       setErrors((prev) => ({ ...prev, [field]: error.message }))
       setUploadProgress((prev) => ({ ...prev, [field]: 0 }))
+    } finally {
+      if (progressInterval) clearInterval(progressInterval)
     }
   }
 
-  const handleFileChange = (field) => async (event) => {
-    const file = event.target.files?.[0]
+  const handleFileSelection = async (field, file) => {
     resetPreview(field)
     setUploadedDocuments((prev) => ({ ...prev, [field]: null }))
     setUploadProgress((prev) => ({ ...prev, [field]: 0 }))
@@ -211,6 +228,44 @@ export default function ProfessionalRegistration() {
     }
 
     await uploadDocument(field, file)
+  }
+
+  const handleFileChange = (field) => async (event) => {
+    const file = event.target.files?.[0]
+    await handleFileSelection(field, file)
+    if (event.target.value) event.target.value = ''
+  }
+
+  const handleDragEnter = (field) => (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setDragStates((prev) => ({ ...prev, [field]: true }))
+  }
+
+  const handleDragLeave = (field) => (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (event.currentTarget === event.target) {
+      setDragStates((prev) => ({ ...prev, [field]: false }))
+    }
+  }
+
+  const handleDragOver = (field) => (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!dragStates[field]) {
+      setDragStates((prev) => ({ ...prev, [field]: true }))
+    }
+  }
+
+  const handleDrop = (field) => async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setDragStates((prev) => ({ ...prev, [field]: false }))
+    const file = event.dataTransfer?.files?.[0]
+    if (file) {
+      await handleFileSelection(field, file)
+    }
   }
 
   const runStepValidation = (step) => {
@@ -387,22 +442,112 @@ export default function ProfessionalRegistration() {
 
           {/* STEP 2: Verification */}
           {currentStep === 2 && (
-            <>
-              {uploadFields.map((field) => (
-                <div key={field} className="registration-field">
-                  <label>{fileLabels[field]}</label>
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={handleFileChange(field)}
-                  />
-                  {previews[field] && <img src={previews[field]} alt="Preview" style={{ maxWidth: '150px' }} />}
-                  {uploadedDocuments[field]?.name && (
-                    <p>Uploaded: {uploadedDocuments[field].name}</p>
-                  )}
-                </div>
-              ))}
-            </>
+            <div className="verification-card">
+              <div className="verification-card__intro">
+                <h3>Identity & Insurance verification</h3>
+                <p>
+                  Upload clear copies of your documents. We accept PDF and image formats up to 5MB per
+                  file.
+                </p>
+              </div>
+
+              {uploadFields.map((field) => {
+                const isUploading = uploadProgress[field] > 0 && uploadProgress[field] < 100
+                const isSuccess = uploadProgress[field] === 100
+
+                return (
+                  <div
+                    key={field}
+                    className={`registration-field registration-field--upload ${
+                      errors[field] ? 'has-error' : ''
+                    }`}
+                  >
+                    <div className="registration-field__header">
+                      <label className="registration-field__label" htmlFor={`${field}-upload`}>
+                        {fileLabels[field]}
+                        {optionalFields.has(field) && (
+                          <span className="registration-field__tag">Optional</span>
+                        )}
+                      </label>
+                      <div className="upload-status">
+                        {isUploading && (
+                          <>
+                            <span className="upload-status__spinner" aria-hidden="true" />
+                            <div className="upload-progress" aria-hidden="true">
+                              <div
+                                className="upload-progress__bar"
+                                style={{ width: `${Math.max(uploadProgress[field], 10)}%` }}
+                              />
+                            </div>
+                            <span className="upload-status__text">Uploading… {uploadProgress[field]}%</span>
+                          </>
+                        )}
+                        {isSuccess && (
+                          <span className="upload-status__success" role="status">
+                            <span aria-hidden="true">✓</span> Uploaded
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div
+                      className={`upload-dropzone ${dragStates[field] ? 'is-dragover' : ''} ${
+                        isSuccess ? 'is-success' : ''
+                      } ${errors[field] ? 'has-error' : ''}`}
+                      onDragEnter={handleDragEnter(field)}
+                      onDragOver={handleDragOver(field)}
+                      onDragLeave={handleDragLeave(field)}
+                      onDrop={handleDrop(field)}
+                    >
+                      <input
+                        id={`${field}-upload`}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        onChange={handleFileChange(field)}
+                        className="upload-dropzone__input"
+                        aria-describedby={`${field}-upload-hint`}
+                        aria-label={`${fileLabels[field]} upload`}
+                      />
+                      <div className="upload-dropzone__content">
+                        <span className="upload-dropzone__action">Click to upload</span>
+                        <span className="upload-dropzone__hint">or drag & drop</span>
+                        <span className="upload-dropzone__meta">PDF, JPG, PNG · 5MB max</span>
+                      </div>
+                    </div>
+
+                    {previews[field] && (
+                      <div className="upload-preview">
+                        <img src={previews[field]} alt={`${fileLabels[field]} preview`} />
+                      </div>
+                    )}
+
+                    {!previews[field] && uploadedDocuments[field]?.name && (
+                      <div className="upload-file-meta">
+                        <span className="upload-file-meta__name">{uploadedDocuments[field].name}</span>
+                        {uploadedDocuments[field]?.url && (
+                          <a
+                            href={uploadedDocuments[field].url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="upload-file-meta__link"
+                          >
+                            View
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    <p id={`${field}-upload-hint`} className="registration-hint">
+                      PDF, JPG or PNG formats. 5MB maximum per file.
+                    </p>
+
+                    {errors[field] && (
+                      <p className="registration-hint registration-hint--error">{errors[field]}</p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           )}
 
           {/* STEP 3: Confirm */}
