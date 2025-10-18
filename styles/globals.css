@@ -355,6 +355,237 @@ img {
   font-weight: 600;
 }
 
+.signup-index__auth {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+  padding: clamp(2rem, 5vw, 3rem);
+  display: grid;
+  gap: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  backdrop-filter: blur(12px);
+}
+
+.signup-index__auth-head {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.signup-index__auth-head h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 700;
+}
+
+.signup-index__auth-head p {
+  margin: 0;
+  color: rgba(15, 23, 42, 0.68);
+}
+
+.signup-index__role-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.signup-index__role-button {
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  border-radius: 999px;
+  padding: 0.55rem 1.2rem;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary-dark);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--speed-fast) var(--ease), transform var(--speed-fast) var(--ease);
+}
+
+.signup-index__role-button.is-active {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(16, 185, 129, 0.85));
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.signup-index__status {
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.signup-index__status--info {
+  background: rgba(37, 99, 235, 0.08);
+  color: rgba(29, 78, 216, 0.95);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+.signup-index__status--success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #047857;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
+.signup-index__status--error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b42318;
+  border: 1px solid rgba(239, 68, 68, 0.26);
+}
+
+.signup-index__status--warning {
+  background: rgba(245, 158, 11, 0.14);
+  color: #92400e;
+  border: 1px solid rgba(245, 158, 11, 0.26);
+}
+
+.signup-index__auth-actions {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.signup-index__auth-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.98rem;
+  cursor: pointer;
+  background: rgba(37, 99, 235, 0.92);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.26);
+  transition: transform var(--speed-fast) var(--ease), box-shadow var(--speed-fast) var(--ease);
+}
+
+.signup-index__auth-button:hover:not(:disabled),
+.signup-index__auth-button:focus-visible:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 46px rgba(37, 99, 235, 0.32);
+}
+
+.signup-index__auth-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.signup-index__auth-button--dark {
+  background: #111827;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.28);
+}
+
+.signup-index__divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: rgba(71, 85, 105, 0.65);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+}
+
+.signup-index__divider::before,
+.signup-index__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.signup-index__form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.signup-index__form label {
+  font-weight: 600;
+  color: #1d2939;
+}
+
+.signup-index__form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.signup-index__form-row input {
+  flex: 1 1 220px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 0.85rem 1rem;
+  font-size: 0.98rem;
+  background: rgba(248, 250, 252, 0.85);
+  transition: border var(--speed-fast) ease, box-shadow var(--speed-fast) ease;
+}
+
+.signup-index__form-row input:focus-visible {
+  outline: none;
+  border-color: rgba(37, 99, 235, 0.7);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+  background: #fff;
+}
+
+.signup-index__form-row button {
+  border-radius: 12px;
+  border: none;
+  padding: 0.85rem 1.3rem;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(16, 185, 129, 0.9));
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--speed-fast) var(--ease), box-shadow var(--speed-fast) var(--ease);
+  min-width: 200px;
+}
+
+.signup-index__form-row button:hover:not(:disabled),
+.signup-index__form-row button:focus-visible:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 34px rgba(37, 99, 235, 0.28);
+}
+
+.signup-index__form-row button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.auth-redirect {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(16, 185, 129, 0.12));
+}
+
+.auth-redirect__body {
+  width: 100%;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-redirect__card {
+  background: #fff;
+  border-radius: var(--r-lg);
+  padding: 2rem 2.5rem;
+  box-shadow: var(--shadow-md);
+  display: grid;
+  gap: 1rem;
+  align-items: center;
+  text-align: center;
+  color: #1f2937;
+}
+
+.auth-redirect__spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 3px solid rgba(37, 99, 235, 0.18);
+  border-top-color: rgba(37, 99, 235, 0.85);
+  animation: spin 0.9s linear infinite;
+  justify-self: center;
+}
+
 /* === FOOTER === */
 .clean-footer {
   background: rgba(15, 23, 42, 0.95);
@@ -623,6 +854,11 @@ img {
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {

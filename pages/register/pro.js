@@ -79,6 +79,7 @@ export default function ProfessionalRegistration() {
   const [submitting, setSubmitting] = useState(false)
   const [submissionError, setSubmissionError] = useState('')
   const [submissionSuccess, setSubmissionSuccess] = useState(false)
+  const [toastVisible, setToastVisible] = useState(false)
 
   // Clean up image previews
   useEffect(() => {
@@ -141,7 +142,7 @@ export default function ProfessionalRegistration() {
   }
 
   const uploadDocument = async (field, file) => {
-    setUploadProgress((prev) => ({ ...prev, [field]: 5 }))
+    setUploadProgress((prev) => ({ ...prev, [field]: 12 }))
     setErrors((prev) => ({ ...prev, [field]: undefined }))
 
     try {
@@ -168,7 +169,7 @@ export default function ProfessionalRegistration() {
 
       if (!response.ok) throw new Error('Upload failed. Please try again.')
 
-      setUploadProgress((prev) => ({ ...prev, [field]: 100 }))
+      setUploadProgress((prev) => ({ ...prev, [field]: 88 }))
       setUploadedDocuments((prev) => ({
         ...prev,
         [field]: {
@@ -177,6 +178,7 @@ export default function ProfessionalRegistration() {
           name: file.name
         }
       }))
+      setUploadProgress((prev) => ({ ...prev, [field]: 100 }))
     } catch (error) {
       console.error('Upload error:', error)
       setErrors((prev) => ({ ...prev, [field]: error.message }))
@@ -253,6 +255,8 @@ export default function ProfessionalRegistration() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmissionError('')
+    setSubmissionSuccess(false)
+    setToastVisible(false)
     const validation = { ...runStepValidation(1), ...runStepValidation(2), ...runStepValidation(3) }
     if (Object.keys(validation).length) return setErrors(validation)
 
@@ -281,6 +285,7 @@ export default function ProfessionalRegistration() {
       })
       if (!res.ok) throw new Error('Submission failed.')
       setSubmissionSuccess(true)
+      setToastVisible(true)
       setFormData(initialState)
       setUploadedDocuments(initialUploadedDocuments)
       setUploadProgress(initialUploads)
@@ -293,6 +298,12 @@ export default function ProfessionalRegistration() {
       setSubmitting(false)
     }
   }
+
+  useEffect(() => {
+    if (!toastVisible) return
+    const timeout = setTimeout(() => setToastVisible(false), 6000)
+    return () => clearTimeout(timeout)
+  }, [toastVisible])
 
   // --- UI RENDER ---
   return (
@@ -400,6 +411,19 @@ export default function ProfessionalRegistration() {
                   {uploadedDocuments[field]?.name && (
                     <p>Uploaded: {uploadedDocuments[field].name}</p>
                   )}
+                  {uploadProgress[field] > 0 && (
+                    <div className="registration-upload__progress" aria-live="polite">
+                      <div className="registration-upload__progress-bar" style={{ width: `${uploadProgress[field]}%` }} />
+                      <span>
+                        {uploadProgress[field] < 100
+                          ? `Uploading… ${Math.min(uploadProgress[field], 99)}%`
+                          : 'Upload complete'}
+                      </span>
+                    </div>
+                  )}
+                  {errors[field] && (
+                    <p className="registration-hint registration-hint--error">{errors[field]}</p>
+                  )}
                 </div>
               ))}
             </>
@@ -439,8 +463,23 @@ export default function ProfessionalRegistration() {
             )}
           </div>
 
-          {submissionError && <p className="error">{submissionError}</p>}
-          {submissionSuccess && <p className="success">Submitted successfully ✅</p>}
+          {submissionError ? <div className="registration-errors">{submissionError}</div> : null}
+          {toastVisible ? (
+            <div className="registration-toast registration-toast--success" role="status">
+              <span className="registration-toast__icon" aria-hidden="true">✅</span>
+              <div>
+                <strong>Application submitted</strong>
+                <p>We’ll review your documents and confirm activation shortly.</p>
+              </div>
+            </div>
+          ) : null}
+
+          {submitting ? (
+            <div className="registration-form__overlay" role="status" aria-live="polite">
+              <span className="registration-spinner" aria-hidden="true" />
+              <p>Submitting application…</p>
+            </div>
+          ) : null}
         </form>
       </div>
     </div>

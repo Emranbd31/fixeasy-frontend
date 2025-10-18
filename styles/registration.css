@@ -626,3 +626,70 @@
   color: #344054;
 }
 
+\n
+.registration-upload__progress {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+
+.registration-upload__progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.28), rgba(16, 185, 129, 0.42));
+  transition: width 0.4s ease;
+}
+
+.registration-upload__progress span {
+  font-size: 0.85rem;
+  color: rgba(71, 85, 105, 0.85);
+  font-weight: 500;
+}
+
+.registration-toast {
+  margin-top: 1.25rem;
+  border-radius: 16px;
+  padding: 1.1rem 1.4rem;
+  display: grid;
+  gap: 0.5rem;
+  align-items: center;
+  box-shadow: 0 24px 56px rgba(34, 197, 94, 0.18);
+}
+
+.registration-toast--success {
+  background: rgba(22, 163, 74, 0.14);
+  border: 1px solid rgba(22, 163, 74, 0.32);
+  color: #047857;
+}
+
+.registration-toast__icon {
+  font-size: 1.4rem;
+}
+
+.registration-form {
+  position: relative;
+}
+
+.registration-form__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 28px;
+  display: grid;
+  gap: 0.75rem;
+  align-items: center;
+  justify-items: center;
+  color: #fff;
+  text-align: center;
+  padding: 2rem;
+  backdrop-filter: blur(6px);
+}
+
+.registration-spinner {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.28);
+  border-top-color: #fff;
+  animation: spin 0.9s linear infinite;
+}

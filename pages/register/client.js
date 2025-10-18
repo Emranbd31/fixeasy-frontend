@@ -220,14 +220,14 @@ export default function ClientBooking() {
     }
 
     try {
-      const response = await fetch('/api/register/client-intake', {
+      const response = await fetch('/api/form/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
 
       const data = await response.json().catch(() => ({}))
-      if (!response.ok) {
+      if (!response.ok || data?.ok !== true) {
         throw new Error(data?.error || 'Could not submit your request.')
       }
 
