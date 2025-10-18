@@ -70,6 +70,18 @@ After the deployment finishes, visit the deployment URL (e.g.
 `https://api.fixeasy.irish/healthz`) to confirm a healthy response before promoting
 to production.
 
+## Post-merge checklist
+
+After resolving conflicts or merging feature branches, run through the following steps
+before considering the deployment complete:
+
+1. `npm run build && npm run start` locally to smoke test both the frontend and the
+   FastAPI endpoints (the `/healthz` route should return status 200).
+2. Push the branch to `main` and confirm Vercel finishes the associated deployment
+   without build errors.
+3. Visit the production URLs for both the web frontend and backend health check to
+   ensure they load successfully after the deployment promotion.
+
 ## Environment Variables
 
 Ensure the following values are configured in your deployment environment (e.g. Vercel project settings or `.env.local`):
