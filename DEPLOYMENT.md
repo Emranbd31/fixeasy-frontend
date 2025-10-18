@@ -95,8 +95,8 @@ When GitHub reports conflicts between `main` and a Codex feature branch
 locally so the CI build reflects the latest layout and registration logic:
 
 1. `git status` to list the files flagged as conflicted.
-2. Open each conflicted file and remove the `<<<<<<<`, `=======`, and `>>>>>>>`
-   markers, keeping the Codex branch content unless a `main` import or hook is
+2. Open each conflicted file and remove the Git conflict markers before keeping
+   the Codex branch content unless a `main` import or hook is
    required.
 3. `git add <file>` after finishing each file to stage the resolution. Use
    `git add .` if every file is ready at once.
