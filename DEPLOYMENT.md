@@ -13,6 +13,7 @@ This project now uses the [Vercel GitHub Integration](https://vercel.com/docs/in
 1. Commit your changes locally.
 2. Push to the `main` branch.
 3. Vercel receives the GitHub webhook, builds the Next.js app, and promotes the deployment to production once the build succeeds.
+4. Monitor the deployment in Vercel and verify the production alias updates without build errors.
 
 No manual `npm install -g vercel`, `vercel link`, or `vercel --prod` commands are required.
 
