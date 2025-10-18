@@ -1,4 +1,4 @@
-/* Hero-specific accents for the Codex "clean" layout */
+/* === FixEasy Hero Accent Layer === */
 
 .clean-hero__background::before,
 .clean-hero__background::after {
@@ -12,7 +12,8 @@
 }
 
 .clean-hero__background::before {
-  background: radial-gradient(circle at 15% 25%, rgba(37, 99, 235, 0.18), transparent 58%),
+  background:
+    radial-gradient(circle at 15% 25%, rgba(37, 99, 235, 0.18), transparent 58%),
     radial-gradient(circle at 85% 35%, rgba(16, 185, 129, 0.16), transparent 62%);
   opacity: 0.9;
 }
@@ -23,6 +24,7 @@
   opacity: 0.75;
 }
 
+/* Soft floating light effect behind hero visuals */
 .clean-hero__visual::before {
   content: '';
   position: absolute;
@@ -34,8 +36,12 @@
   animation: cleanHeroGlow 6s ease-in-out infinite;
 }
 
+/* Frame styling */
 .clean-hero__image-frame {
   position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 
 .clean-hero__image-frame::before {
@@ -47,6 +53,7 @@
   opacity: 0.65;
 }
 
+/* Animated statistics */
 .clean-hero__stat {
   animation: cleanHeroRise 0.8s ease both;
 }
@@ -59,13 +66,14 @@
   animation-delay: 0.24s;
 }
 
+/* Floating hero ticket animation */
 .clean-hero__ticket {
   animation: cleanHeroFloat 12s ease-in-out infinite;
 }
 
+/* === Animations === */
 @keyframes cleanHeroGlow {
-  0%,
-  100% {
+  0%, 100% {
     transform: scale(1);
     opacity: 0.7;
   }
@@ -87,8 +95,7 @@
 }
 
 @keyframes cleanHeroFloat {
-  0%,
-  100% {
+  0%, 100% {
     transform: translateY(0);
   }
   50% {
@@ -96,6 +103,7 @@
   }
 }
 
+/* === Mobile Adjustments === */
 @media (max-width: 768px) {
   .clean-hero__visual::before {
     inset: -28%;

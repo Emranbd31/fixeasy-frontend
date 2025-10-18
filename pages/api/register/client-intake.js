@@ -15,6 +15,7 @@ export default function handler(req, res) {
     email,
     phone,
     address,
+ codex/implement-v5-update-plan-for-fixeasy-o20fcx
     serviceType,
     otherServiceDescription,
     issueDetails,
@@ -35,6 +36,22 @@ export default function handler(req, res) {
   }
 
   if (!normalizedEmail || !/^([^\s@]+)@([^\s@]+)\.([\w-]{2,})$/.test(normalizedEmail)) {
+
+    password,
+    serviceType,
+    otherServiceDescription,
+    problemDetails,
+    issuePhoto,
+    issuePhotoUrl,
+    acceptTerms
+  } = req.body ?? {}
+
+  if (!sanitizeText(fullName)) {
+    return res.status(400).json(error('Enter your full name.', 'fullName'))
+  }
+
+  if (!sanitizeText(email) || !/^([^\s@]+)@([^\s@]+)\.([\w-]{2,})$/.test(email)) {
+ main
     return res.status(400).json(error('Provide a valid contact email.', 'email'))
   }
 
@@ -42,6 +59,7 @@ export default function handler(req, res) {
     return res.status(400).json(error('Use an Irish contact number in +353 format.', 'phone'))
   }
 
+ codex/implement-v5-update-plan-for-fixeasy-o20fcx
   if (!normalizedAddress) {
     return res.status(400).json(error('Include an address or Eircode so we can route the job.', 'address'))
   }
@@ -56,10 +74,38 @@ export default function handler(req, res) {
 
   if (!normalizedIssueDetails || normalizedIssueDetails.length < 20) {
     return res.status(400).json(error('Describe the issue so we can triage correctly.', 'issueDetails'))
+    
+  if (!sanitizeText(address)) {
+    return res.status(400).json(error('Include an address or Eircode so we can route the job.', 'address'))
+  }
+
+  if (!sanitizeText(serviceType)) {
+    return res.status(400).json(error('Select the service you need support with.', 'serviceType'))
+  }
+
+  if (
+    serviceType === 'Other (please specify)' &&
+    !sanitizeText(otherServiceDescription)
+  ) {
+    return res.status(400).json(error('Describe the service or expertise you require.', 'otherServiceDescription'))
+  }
+
+  if (!sanitizeText(problemDetails) || sanitizeText(problemDetails).length < 20) {
+    return res.status(400).json(error('Describe the issue so we can triage correctly.', 'problemDetails'))
+  }
+
+  if (!sanitizeText(password) || password.length < 8) {
+    return res.status(400).json(error('Create a secure password of at least 8 characters.', 'password'))
+  }
+
+  if (!acceptTerms) {
+    return res.status(400).json(error('You must agree to the FixEasy terms to continue.', 'acceptTerms'))
+ main
   }
 
   const reference = `CL-${Date.now().toString(36).toUpperCase()}`
 
+ codex/implement-v5-update-plan-for-fixeasy-o20fcx
   const responsePayload = {
     ok: true,
     reference,
@@ -78,4 +124,17 @@ export default function handler(req, res) {
   }
 
   return res.status(200).json(responsePayload)
+=======
+  return res.status(200).json({
+    ok: true,
+    reference,
+    receivedAt: new Date().toISOString(),
+    serviceType: sanitizeText(serviceType),
+    otherServiceDescription: sanitizeText(otherServiceDescription),
+    problemDetails: sanitizeText(problemDetails),
+    issuePhoto,
+    issuePhotoUrl: issuePhotoUrl || '',
+    phone: sanitizePhone(phone)
+  })
+ main
 }

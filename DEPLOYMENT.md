@@ -29,6 +29,7 @@ npm run start
 
 Then push to `main` when you are ready.
 
+codex/implement-v5-update-plan-for-fixeasy-o20fcx
 ## Backend Service Deployment
 
 The `backend/Backend--main` directory now contains a lightweight FastAPI service that
@@ -106,6 +107,8 @@ locally so the CI build reflects the latest layout and registration logic:
 6. `git push` the branch, confirm GitHub marks the conflicts as resolved, and use
    the “Merge pull request” button once checks succeed.
 
+
+ main
 ## Environment Variables
 
 Ensure the following values are configured in your deployment environment (e.g. Vercel project settings or `.env.local`):
@@ -123,5 +126,7 @@ Ensure the following values are configured in your deployment environment (e.g. 
 | `SUPABASE_AUTH_APPLE_CLIENT_ID` / `SUPABASE_AUTH_APPLE_SECRET` | ⚙️ | Configure Apple OAuth in Supabase. |
 
 After changing authentication provider credentials, rebuild the frontend so the new environment variables are included in the deployed bundle.
+codex/implement-v5-update-plan-for-fixeasy-o20fcx
 
 Before running a production build locally, double-check that these environment variables are available in your shell so the Next.js process can access Supabase and admin session secrets during compilation.
+ main
