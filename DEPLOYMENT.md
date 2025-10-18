@@ -87,6 +87,25 @@ before considering the deployment complete:
 5. Confirm the production alias swaps to the new deployment in Vercel so clients
    see the Codex updates immediately after the merge.
 
+## Resolving merge conflicts when updating Codex branches
+
+When GitHub reports conflicts between `main` and a Codex feature branch
+(for example `codex/implement-v5-update-plan-for-fixeasy-wirzgc`), resolve them
+locally so the CI build reflects the latest layout and registration logic:
+
+1. `git status` to list the files flagged as conflicted.
+2. Open each conflicted file and remove the `<<<<<<<`, `=======`, and `>>>>>>>`
+   markers, keeping the Codex branch content unless a `main` import or hook is
+   required.
+3. `git add <file>` after finishing each file to stage the resolution. Use
+   `git add .` if every file is ready at once.
+4. `npm run build` to make sure the merged code compiles. Follow with
+   `npm run start` if you need to test the production bundle locally.
+5. Commit with a descriptive message (e.g. “Resolved merge conflicts in deployment
+   guide and registration modules — keeping Codex updates”).
+6. `git push` the branch, confirm GitHub marks the conflicts as resolved, and use
+   the “Merge pull request” button once checks succeed.
+
 ## Environment Variables
 
 Ensure the following values are configured in your deployment environment (e.g. Vercel project settings or `.env.local`):

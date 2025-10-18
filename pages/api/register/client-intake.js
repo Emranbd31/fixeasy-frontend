@@ -22,11 +22,19 @@ export default function handler(req, res) {
     issuePhotoUrl
   } = req.body ?? {}
 
-  if (!sanitizeText(fullName)) {
+  const normalizedFullName = sanitizeText(fullName)
+  const normalizedEmail = sanitizeText(email).toLowerCase()
+  const normalizedAddress = sanitizeText(address)
+  const normalizedServiceType = sanitizeText(serviceType)
+  const normalizedOtherDescription = sanitizeText(otherServiceDescription)
+  const normalizedIssueDetails = sanitizeText(issueDetails)
+  const normalizedIssuePhotoUrl = sanitizeText(issuePhotoUrl)
+
+  if (!normalizedFullName) {
     return res.status(400).json(error('Enter your full name.', 'fullName'))
   }
 
-  if (!sanitizeText(email) || !/^([^\s@]+)@([^\s@]+)\.([\w-]{2,})$/.test(email)) {
+  if (!normalizedEmail || !/^([^\s@]+)@([^\s@]+)\.([\w-]{2,})$/.test(normalizedEmail)) {
     return res.status(400).json(error('Provide a valid contact email.', 'email'))
   }
 
@@ -34,36 +42,40 @@ export default function handler(req, res) {
     return res.status(400).json(error('Use an Irish contact number in +353 format.', 'phone'))
   }
 
-  if (!sanitizeText(address)) {
+  if (!normalizedAddress) {
     return res.status(400).json(error('Include an address or Eircode so we can route the job.', 'address'))
   }
 
-  if (!sanitizeText(serviceType)) {
+  if (!normalizedServiceType) {
     return res.status(400).json(error('Select the service you need support with.', 'serviceType'))
   }
 
-  if (
-    serviceType === 'Other (please specify)' &&
-    !sanitizeText(otherServiceDescription)
-  ) {
+  if (serviceType === 'Other (please specify)' && !normalizedOtherDescription) {
     return res.status(400).json(error('Describe the service or expertise you require.', 'otherServiceDescription'))
   }
 
-  if (!sanitizeText(issueDetails) || sanitizeText(issueDetails).length < 20) {
+  if (!normalizedIssueDetails || normalizedIssueDetails.length < 20) {
     return res.status(400).json(error('Describe the issue so we can triage correctly.', 'issueDetails'))
   }
 
   const reference = `CL-${Date.now().toString(36).toUpperCase()}`
 
-  return res.status(200).json({
+  const responsePayload = {
     ok: true,
     reference,
     receivedAt: new Date().toISOString(),
-    serviceType: sanitizeText(serviceType),
-    otherServiceDescription: sanitizeText(otherServiceDescription),
-    issueDetails: sanitizeText(issueDetails),
+    serviceType: normalizedServiceType,
+    otherServiceDescription: normalizedOtherDescription,
+    issueDetails: normalizedIssueDetails,
     issuePhoto,
-    issuePhotoUrl: issuePhotoUrl || '',
-    phone: sanitizePhone(phone)
-  })
+    issuePhotoUrl: normalizedIssuePhotoUrl,
+    phone: sanitizePhone(phone),
+    normalized: {
+      fullName: normalizedFullName,
+      email: normalizedEmail,
+      address: normalizedAddress
+    }
+  }
+
+  return res.status(200).json(responsePayload)
 }

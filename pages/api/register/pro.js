@@ -21,11 +21,15 @@ export default async function handler(req, res) {
     verificationDocuments
   } = req.body ?? {}
 
-  if (!sanitizeText(fullName)) {
+  const normalizedFullName = sanitizeText(fullName)
+  const normalizedEmail = sanitizeText(email).toLowerCase()
+  const normalizedOtherCategory = sanitizeText(otherCategoryDetail)
+
+  if (!normalizedFullName) {
     return res.status(400).json(error('Enter your full name or business name.', 'fullName'))
   }
 
-  if (!sanitizeText(email) || !/^([^\s@]+)@([^\s@]+)\.([\w-]{2,})$/.test(email)) {
+  if (!normalizedEmail || !/^([^\s@]+)@([^\s@]+)\.([\w-]{2,})$/.test(normalizedEmail)) {
     return res.status(400).json(error('Provide a valid contact email.', 'email'))
   }
 
@@ -37,10 +41,7 @@ export default async function handler(req, res) {
     return res.status(400).json(error('Select at least one service category.', 'serviceCategories'))
   }
 
-  if (
-    serviceCategories.includes('Other (please specify)') &&
-    !sanitizeText(otherCategoryDetail)
-  ) {
+  if (serviceCategories.includes('Other (please specify)') && !normalizedOtherCategory) {
     return res.status(400).json(error('Describe the additional service you offer.', 'otherCategoryDetail'))
   }
 
@@ -71,11 +72,11 @@ export default async function handler(req, res) {
     reference,
     receivedAt: new Date().toISOString(),
     normalized: {
-      fullName: sanitizeText(fullName),
-      email: sanitizeText(email).toLowerCase(),
+      fullName: normalizedFullName,
+      email: normalizedEmail,
       phone: sanitizePhone(phone),
       serviceCategories,
-      otherCategoryDetail: sanitizeText(otherCategoryDetail),
+      otherCategoryDetail: normalizedOtherCategory,
       serviceAreas,
       consent: Boolean(consent),
       verificationDocuments: {
