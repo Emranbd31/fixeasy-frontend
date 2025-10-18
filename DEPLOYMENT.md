@@ -23,9 +23,13 @@ If you need to verify a build locally before pushing:
 ```bash
 npm install
 npm run build
+npm run start
 ```
 
-Then push to `main` when you are ready.
+Running `npm run start` locally after the build confirms the production
+bundle boots without runtime errors before you promote it. Stop the server
+with <kbd>Ctrl</kbd>+<kbd>C</kbd> once you see the ready message, then push to
+`main` when you are ready.
 
 ## Backend Service Deployment
 
