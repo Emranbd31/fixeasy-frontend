@@ -1,0 +1,60 @@
+<svg width="1200" height="1600" viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Roofing specialist inspecting shingles</title>
+  <desc id="desc">Stylised rooftops, shingles, and safety gear over a dramatic twilight gradient.</desc>
+  <defs>
+    <linearGradient id="bgRoof" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#020617" />
+      <stop offset="50%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#fb7185" />
+    </linearGradient>
+    <radialGradient id="roofGlow" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="rgba(248, 250, 252, 0.45)" />
+      <stop offset="58%" stop-color="rgba(99, 102, 241, 0.16)" />
+      <stop offset="100%" stop-color="rgba(2, 6, 23, 0.08)" />
+    </radialGradient>
+    <linearGradient id="shingle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1f2937" />
+      <stop offset="100%" stop-color="#4b5563" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1600" fill="url(#bgRoof)" />
+  <ellipse cx="600" cy="600" rx="520" ry="470" fill="url(#roofGlow)" />
+  <g transform="translate(160 720)">
+    <path d="M0 280 L300 80 L620 240 L920 40 L1200 260 L1200 520 L0 520 Z" fill="rgba(2, 6, 23, 0.65)" />
+    <path d="M0 360 L300 160 L620 320 L920 120 L1200 340" stroke="rgba(236, 72, 153, 0.45)" stroke-width="24" stroke-linecap="round" fill="none" />
+    <path d="M60 340 L60 520" stroke="rgba(59, 130, 246, 0.4)" stroke-width="16" stroke-linecap="round" />
+    <path d="M360 160 L360 520" stroke="rgba(59, 130, 246, 0.4)" stroke-width="16" stroke-linecap="round" />
+    <path d="M660 320 L660 520" stroke="rgba(59, 130, 246, 0.4)" stroke-width="16" stroke-linecap="round" />
+    <path d="M960 120 L960 520" stroke="rgba(59, 130, 246, 0.4)" stroke-width="16" stroke-linecap="round" />
+  </g>
+  <g transform="translate(260 600)">
+    <polygon points="160,260 320,120 520,220 420,360" fill="rgba(99, 102, 241, 0.65)" stroke="rgba(226, 232, 240, 0.24)" stroke-width="6" />
+    <polygon points="520,220 720,80 880,220 700,360" fill="rgba(236, 72, 153, 0.6)" stroke="rgba(226, 232, 240, 0.28)" stroke-width="6" />
+    <rect x="420" y="260" width="160" height="220" rx="50" fill="rgba(15, 23, 42, 0.8)" />
+    <rect x="456" y="280" width="88" height="120" rx="18" fill="rgba(59, 130, 246, 0.65)" />
+    <rect x="456" y="420" width="120" height="24" rx="12" fill="rgba(226, 232, 240, 0.4)" />
+  </g>
+  <g transform="translate(140 1140)">
+    <g fill="url(#shingle)">
+      <rect x="0" y="0" width="220" height="90" rx="16" />
+      <rect x="210" y="20" width="240" height="90" rx="16" />
+      <rect x="440" y="-10" width="240" height="90" rx="16" />
+      <rect x="680" y="10" width="240" height="90" rx="16" />
+      <rect x="920" y="-20" width="240" height="90" rx="16" />
+    </g>
+    <g fill="rgba(226, 232, 240, 0.22)">
+      <rect x="30" y="20" width="80" height="10" rx="5" />
+      <rect x="260" y="38" width="80" height="10" rx="5" />
+      <rect x="500" y="14" width="80" height="10" rx="5" />
+      <rect x="740" y="32" width="80" height="10" rx="5" />
+      <rect x="980" y="8" width="80" height="10" rx="5" />
+    </g>
+  </g>
+  <g transform="translate(220 1260)" fill="rgba(255, 255, 255, 0.3)">
+    <circle cx="80" cy="40" r="6" />
+    <circle cx="260" cy="60" r="5" />
+    <circle cx="520" cy="32" r="7" />
+    <circle cx="780" cy="50" r="5" />
+    <circle cx="960" cy="40" r="6" />
+  </g>
+</svg>

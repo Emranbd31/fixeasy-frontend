@@ -1,0 +1,55 @@
+<svg width="1200" height="1600" viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Tech support specialist configuring devices</title>
+  <desc id="desc">Futuristic workspace with holographic screens, devices, and digital gradients.</desc>
+  <defs>
+    <linearGradient id="bgTech" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#020617" />
+      <stop offset="45%" stop-color="#312e81" />
+      <stop offset="100%" stop-color="#0ea5e9" />
+    </linearGradient>
+    <radialGradient id="techGlow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="rgba(248, 250, 252, 0.5)" />
+      <stop offset="60%" stop-color="rgba(14, 165, 233, 0.22)" />
+      <stop offset="100%" stop-color="rgba(2, 6, 23, 0.08)" />
+    </radialGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1600" fill="url(#bgTech)" />
+  <ellipse cx="600" cy="640" rx="520" ry="480" fill="url(#techGlow)" />
+  <g transform="translate(220 540)">
+    <rect width="760" height="540" rx="56" fill="rgba(15, 23, 42, 0.7)" stroke="rgba(226, 232, 240, 0.2)" stroke-width="4" />
+    <g transform="translate(80 120)">
+      <rect x="0" y="0" width="440" height="240" rx="28" fill="rgba(15, 23, 42, 0.8)" stroke="rgba(148, 163, 184, 0.35)" stroke-width="3" />
+      <rect x="32" y="32" width="376" height="120" rx="22" fill="url(#screen)" />
+      <rect x="32" y="172" width="180" height="32" rx="16" fill="rgba(226, 232, 240, 0.25)" />
+      <rect x="232" y="172" width="140" height="32" rx="16" fill="rgba(226, 232, 240, 0.15)" />
+      <circle cx="368" cy="208" r="8" fill="#22d3ee" />
+    </g>
+    <g transform="translate(560 110)">
+      <rect x="0" y="0" width="120" height="200" rx="30" fill="rgba(30, 64, 175, 0.6)" />
+      <rect x="20" y="24" width="80" height="60" rx="14" fill="rgba(59, 130, 246, 0.8)" />
+      <rect x="20" y="104" width="80" height="60" rx="14" fill="rgba(59, 130, 246, 0.45)" />
+      <rect x="40" y="180" width="40" height="12" rx="6" fill="rgba(226, 232, 240, 0.4)" />
+    </g>
+    <g transform="translate(80 380)" stroke-linecap="round" stroke-width="14">
+      <path d="M0 0 Q120 -60 240 0 T480 0" stroke="#38bdf8" fill="none" />
+      <path d="M40 40 Q160 -10 280 30 T520 10" stroke="#a855f7" fill="none" opacity="0.55" />
+    </g>
+    <g transform="translate(400 320)">
+      <rect x="0" y="0" width="180" height="160" rx="30" fill="rgba(2, 6, 23, 0.75)" />
+      <rect x="24" y="28" width="132" height="42" rx="12" fill="#22d3ee" opacity="0.6" />
+      <rect x="24" y="84" width="132" height="42" rx="12" fill="#a855f7" opacity="0.6" />
+      <circle cx="90" cy="132" r="12" fill="#f472b6" opacity="0.85" />
+    </g>
+  </g>
+  <g transform="translate(200 1140)" fill="rgba(255, 255, 255, 0.28)">
+    <circle cx="60" cy="50" r="6" />
+    <circle cx="260" cy="30" r="5" />
+    <circle cx="520" cy="70" r="7" />
+    <circle cx="780" cy="40" r="5" />
+    <circle cx="960" cy="60" r="6" />
+  </g>
+</svg>

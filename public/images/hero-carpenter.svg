@@ -1,0 +1,68 @@
+<svg width="1200" height="1600" viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Carpenter marking timber boards</title>
+  <desc id="desc">Illustration showing carpentry tools, timber textures, and precise measurements on a warm studio gradient.</desc>
+  <defs>
+    <linearGradient id="bgWood" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="45%" stop-color="#b45309" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+    <radialGradient id="woodGlow" cx="48%" cy="38%" r="60%">
+      <stop offset="0%" stop-color="rgba(254, 243, 199, 0.45)" />
+      <stop offset="62%" stop-color="rgba(251, 191, 36, 0.16)" />
+      <stop offset="100%" stop-color="rgba(15, 23, 42, 0.08)" />
+    </radialGradient>
+    <linearGradient id="woodGrain" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1600" fill="url(#bgWood)" />
+  <ellipse cx="600" cy="620" rx="520" ry="470" fill="url(#woodGlow)" />
+  <g transform="translate(220 520)">
+    <rect width="760" height="540" rx="56" fill="rgba(15, 23, 42, 0.68)" stroke="rgba(226, 232, 240, 0.2)" stroke-width="4" />
+    <g transform="translate(80 120)">
+      <rect x="0" y="0" width="600" height="220" rx="28" fill="rgba(15, 23, 42, 0.78)" stroke="rgba(148, 163, 184, 0.35)" stroke-width="3" />
+      <g transform="translate(40 40)">
+        <rect x="0" y="0" width="220" height="140" rx="18" fill="url(#woodGrain)" />
+        <path d="M20 40 C60 10 120 10 180 40" stroke="rgba(146, 64, 14, 0.45)" stroke-width="6" fill="none" />
+        <path d="M20 80 C60 50 120 50 180 80" stroke="rgba(146, 64, 14, 0.35)" stroke-width="6" fill="none" />
+        <path d="M20 120 C60 90 120 90 180 120" stroke="rgba(146, 64, 14, 0.25)" stroke-width="6" fill="none" />
+        <rect x="40" y="48" width="60" height="12" rx="6" fill="rgba(15, 23, 42, 0.35)" />
+        <rect x="120" y="96" width="80" height="12" rx="6" fill="rgba(15, 23, 42, 0.35)" />
+      </g>
+      <g transform="translate(280 34)">
+        <rect x="0" y="0" width="240" height="24" rx="12" fill="rgba(226, 232, 240, 0.22)" />
+        <rect x="0" y="48" width="260" height="24" rx="12" fill="rgba(226, 232, 240, 0.16)" />
+        <rect x="0" y="96" width="220" height="24" rx="12" fill="rgba(226, 232, 240, 0.16)" />
+      </g>
+      <g transform="translate(280 160)" fill="rgba(226, 232, 240, 0.25)">
+        <rect x="0" y="0" width="160" height="14" rx="7" />
+        <rect x="0" y="28" width="220" height="14" rx="7" />
+      </g>
+    </g>
+    <g transform="translate(120 360)" stroke-linecap="round" stroke-width="18">
+      <line x1="0" y1="0" x2="200" y2="120" stroke="#facc15" />
+      <line x1="60" y1="-30" x2="260" y2="90" stroke="#f97316" opacity="0.5" />
+      <line x1="140" y1="-60" x2="340" y2="60" stroke="#fb923c" opacity="0.35" />
+    </g>
+    <g transform="translate(360 340)">
+      <rect x="0" y="0" width="120" height="220" rx="36" fill="rgba(248, 113, 113, 0.85)" />
+      <rect x="40" y="-60" width="40" height="120" rx="20" fill="rgba(248, 250, 252, 0.8)" />
+      <rect x="28" y="140" width="64" height="16" rx="8" fill="rgba(15, 23, 42, 0.35)" />
+    </g>
+    <g transform="translate(520 320)">
+      <rect x="0" y="0" width="120" height="240" rx="50" fill="rgba(226, 232, 240, 0.2)" stroke="rgba(148, 163, 184, 0.4)" stroke-width="6" />
+      <line x1="20" y1="60" x2="100" y2="60" stroke="rgba(148, 163, 184, 0.5)" stroke-width="10" stroke-linecap="round" />
+      <line x1="20" y1="120" x2="100" y2="120" stroke="rgba(148, 163, 184, 0.5)" stroke-width="10" stroke-linecap="round" />
+      <line x1="20" y1="180" x2="100" y2="180" stroke="rgba(148, 163, 184, 0.5)" stroke-width="10" stroke-linecap="round" />
+    </g>
+  </g>
+  <g transform="translate(220 1150)" fill="rgba(255, 255, 255, 0.3)">
+    <circle cx="60" cy="40" r="6" />
+    <circle cx="260" cy="80" r="5" />
+    <circle cx="520" cy="30" r="7" />
+    <circle cx="760" cy="70" r="4" />
+    <circle cx="920" cy="50" r="6" />
+  </g>
+</svg>
