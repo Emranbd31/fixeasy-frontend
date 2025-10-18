@@ -116,6 +116,36 @@
   gap: 0.5rem;
 }
 
+.registration-field--upload {
+  gap: 0.75rem;
+}
+
+.registration-field__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.registration-field__label {
+  font-weight: 600;
+  color: #1d2939;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.registration-field__tag {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(148, 163, 184, 0.24);
+  color: rgba(15, 23, 42, 0.72);
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+}
+
 .registration-field--group {
   gap: 0.75rem;
 }
@@ -168,6 +198,189 @@
   padding: 0.75rem 1rem;
   background-color: #ffffff;
   border-style: dashed;
+}
+
+.registration-field.has-error .registration-field__label {
+  color: #b42318;
+}
+
+.verification-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(244, 248, 255, 0.66));
+  border-radius: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  box-shadow: 0 40px 80px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(22px);
+  padding: clamp(1.8rem, 3vw, 2.4rem);
+  display: grid;
+  gap: 1.75rem;
+}
+
+.verification-card__intro {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.verification-card__intro h3 {
+  font-size: 1.32rem;
+  font-weight: 700;
+  color: #111c3d;
+}
+
+.verification-card__intro p {
+  color: rgba(15, 23, 42, 0.66);
+  font-size: 0.97rem;
+}
+
+.upload-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 1.5rem;
+}
+
+.upload-status__spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid rgba(76, 102, 255, 0.25);
+  border-top-color: rgba(76, 102, 255, 0.85);
+  animation: uploadSpin 0.75s linear infinite;
+}
+
+.upload-status__text {
+  font-size: 0.85rem;
+  color: rgba(15, 23, 42, 0.72);
+}
+
+.upload-status__success {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: rgba(34, 197, 94, 0.16);
+  color: #047857;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+
+.upload-progress {
+  width: 96px;
+  height: 6px;
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.upload-progress__bar {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(76, 102, 255, 0.85), rgba(34, 211, 166, 0.85));
+  transition: width 0.25s ease;
+}
+
+.upload-dropzone {
+  position: relative;
+  border: 2px dashed rgba(99, 112, 142, 0.3);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 1.25rem 1.4rem;
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+  text-align: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+}
+
+.upload-dropzone__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-dropzone__content {
+  pointer-events: none;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.upload-dropzone__action {
+  font-weight: 600;
+  color: #4c6fff;
+}
+
+.upload-dropzone__hint {
+  font-size: 0.88rem;
+  color: rgba(71, 85, 105, 0.85);
+}
+
+.upload-dropzone__meta {
+  font-size: 0.78rem;
+  color: rgba(100, 116, 139, 0.8);
+  letter-spacing: 0.02em;
+}
+
+.upload-dropzone.is-dragover {
+  border-color: rgba(76, 102, 255, 0.75);
+  background: rgba(76, 102, 255, 0.06);
+  box-shadow: 0 0 0 4px rgba(76, 102, 255, 0.12);
+}
+
+.upload-dropzone.is-success {
+  border-color: rgba(34, 197, 94, 0.55);
+  background: rgba(236, 253, 245, 0.82);
+}
+
+.upload-dropzone.has-error {
+  border-color: rgba(220, 38, 38, 0.66);
+  background: rgba(254, 242, 242, 0.9);
+}
+
+.upload-preview {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.92);
+  max-width: 220px;
+}
+
+.upload-preview img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.upload-file-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.upload-file-meta__name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.upload-file-meta__link {
+  font-size: 0.85rem;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.upload-file-meta__link:hover {
+  text-decoration: underline;
+}
+
+@keyframes uploadSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .registration-hint {
