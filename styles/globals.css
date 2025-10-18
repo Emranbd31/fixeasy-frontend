@@ -355,6 +355,220 @@ img {
   font-weight: 600;
 }
 
+.signup-index__auth {
+  display: grid;
+  gap: 2rem;
+}
+
+.signup-index__auth-card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  padding: clamp(2rem, 6vw, 3.5rem);
+  display: grid;
+  gap: 2rem;
+}
+
+.signup-index__auth-head {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.signup-index__roles {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.signup-index__roles-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--primary-dark);
+}
+
+.signup-index__roles-grid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.signup-index__role {
+  position: relative;
+  display: grid;
+  gap: 0.4rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(255, 255, 255, 0.75);
+  transition: border-color var(--speed-fast) var(--ease), box-shadow var(--speed-fast) var(--ease);
+  cursor: pointer;
+}
+
+.signup-index__role input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.signup-index__role-title {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.signup-index__role-helper {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.signup-index__role.is-active {
+  border-color: rgba(37, 99, 235, 0.6);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.18);
+}
+
+.signup-index__oauth {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.signup-index__oauth-btn {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+  padding: 0.85rem 1.5rem;
+  font-weight: 600;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  background: #fff;
+  transition: transform var(--speed-fast) var(--ease), box-shadow var(--speed-fast) var(--ease);
+}
+
+.signup-index__oauth-btn:hover,
+.signup-index__oauth-btn:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.signup-index__oauth-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.signup-index__oauth-btn--google {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 255, 0.95));
+}
+
+.signup-index__oauth-btn--apple {
+  background: #0f172a;
+  color: #fff;
+}
+
+.signup-index__auth-error {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.signup-index__auth-warning {
+  background: rgba(250, 204, 21, 0.18);
+  border-radius: 0.9rem;
+  padding: 0.85rem 1.1rem;
+  color: #854d0e;
+  font-weight: 600;
+}
+
+.signup-index__divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+}
+
+.signup-index__divider::before,
+.signup-index__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.signup-index__form {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.signup-index__form-row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .signup-index__form-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
+
+.signup-index__form-row--stacked {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.signup-index__form input {
+  border-radius: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.signup-index__form button {
+  border-radius: 999px;
+  padding: 0.75rem 1.6rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--speed-fast) var(--ease), box-shadow var(--speed-fast) var(--ease);
+}
+
+.signup-index__form button:hover,
+.signup-index__form button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.signup-index__form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.signup-index__form-hint {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.signup-index__form-hint--success {
+  color: #047857;
+}
+
+.signup-index__form-hint--error {
+  color: #b91c1c;
+}
+
 /* === FOOTER === */
 .clean-footer {
   background: rgba(15, 23, 42, 0.95);

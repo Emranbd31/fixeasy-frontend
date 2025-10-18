@@ -79,6 +79,7 @@ export default function ProfessionalRegistration() {
   const [submitting, setSubmitting] = useState(false)
   const [submissionError, setSubmissionError] = useState('')
   const [submissionSuccess, setSubmissionSuccess] = useState(false)
+  const [toast, setToast] = useState('')
 
   // Clean up image previews
   useEffect(() => {
@@ -286,6 +287,7 @@ export default function ProfessionalRegistration() {
       setUploadProgress(initialUploads)
       setPreviews({ photoId: null, selfie: null, insurance: null })
       setCurrentStep(3)
+      setToast('Verification documents received. We will be in touch shortly!')
     } catch (err) {
       console.error(err)
       setSubmissionError('Could not submit your registration. Try again shortly.')
@@ -293,6 +295,12 @@ export default function ProfessionalRegistration() {
       setSubmitting(false)
     }
   }
+
+  useEffect(() => {
+    if (!toast) return
+    const timeout = setTimeout(() => setToast(''), 5000)
+    return () => clearTimeout(timeout)
+  }, [toast])
 
   // --- UI RENDER ---
   return (
@@ -303,6 +311,11 @@ export default function ProfessionalRegistration() {
       </Head>
 
       <div className="registration-layout__container">
+        {toast ? (
+          <div className="registration-toast" role="status">
+            {toast}
+          </div>
+        ) : null}
         <header className="registration-header">
           <span className="registration-header__eyebrow">Join as a professional</span>
           <h1 className="registration-header__title">Become part of Ireland’s trusted FixEasy network</h1>
@@ -434,6 +447,9 @@ export default function ProfessionalRegistration() {
             )}
             {currentStep === 3 && (
               <button type="submit" disabled={submitting}>
+                {submitting ? (
+                  <span className="registration-spinner" aria-hidden="true" />
+                ) : null}
                 {submitting ? 'Submitting…' : 'Submit'}
               </button>
             )}

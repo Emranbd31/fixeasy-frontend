@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,6 +12,10 @@ const HERO_FLAIR = [
   { icon: '🛡️', label: 'Garda-vetted & insured professionals' },
   { icon: '💬', label: 'Live updates from the FixEasy team' }
 ]
+
+const HERO_IMAGE_SRC =
+  'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80'
+const HERO_IMAGE_BLUR = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
 
 const HERO_METRICS = [
   { headline: '18k+', subline: 'Jobs completed nationwide' },
@@ -148,6 +153,45 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [userRole, setUserRole] = useState(null)
   const ribbonItems = useMemo(() => [...HERO_RIBBON, ...HERO_RIBBON], [])
+  const prefersReducedMotion = useReducedMotion()
+
+  const statVariants = {
+    hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 16 },
+    visible: (index) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        delay: prefersReducedMotion ? 0 : 0.1 * index,
+        ease: 'easeOut'
+      }
+    })
+  }
+
+  const fadeSlideVariants = {
+    hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: 'easeOut'
+      }
+    }
+  }
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 20 },
+    visible: (index) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        delay: prefersReducedMotion ? 0 : 0.08 * index,
+        ease: 'easeOut'
+      }
+    })
+  }
 
   /* === Sticky header === */
   useEffect(() => {
@@ -271,11 +315,19 @@ export default function Home() {
                 </Link>
               </div>
               <div className="clean-hero__metrics">
-                {HERO_METRICS.map((stat) => (
-                  <div key={stat.headline} className="clean-hero__stat">
+                {HERO_METRICS.map((stat, index) => (
+                  <motion.div
+                    key={stat.headline}
+                    className="clean-hero__stat"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.5 }}
+                    variants={statVariants}
+                    custom={index}
+                  >
                     <strong>{stat.headline}</strong>
                     <span>{stat.subline}</span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -283,11 +335,13 @@ export default function Home() {
             <div className="clean-hero__visual">
               <div className="clean-hero__image-frame">
                 <Image
-                  src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80"
+                  src={HERO_IMAGE_SRC}
                   alt="FixEasy professional assisting a homeowner"
                   width={520}
                   height={400}
-                  priority
+                  loading="lazy"
+                  placeholder="blur"
+                  blurDataURL={HERO_IMAGE_BLUR}
                   className="clean-hero__image"
                 />
               </div>
@@ -328,7 +382,13 @@ export default function Home() {
               </p>
             </header>
 
-            <div className="clean-experience__grid">
+            <motion.div
+              className="clean-experience__grid"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.4 }}
+              variants={fadeSlideVariants}
+            >
               {EXPERIENCE_CARDS.map((card) => (
                 <article key={card.title}>
                   <span className="clean-experience__icon">{card.icon}</span>
@@ -337,7 +397,7 @@ export default function Home() {
                   <span className="clean-experience__accent">{card.accent}</span>
                 </article>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -467,12 +527,21 @@ export default function Home() {
             </header>
 
             <div className="clean-contact__grid">
-              {CONTACT_OPTIONS.map((opt) => (
-                <a key={opt.title} href={opt.href} className="clean-contact__card">
+              {CONTACT_OPTIONS.map((opt, index) => (
+                <motion.a
+                  key={opt.title}
+                  href={opt.href}
+                  className="clean-contact__card"
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.5 }}
+                  variants={cardVariants}
+                  custom={index}
+                >
                   <h3>{opt.title}</h3>
                   <p>{opt.description}</p>
                   <span className="clean-contact__action">{opt.action}</span>
-                </a>
+                </motion.a>
               ))}
             </div>
           </div>
