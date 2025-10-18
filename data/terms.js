@@ -2,6 +2,7 @@ export const TERMS_VERSIONS = [
   {
     version: 'v1.0',
     effectiveDate: '2024-07-01',
+    lastUpdated: '2024-09-10',
     summary: [
       'Defines FixEasy client and professional platform usage expectations.',
       'Explains verification, scheduling, payment, and dispute processes.',
