@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
-import ServiceIcon from '../components/icons/ServiceIcon'
+import { motion } from 'framer-motion'
+import ServiceCard from '../components/services/ServiceCard'
 import { SERVICE_GROUPS } from '../data/services'
 
 /* === HERO DATA === */
@@ -148,6 +149,16 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [userRole, setUserRole] = useState(null)
   const ribbonItems = useMemo(() => [...HERO_RIBBON, ...HERO_RIBBON], [])
+  const services = useMemo(
+    () =>
+      SERVICE_GROUPS.flatMap((group) =>
+        group.services.map((service) => ({
+          ...service,
+          group: group.title
+        }))
+      ),
+    []
+  )
 
   /* === Sticky header === */
   useEffect(() => {
@@ -353,25 +364,28 @@ export default function Home() {
               </p>
             </header>
 
-            <div className="clean-services__grid">
-              {SERVICE_GROUPS.map((group) => (
-                <article key={group.id} className="clean-services__card">
-                  <h3>{group.title}</h3>
-                  <p>{group.description}</p>
-                  <ul>
-                    {group.services.map((service) => (
-                      <li key={service.id}>
-                        <ServiceIcon type={service.icon} className="clean-services__icon" />
-                        <div>
-                          <strong>{service.name}</strong>
-                          <p>{service.summary}</p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </article>
+            <motion.div
+              className="clean-services__grid"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              {services.map((service, index) => (
+                <ServiceCard key={service.id} service={service} index={index} />
               ))}
-            </div>
+            </motion.div>
+
+            <motion.div
+              className="clean-services__cta-wrapper"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+            >
+              <Link href="/plan" className="clean-services__cta">
+                View All Services
+              </Link>
+            </motion.div>
           </div>
         </section>
 
