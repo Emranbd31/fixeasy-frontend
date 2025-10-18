@@ -19,7 +19,7 @@
   --radius-md: 1.1rem;
 }
 
-/* === RESET === */
+/*  RESET  */
 *,
 *::before,
 *::after {
@@ -119,7 +119,7 @@ main {
   font-size: clamp(1rem, 2vw, 1.12rem);
 }
 
-/* === NAVIGATION === */
+/* NAVIGATION  */
 .clean-nav {
   position: sticky;
   top: 0;
@@ -694,6 +694,7 @@ main {
     grid-column: 1 / -1;
   }
 }
+ codex/fix-configuration-update-issues-b3y0ac
 
 /* === SIGNUP LANDING === */
 .signup-index {
@@ -830,3 +831,5 @@ main {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
 }
+
+ main
