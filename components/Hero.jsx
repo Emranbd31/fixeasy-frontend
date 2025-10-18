@@ -1,5 +1,3 @@
-import { motion } from 'framer-motion'
-
 const navLinks = [
   { href: '#services', label: 'Services' },
   { href: '#how-it-works', label: 'How it works' },
@@ -28,13 +26,7 @@ const jobFeed = [
 
 export default function Hero() {
   return (
-    <motion.section
-      className="hero"
-      aria-labelledby="hero-heading"
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
+    <section className="hero" aria-labelledby="hero-heading">
       <div className="hero__container">
         <header className="hero__top">
           <a className="hero__brand" href="/">
@@ -119,6 +111,6 @@ export default function Hero() {
           </aside>
         </div>
       </div>
-    </motion.section>
+    </section>
   )
 }
