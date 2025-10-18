@@ -73,6 +73,23 @@ const WORKFLOW_STEPS = [
   }
 ]
 
+ codex/fix-configuration-update-issues-91042p
+const TRUST_HIGHLIGHTS = [
+  {
+    title: 'Insurance & compliance',
+    description: 'Professionals maintain active public liability insurance and pass Garda vetting before accepting work.'
+  },
+  {
+    title: 'Secure, cashless payments',
+    description: 'Every transaction is processed via Stripe Connect with detailed receipts and VAT-ready invoices.'
+  },
+  {
+    title: 'Always-on concierge',
+    description: 'Our Dublin support hub tracks each booking, resolves issues, and keeps clients informed in real time.'
+  }
+]
+
+=======
 /* === TRUST HIGHLIGHTS === */
 const TRUST_HIGHLIGHTS = [
   {
@@ -93,6 +110,7 @@ const TRUST_HIGHLIGHTS = [
 ]
 
 /* === CONTACT OPTIONS === */
+ main
 const CONTACT_OPTIONS = [
   {
     title: 'Talk to support',
@@ -121,7 +139,12 @@ export default function Home() {
 
   /* === Sticky header === */
   useEffect(() => {
+ codex/fix-configuration-update-issues-91042p
+    if (typeof window === 'undefined') return
+=======
+ main
     const handleScroll = () => setIsScrolled(window.scrollY > 12)
+    handleScroll()
     window.addEventListener('scroll', handleScroll)
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
@@ -130,6 +153,36 @@ export default function Home() {
   /* === Sync & verify user role === */
   useEffect(() => {
     if (typeof window === 'undefined') return
+ codex/fix-configuration-update-issues-91042p
+
+    let isActive = true
+    const storedRole = window.localStorage.getItem('fixeasy_role')
+    if (storedRole) setUserRole(storedRole)
+
+    const handleStorage = (event) => {
+      if (event.key === 'fixeasy_role') {
+        setUserRole(event.newValue)
+      }
+    }
+
+    window.addEventListener('storage', handleStorage)
+
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
+
+    const verifyAdmin = async () => {
+      if (storedRole || typeof fetch === 'undefined') return
+
+      try {
+        const response = await fetch('/api/auth/admin/session', {
+          signal: controller?.signal
+        })
+        if (!isActive || !response?.ok) return
+        window.localStorage.setItem('fixeasy_role', 'admin')
+        setUserRole('admin')
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Failed to verify admin session', error)
+
     let active = true
 
     const stored = localStorage.getItem('fixeasy_role')
@@ -150,14 +203,23 @@ export default function Home() {
       } catch (err) {
         if (process.env.NODE_ENV !== 'production') {
           console.warn('Admin check failed:', err)
+ main
         }
       }
     }
 
     verifyAdmin()
+ codex/fix-configuration-update-issues-91042p
+
+    return () => {
+      isActive = false
+      window.removeEventListener('storage', handleStorage)
+      controller?.abort()
+
     return () => {
       active = false
       window.removeEventListener('storage', syncRole)
+ main
     }
   }, [])
 
@@ -181,7 +243,10 @@ export default function Home() {
         />
       </Head>
 
+codex/fix-configuration-update-issues-91042p
+    
       {/* === NAVBAR === */}
+ main
       <header className={`clean-nav ${isScrolled ? 'clean-nav--sticky' : ''}`}>
         <div className="container clean-nav__inner">
           <Link href="/" className="clean-nav__brand" aria-label="FixEasy homepage">
@@ -192,7 +257,11 @@ export default function Home() {
           <nav className="clean-nav__links">
             <Link href="#services">Services</Link>
             <Link href="#workflow">How it works</Link>
+ codex/fix-configuration-update-issues-91042p
+            <Link href="#trust">Why FixEasy</Link>
+
             <Link href="#trust">Trust</Link>
+ main
             <Link href="#contact">Contact</Link>
           </nav>
 
@@ -226,20 +295,34 @@ export default function Home() {
               </span>
               <h1>Trusted Professionals. Verified for Your Peace of Mind.</h1>
               <p className="clean-hero__lead">
+ codex/fix-configuration-update-issues-91042p
+                Book FixEasy services with transparent pricing, secure payments, and same-day availability. We connect your home
+                with Garda-vetted experts ready to help across Ireland.
+
                 Transparent pricing, secure payments, and same-day availability.
                 FixEasy connects Irish homes with vetted experts.
+ main
               </p>
               <div className="clean-hero__cta-group">
                 <Link href="/register/client" className="clean-hero__cta clean-hero__cta--primary">
                   Book a Service
                 </Link>
                 <Link href="/register/pro" className="clean-hero__cta clean-hero__cta--secondary">
-                  Join as Professional
+                  Join as a Professional
                 </Link>
               </div>
               <div className="clean-hero__metrics">
+ codex/fix-configuration-update-issues-91042p
+                {HERO_METRICS.map((stat, index) => (
+                  <div
+                    key={stat.headline}
+                    className="clean-hero__stat"
+                    style={{ '--delay': `${index * 80}ms` }}
+                  >
+
                 {HERO_METRICS.map((stat) => (
                   <div key={stat.headline} className="clean-hero__stat">
+ main
                     <strong>{stat.headline}</strong>
                     <span>{stat.subline}</span>
                   </div>
@@ -252,10 +335,17 @@ export default function Home() {
                 <Image
                   src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80"
                   alt="FixEasy professional assisting a homeowner"
+ codex/fix-configuration-update-issues-91042p
+                  fill
+                  priority
+                  className="clean-hero__image"
+                  sizes="(min-width: 1024px) 420px, (min-width: 768px) 360px, 88vw"
+
                   width={520}
                   height={400}
                   priority
                   className="clean-hero__image"
+ main
                 />
               </div>
               <div className="clean-hero__ticket">
@@ -274,14 +364,92 @@ export default function Home() {
           </div>
         </section>
 
+ codex/fix-configuration-update-issues-91042p
+        <section className="section clean-experience">
+          <div className="container">
+            <div className="section__header">
+              <span className="section__eyebrow">Why FixEasy</span>
+              <h2 className="section__title">Premium support for every booking</h2>
+              <p className="section__description">
+                Every request is paired with concierge oversight, quality scoring, and digital audit trails from quote to
+                completion.
+              </p>
+            </div>
+            <div className="clean-experience__grid">
+              {EXPERIENCE_CARDS.map((card) => (
+                <article key={card.title}>
+                  <span className="clean-experience__icon" aria-hidden="true">
+                    {card.icon}
+                  </span>
+                  <h3>{card.title}</h3>
+                  <p>{card.description}</p>
+                  <span className="clean-experience__accent">{card.accent}</span>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="clean-ribbon" aria-hidden="true">
+          <div className="clean-ribbon__track">
+            {ribbonItems.map((item, index) => (
+              <span key={`${item}-${index}`} className="clean-ribbon__item">
+                {item}
+              </span>
+=======
         {/* === RIBBON === */}
         <section className="clean-ribbon" aria-hidden="true">
           <div className="clean-ribbon__track">
             {ribbonItems.map((item, i) => (
               <span key={`${item}-${i}`}>{item}</span>
+ main
             ))}
           </div>
         </section>
+
+ codex/fix-configuration-update-issues-91042p
+        <section id="services" className="section clean-services">
+          <div className="section__header">
+            <span className="section__eyebrow">Service catalogue</span>
+            <h2 className="section__title">Every FixEasy specialist, in one place</h2>
+            <p className="section__description">
+              From urgent call-outs to planned projects, book trusted tradespeople with full insurance, reviews, and digital
+              paperwork.
+            </p>
+          </div>
+          <div className="clean-services__grid">
+            {SERVICE_GROUPS.map((group) => (
+              <article key={group.id} className="clean-services__card">
+                <header>
+                  <h3>{group.title}</h3>
+                  <p>{group.description}</p>
+                </header>
+                <ul>
+                  {group.services.map((service) => (
+                    <li key={service.id}>
+                      <ServiceIcon type={service.icon} className="clean-services__icon" />
+                      <div>
+                        <strong>{service.name}</strong>
+                        <p>{service.summary}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="workflow" className="section clean-workflow">
+          <div className="container clean-workflow__inner">
+            <div className="clean-workflow__intro">
+              <span className="section__eyebrow">How FixEasy works</span>
+              <h2>Secure bookings with concierge support</h2>
+              <p>
+                Every request is triaged by our support team, matched to a specialist, and tracked through completion so you can
+                focus on the outcome — not the admin.
+              </p>
+            </div>
 
         {/* === WHY FIXEASY === */}
         <section id="why" className="section clean-experience">
@@ -354,6 +522,7 @@ export default function Home() {
               </p>
             </header>
 
+ main
             <ol className="clean-workflow__steps">
               {WORKFLOW_STEPS.map((step) => (
                 <li key={step.step}>
@@ -368,6 +537,18 @@ export default function Home() {
           </div>
         </section>
 
+ codex/fix-configuration-update-issues-91042p
+        <section id="trust" className="section clean-trust">
+          <div className="container">
+            <div className="section__header">
+              <span className="section__eyebrow">Trust & safety</span>
+              <h2 className="section__title">Safeguards for clients, professionals, and data</h2>
+              <p className="section__description">
+                FixEasy blends compliance, security tooling, and responsive support to keep every interaction accountable and
+                transparent.
+              </p>
+            </div>
+
         {/* === TRUST === */}
         <section id="trust" className="section clean-trust">
           <div className="container">
@@ -380,6 +561,7 @@ export default function Home() {
               </p>
             </header>
 
+ main
             <div className="clean-trust__grid">
               {TRUST_HIGHLIGHTS.map((item) => (
                 <article key={item.title}>
@@ -390,6 +572,23 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+ codex/fix-configuration-update-issues-91042p
+        <section id="contact" className="section clean-contact">
+          <div className="container">
+            <div className="section__header">
+              <span className="section__eyebrow">Talk to the team</span>
+              <h2 className="section__title">Ready when you need us</h2>
+              <p className="section__description">
+                Book online or reach out directly — our concierge team keeps every FixEasy booking running smoothly.
+              </p>
+            </div>
+            <div className="clean-contact__grid">
+              {CONTACT_OPTIONS.map((option) => (
+                <a key={option.title} href={option.href} className="clean-contact__card">
+                  <h3>{option.title}</h3>
+                  <p>{option.description}</p>
+                  <span className="clean-contact__action">{option.action}</span>
 
         {/* === CONTACT === */}
         <section id="contact" className="section clean-contact">
@@ -406,6 +605,7 @@ export default function Home() {
                   <h3>{opt.title}</h3>
                   <p>{opt.description}</p>
                   <span className="clean-contact__action">{opt.action}</span>
+ main
                 </a>
               ))}
             </div>
@@ -413,24 +613,37 @@ export default function Home() {
         </section>
       </main>
 
+ codex/fix-configuration-update-issues-91042p
+
       {/* === FOOTER === */}
+ main
       <footer className="clean-footer">
         <div className="container clean-footer__inner">
           <div>
             <span className="clean-footer__logo">ƒ</span>
+ codex/fix-configuration-update-issues-91042p
+            <p>FixEasy connects households and businesses with vetted professionals nationwide.</p>
+=======
             <p>
               FixEasy connects homes and businesses with trusted professionals
               across Ireland.
             </p>
+ main
           </div>
           <div className="clean-footer__links">
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>
+ codex/fix-configuration-update-issues-91042p
+            <Link href="/register/pro">Professional onboarding</Link>
+          </div>
+          <p className="clean-footer__copy">© {new Date().getFullYear()} FixEasy. All rights reserved.</p>
+
             <Link href="/register/pro">Join as Professional</Link>
           </div>
           <p className="clean-footer__copy">
             © {new Date().getFullYear()} FixEasy. All rights reserved.
           </p>
+ main
         </div>
       </footer>
     </div>
