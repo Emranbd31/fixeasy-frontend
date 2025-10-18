@@ -114,6 +114,36 @@ const CONTACT_OPTIONS = [
   }
 ]
 
+const ROLLOUT_PILLARS = [
+  {
+    title: 'Operational readiness',
+    description: 'Reliability first: observability, runbooks, and rapid rollback paths.',
+    bullets: [
+      'Unified monitoring with BetterStack, Sentry, and Vercel Analytics.',
+      'Deployment guardrails with preview gates and automated QA.',
+      'Error budgets shared across product, ops, and engineering.'
+    ]
+  },
+  {
+    title: 'Trust & compliance',
+    description: 'Security as a product feature across clients, pros, and admins.',
+    bullets: [
+      'Turnstile, device trust, and MFA rolled out on every critical flow.',
+      'Quarterly RLS reviews and access recertification across Supabase.',
+      'Signed document storage with audit logs and retention policies.'
+    ]
+  },
+  {
+    title: 'Growth loops',
+    description: 'Delightful journeys that convert curious visitors into loyal advocates.',
+    bullets: [
+      'Guided intake with instant quotes and smart recommendations.',
+      'SEO-rich service pages with CMS-controlled blocks.',
+      'Continuous NPS feedback powering coaching and feature bets.'
+    ]
+  }
+]
+
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [userRole, setUserRole] = useState(null)
@@ -235,6 +265,9 @@ export default function Home() {
                 </Link>
                 <Link href="/register/pro" className="clean-hero__cta clean-hero__cta--secondary">
                   Join as Professional
+                </Link>
+                <Link href="/plan" className="clean-hero__cta clean-hero__cta--ghost">
+                  View rollout plan
                 </Link>
               </div>
               <div className="clean-hero__metrics">
@@ -387,6 +420,39 @@ export default function Home() {
                   <p>{item.description}</p>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* === ROLLOUT === */}
+        <section className="section">
+          <div className="container">
+            <div className="clean-rollout">
+              <header className="section__header">
+                <span className="section__eyebrow">Roadmap</span>
+                <h2>Focused plays for the next 12 months</h2>
+                <p>
+                  We’re sequencing delivery so every launch makes FixEasy more reliable, more trusted, and easier to grow.
+                </p>
+              </header>
+
+              <div className="clean-rollout__grid">
+                {ROLLOUT_PILLARS.map((pillar) => (
+                  <article key={pillar.title} className="clean-rollout__card">
+                    <h3>{pillar.title}</h3>
+                    <p>{pillar.description}</p>
+                    <ul>
+                      {pillar.bullets.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+
+              <Link href="/plan" className="clean-rollout__cta">
+                Explore the full rollout plan
+              </Link>
             </div>
           </div>
         </section>
