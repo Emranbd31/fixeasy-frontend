@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import ServiceIcon from '../components/icons/ServiceIcon'
 import { SERVICE_GROUPS } from '../data/services'
 
@@ -17,6 +18,9 @@ const HERO_METRICS = [
   { headline: '1,200+', subline: 'Trade specialists on FixEasy' },
   { headline: '4.9/5', subline: 'Average client rating' }
 ]
+
+const HERO_IMAGE_BLUR =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAE4QJ/hl725QAAAABJRU5ErkJggg=='
 
 const HERO_RIBBON = [
   'Plumbers on call 24/7',
@@ -271,11 +275,18 @@ export default function Home() {
                 </Link>
               </div>
               <div className="clean-hero__metrics">
-                {HERO_METRICS.map((stat) => (
-                  <div key={stat.headline} className="clean-hero__stat">
+                {HERO_METRICS.map((stat, index) => (
+                  <motion.div
+                    key={stat.headline}
+                    className="clean-hero__stat"
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, delay: index * 0.12 }}
+                    viewport={{ once: true, amount: 0.4 }}
+                  >
                     <strong>{stat.headline}</strong>
                     <span>{stat.subline}</span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -283,11 +294,14 @@ export default function Home() {
             <div className="clean-hero__visual">
               <div className="clean-hero__image-frame">
                 <Image
-                  src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80"
-                  alt="FixEasy professional assisting a homeowner"
+                  src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80"
+                  alt="FixEasy electrician wiring a panel"
                   width={520}
                   height={400}
-                  priority
+                  loading="lazy"
+                  placeholder="blur"
+                  blurDataURL={HERO_IMAGE_BLUR}
+                  sizes="(min-width: 1024px) 520px, 90vw"
                   className="clean-hero__image"
                 />
               </div>
@@ -328,16 +342,28 @@ export default function Home() {
               </p>
             </header>
 
-            <div className="clean-experience__grid">
-              {EXPERIENCE_CARDS.map((card) => (
-                <article key={card.title}>
+            <motion.div
+              className="clean-experience__grid"
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              viewport={{ once: true, amount: 0.3 }}
+            >
+              {EXPERIENCE_CARDS.map((card, index) => (
+                <motion.article
+                  key={card.title}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true, amount: 0.4 }}
+                >
                   <span className="clean-experience__icon">{card.icon}</span>
                   <h3>{card.title}</h3>
                   <p>{card.description}</p>
                   <span className="clean-experience__accent">{card.accent}</span>
-                </article>
+                </motion.article>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -467,12 +493,20 @@ export default function Home() {
             </header>
 
             <div className="clean-contact__grid">
-              {CONTACT_OPTIONS.map((opt) => (
-                <a key={opt.title} href={opt.href} className="clean-contact__card">
+              {CONTACT_OPTIONS.map((opt, index) => (
+                <motion.a
+                  key={opt.title}
+                  href={opt.href}
+                  className="clean-contact__card"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, delay: index * 0.1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                >
                   <h3>{opt.title}</h3>
                   <p>{opt.description}</p>
                   <span className="clean-contact__action">{opt.action}</span>
-                </a>
+                </motion.a>
               ))}
             </div>
           </div>
