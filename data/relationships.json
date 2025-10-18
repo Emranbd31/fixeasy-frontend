@@ -1,0 +1,45 @@
+{
+  "entities": [
+    {
+      "id": "clients",
+      "title": "Clients",
+      "description": "Book services, manage jobs, and receive updates through the FixEasy client portal."
+    },
+    {
+      "id": "professionals",
+      "title": "Professionals",
+      "description": "Verified tradespeople with Garda vetting, Stripe payouts, and digital job tracking."
+    },
+    {
+      "id": "bookings",
+      "title": "Bookings",
+      "description": "Central job record that captures scope, schedule, conversations, and payment milestones."
+    },
+    {
+      "id": "documents",
+      "title": "Documents",
+      "description": "KYC, insurance, invoices, and photo evidence stored in Supabase with signed URLs."
+    },
+    {
+      "id": "payments",
+      "title": "Payments",
+      "description": "Stripe Connect manages authorisations, holds, payouts, refunds, and VAT-ready invoices."
+    },
+    {
+      "id": "support",
+      "title": "Support",
+      "description": "Concierge team monitors SLAs, escalations, and security events across the platform."
+    }
+  ],
+  "relationships": [
+    { "from": "clients", "to": "bookings", "label": "creates" },
+    { "from": "bookings", "to": "professionals", "label": "assigns" },
+    { "from": "professionals", "to": "documents", "label": "submits" },
+    { "from": "bookings", "to": "documents", "label": "collects" },
+    { "from": "bookings", "to": "payments", "label": "charges" },
+    { "from": "payments", "to": "professionals", "label": "pays out" },
+    { "from": "support", "to": "bookings", "label": "oversees" },
+    { "from": "support", "to": "clients", "label": "updates" },
+    { "from": "support", "to": "professionals", "label": "coaches" }
+  ]
+}
