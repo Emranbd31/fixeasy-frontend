@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const navLinks = [
   { href: '#services', label: 'Services' },
@@ -27,14 +27,18 @@ const jobFeed = [
 ]
 
 export default function Hero() {
+  const prefersReducedMotion = useReducedMotion()
+
   return (
     <motion.section
-      className="hero"
+      className="hero hero--aurora"
       aria-labelledby="hero-heading"
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.7, ease: 'easeOut' }}
     >
+      <div className="hero__aurora hero__aurora--one" aria-hidden="true" />
+      <div className="hero__aurora hero__aurora--two" aria-hidden="true" />
       <div className="hero__container">
         <header className="hero__top">
           <a className="hero__brand" href="/">

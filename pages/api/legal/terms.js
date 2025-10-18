@@ -12,6 +12,7 @@ export default function handler(req, res) {
     ok: true,
     version: latest.version,
     effectiveDate: latest.effectiveDate,
+    lastUpdated: latest.lastUpdated ?? latest.effectiveDate,
     summary: latest.summary
   })
 }

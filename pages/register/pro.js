@@ -1,25 +1,56 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
+import CameraCapture from '../../components/CameraCapture'
 import { SERVICE_OPTIONS } from '../../data/services'
+import { startSupabaseOAuth } from '../../lib/oauth'
 import { isValidIrishPhone, sanitizePhone, sanitizeText } from '../../lib/validation'
 
 const OTHER_CATEGORY_OPTION = 'Other (please specify)'
+const OTHER_SERVICE_AREA_OPTION = 'Other area (please specify)'
 const categoryOptions = SERVICE_OPTIONS
 
 const serviceAreaOptions = [
+  'Carlow',
+  'Cavan',
+  'Clare',
+  'Cork',
+  'Donegal',
   'Dublin City & County',
-  'Leinster',
-  'Munster',
-  'Connacht',
-  'Ulster (ROI)',
-  'Nationwide (Republic of Ireland)'
+  'Galway',
+  'Kerry',
+  'Kildare',
+  'Kilkenny',
+  'Laois',
+  'Leitrim',
+  'Limerick',
+  'Longford',
+  'Louth',
+  'Mayo',
+  'Meath',
+  'Monaghan',
+  'Offaly',
+  'Roscommon',
+  'Sligo',
+  'Tipperary',
+  'Waterford',
+  'Westmeath',
+  'Wexford',
+  'Wicklow',
+  'Nationwide (Republic of Ireland)',
+  'Northern Ireland (on request)',
+  OTHER_SERVICE_AREA_OPTION
+]
+
+const LOGIN_PROVIDERS = [
+  { id: 'google', label: 'Continue with Google', icon: '🟦' },
+  { id: 'apple', label: 'Continue with Apple', icon: '' }
 ]
 
 const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png']
 const uploadFields = ['photoId', 'selfie', 'insurance']
 const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '')
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-const SUPABASE_PRO_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_PRO_BUCKET || 'professional-documents'
+const SUPABASE_PRO_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_PRO_BUCKET || 'pro-verifications'
 
 const initialState = {
   fullName: '',
@@ -28,6 +59,7 @@ const initialState = {
   serviceCategories: [],
   serviceAreas: [],
   otherCategoryDetail: '',
+  otherServiceAreaDetail: '',
   consent: false
 }
 
@@ -54,6 +86,8 @@ export default function ProfessionalRegistration() {
   const [submitting, setSubmitting] = useState(false)
   const [submissionError, setSubmissionError] = useState('')
   const [submissionSuccess, setSubmissionSuccess] = useState(false)
+  const [isCameraOpen, setIsCameraOpen] = useState(false)
+  const [oauthError, setOauthError] = useState('')
 
   // Clean up image previews
   useEffect(() => {
@@ -69,12 +103,23 @@ export default function ProfessionalRegistration() {
     [formData.serviceCategories]
   )
 
+  const otherAreaSelected = useMemo(
+    () => formData.serviceAreas.includes(OTHER_SERVICE_AREA_OPTION),
+    [formData.serviceAreas]
+  )
+
   // Reset "Other service" when deselected
   useEffect(() => {
     if (!otherCategorySelected && formData.otherCategoryDetail) {
       setFormData((prev) => ({ ...prev, otherCategoryDetail: '' }))
     }
   }, [formData.otherCategoryDetail, otherCategorySelected])
+
+  useEffect(() => {
+    if (!otherAreaSelected && formData.otherServiceAreaDetail) {
+      setFormData((prev) => ({ ...prev, otherServiceAreaDetail: '' }))
+    }
+  }, [formData.otherServiceAreaDetail, otherAreaSelected])
 
   const handleInputChange = (event) => {
     const { name, value } = event.target
@@ -95,6 +140,15 @@ export default function ProfessionalRegistration() {
     const { checked } = event.target
     setFormData((prev) => ({ ...prev, consent: checked }))
     setErrors((prev) => ({ ...prev, consent: undefined }))
+  }
+
+  const handleOAuth = async (provider) => {
+    try {
+      setOauthError('')
+      await startSupabaseOAuth(provider, 'pro')
+    } catch (error) {
+      setOauthError(error.message)
+    }
   }
 
   const resetPreview = (field) => {
@@ -148,8 +202,7 @@ export default function ProfessionalRegistration() {
     }
   }
 
-  const handleFileChange = (field) => async (event) => {
-    const file = event.target.files?.[0]
+  const processFile = async (field, file) => {
     resetPreview(field)
     setUploadedDocuments((prev) => ({ ...prev, [field]: null }))
     setUploadProgress((prev) => ({ ...prev, [field]: 0 }))
@@ -177,6 +230,24 @@ export default function ProfessionalRegistration() {
     await uploadDocument(field, file)
   }
 
+  const handleFileChange = (field) => async (event) => {
+    const file = event.target.files?.[0]
+    await processFile(field, file)
+  }
+
+  const handleSelfieCapture = async (file) => {
+    if (!file) {
+      setIsCameraOpen(false)
+      return
+    }
+
+    try {
+      await processFile('selfie', file)
+    } finally {
+      setIsCameraOpen(false)
+    }
+  }
+
   const runStepValidation = (step) => {
     const validation = {}
 
@@ -190,6 +261,8 @@ export default function ProfessionalRegistration() {
       if (otherCategorySelected && !sanitizeText(formData.otherCategoryDetail))
         validation.otherCategoryDetail = 'Describe the additional service.'
       if (formData.serviceAreas.length === 0) validation.serviceAreas = 'Select at least one service area.'
+      if (otherAreaSelected && !sanitizeText(formData.otherServiceAreaDetail))
+        validation.otherServiceAreaDetail = 'Share the locations you cover.'
     }
 
     if (step === 2) {
@@ -215,6 +288,7 @@ export default function ProfessionalRegistration() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmissionError('')
+    setSubmissionSuccess(false)
     const validation = { ...runStepValidation(1), ...runStepValidation(2), ...runStepValidation(3) }
     if (Object.keys(validation).length) return setErrors(validation)
 
@@ -226,6 +300,7 @@ export default function ProfessionalRegistration() {
       serviceCategories: formData.serviceCategories,
       otherCategoryDetail: sanitizeText(formData.otherCategoryDetail),
       serviceAreas: formData.serviceAreas,
+      otherServiceAreaDetail: sanitizeText(formData.otherServiceAreaDetail),
       consent: formData.consent,
       verificationDocuments: {
         photo_id_url: uploadedDocuments.photoId?.path ?? '',
@@ -270,22 +345,59 @@ export default function ProfessionalRegistration() {
         </header>
 
         <form className="registration-form" onSubmit={handleSubmit}>
+          {currentStep === 1 ? (
+            <>
+              <div className="registration-login-options" role="group" aria-label="Continue with a provider">
+                {LOGIN_PROVIDERS.map((provider) => (
+                  <button
+                    key={provider.id}
+                    type="button"
+                    className="registration-login-options__button aurora-auth-button"
+                    onClick={() => handleOAuth(provider.id)}
+                  >
+                    <span aria-hidden="true" className="aurora-auth-button__icon">
+                      {provider.icon}
+                    </span>
+                    {provider.label}
+                  </button>
+                ))}
+              </div>
+              {oauthError ? (
+                <p role="alert" className="registration-hint registration-hint--error">
+                  {oauthError}
+                </p>
+              ) : null}
+              <div className="registration-divider">
+                <span>or continue below</span>
+              </div>
+            </>
+          ) : null}
+
           {/* STEP 1: Info */}
           {currentStep === 1 && (
             <>
               <div className="registration-field">
-                <label>Full Name / Business Name</label>
-                <input name="fullName" value={formData.fullName} onChange={handleInputChange} />
+                <label htmlFor="fullName">Full Name / Business Name</label>
+                <input id="fullName" name="fullName" value={formData.fullName} onChange={handleInputChange} />
+                {errors.fullName ? (
+                  <p className="registration-hint registration-hint--error">{errors.fullName}</p>
+                ) : null}
               </div>
 
               <div className="registration-field">
-                <label>Email</label>
-                <input name="email" type="email" value={formData.email} onChange={handleInputChange} />
+                <label htmlFor="email">Email</label>
+                <input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} />
+                {errors.email ? (
+                  <p className="registration-hint registration-hint--error">{errors.email}</p>
+                ) : null}
               </div>
 
               <div className="registration-field">
-                <label>Phone</label>
-                <input name="phone" value={formData.phone} onChange={handleInputChange} />
+                <label htmlFor="phone">Phone</label>
+                <input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} />
+                {errors.phone ? (
+                  <p className="registration-hint registration-hint--error">{errors.phone}</p>
+                ) : null}
               </div>
 
               <div className="registration-field">
@@ -302,17 +414,24 @@ export default function ProfessionalRegistration() {
                     </button>
                   ))}
                 </div>
+                {errors.serviceCategories ? (
+                  <p className="registration-hint registration-hint--error">{errors.serviceCategories}</p>
+                ) : null}
               </div>
 
               {otherCategorySelected && (
                 <div className="registration-field">
-                  <label>Other Category Details</label>
+                  <label htmlFor="otherCategoryDetail">Other Category Details</label>
                   <input
+                    id="otherCategoryDetail"
                     name="otherCategoryDetail"
                     value={formData.otherCategoryDetail}
                     onChange={handleInputChange}
                     placeholder="e.g. Heritage restoration"
                   />
+                  {errors.otherCategoryDetail ? (
+                    <p className="registration-hint registration-hint--error">{errors.otherCategoryDetail}</p>
+                  ) : null}
                 </div>
               )}
 
@@ -330,27 +449,83 @@ export default function ProfessionalRegistration() {
                     </button>
                   ))}
                 </div>
+                {errors.serviceAreas ? (
+                  <p className="registration-hint registration-hint--error">{errors.serviceAreas}</p>
+                ) : null}
               </div>
+
+              {otherAreaSelected && (
+                <div className="registration-field">
+                  <label htmlFor="otherServiceAreaDetail">Other Service Areas</label>
+                  <input
+                    id="otherServiceAreaDetail"
+                    name="otherServiceAreaDetail"
+                    value={formData.otherServiceAreaDetail}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Cross-border projects, seasonal work"
+                  />
+                  {errors.otherServiceAreaDetail ? (
+                    <p className="registration-hint registration-hint--error">{errors.otherServiceAreaDetail}</p>
+                  ) : null}
+                </div>
+              )}
             </>
           )}
 
           {/* STEP 2: Verification */}
           {currentStep === 2 && (
             <>
-              {uploadFields.map((field) => (
-                <div key={field} className="registration-field">
-                  <label>{fileLabels[field]}</label>
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={handleFileChange(field)}
-                  />
-                  {previews[field] && <img src={previews[field]} alt="Preview" style={{ maxWidth: '150px' }} />}
-                  {uploadedDocuments[field]?.name && (
-                    <p>Uploaded: {uploadedDocuments[field].name}</p>
-                  )}
-                </div>
-              ))}
+              {uploadFields.map((field) => {
+                const progress = uploadProgress[field]
+                const uploadedName = uploadedDocuments[field]?.name
+                const optional = optionalFields.has(field)
+
+                return (
+                  <div key={field} className="registration-field registration-field--upload">
+                    <label htmlFor={`${field}-upload`}>
+                      {fileLabels[field]}
+                      {optional ? <span className="registration-optional">Optional</span> : null}
+                    </label>
+                    <div className="registration-upload-controls">
+                      <input
+                        id={`${field}-upload`}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        onChange={handleFileChange(field)}
+                      />
+                      {field === 'selfie' ? (
+                        <button
+                          type="button"
+                          className="registration-secondary registration-upload__camera"
+                          onClick={() => setIsCameraOpen(true)}
+                        >
+                          Use camera
+                        </button>
+                      ) : null}
+                    </div>
+
+                    {previews[field] ? (
+                      <img
+                        src={previews[field]}
+                        alt={`${fileLabels[field]} preview`}
+                        className="registration-upload__preview"
+                      />
+                    ) : null}
+
+                    {progress > 0 && progress < 100 ? (
+                      <p className="registration-hint">Uploading… {progress}%</p>
+                    ) : null}
+
+                    {uploadedName ? (
+                      <p className="registration-success">Uploaded: {uploadedName}</p>
+                    ) : null}
+
+                    {errors[field] ? (
+                      <p className="registration-hint registration-hint--error">{errors[field]}</p>
+                    ) : null}
+                  </div>
+                )
+              })}
             </>
           )}
 
@@ -358,39 +533,58 @@ export default function ProfessionalRegistration() {
           {currentStep === 3 && (
             <>
               <h3>Review & Confirm</h3>
-              <p>{formData.fullName}</p>
-              <label>
+              <p className="registration-summary">{formData.fullName}</p>
+              <label className="registration-checkbox">
                 <input
                   type="checkbox"
                   checked={formData.consent}
                   onChange={handleConsentChange}
                 />
-                I confirm all details are correct.
+                <span>I confirm all details are accurate and documents are genuine.</span>
               </label>
+              {errors.consent ? (
+                <p className="registration-hint registration-hint--error">{errors.consent}</p>
+              ) : null}
             </>
           )}
 
           <div className="registration-step-actions">
             {currentStep > 1 && (
-              <button type="button" onClick={handleBack}>
+              <button type="button" className="registration-secondary" onClick={handleBack}>
                 Back
               </button>
             )}
             {currentStep < 3 && (
-              <button type="button" onClick={handleNext}>
+              <button type="button" className="registration-primary" onClick={handleNext}>
                 Continue
               </button>
             )}
             {currentStep === 3 && (
-              <button type="submit" disabled={submitting}>
-                {submitting ? 'Submitting…' : 'Submit'}
+              <button
+                type="submit"
+                className="registration-primary"
+                disabled={submitting}
+                aria-busy={submitting}
+              >
+                {submitting ? 'Submitting…' : 'Submit application'}
               </button>
             )}
           </div>
 
-          {submissionError && <p className="error">{submissionError}</p>}
-          {submissionSuccess && <p className="success">Submitted successfully ✅</p>}
+          {submissionError ? (
+            <p role="alert" className="registration-hint registration-hint--error">
+              {submissionError}
+            </p>
+          ) : null}
+
+          {submissionSuccess ? (
+            <p role="status" className="registration-success">
+              Application received — we’ll email you once verification is complete.
+            </p>
+          ) : null}
+
         </form>
+        <CameraCapture isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={handleSelfieCapture} />
       </div>
     </div>
   )
