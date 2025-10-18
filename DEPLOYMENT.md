@@ -86,3 +86,5 @@ Ensure the following values are configured in your deployment environment (e.g. 
 | `SUPABASE_AUTH_APPLE_CLIENT_ID` / `SUPABASE_AUTH_APPLE_SECRET` | ⚙️ | Configure Apple OAuth in Supabase. |
 
 After changing authentication provider credentials, rebuild the frontend so the new environment variables are included in the deployed bundle.
+
+Before running a production build locally, double-check that these environment variables are available in your shell so the Next.js process can access Supabase and admin session secrets during compilation.
