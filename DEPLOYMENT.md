@@ -84,6 +84,8 @@ before considering the deployment complete:
 4. Open the latest Vercel build logs to double-check that the Supabase keys and
    new admin session secrets from the Codex update set are detected during the
    build; redeploy immediately if any environment variable is missing.
+5. Confirm the production alias swaps to the new deployment in Vercel so clients
+   see the Codex updates immediately after the merge.
 
 ## Environment Variables
 
