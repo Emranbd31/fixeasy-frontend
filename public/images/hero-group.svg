@@ -1,0 +1,71 @@
+<svg width="960" height="720" viewBox="0 0 960 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="40" x2="880" y2="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e0f2ff" />
+      <stop offset="1" stop-color="#f5fff9" />
+    </linearGradient>
+    <linearGradient id="shadow" x1="200" y1="580" x2="760" y2="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94a3b8" stop-opacity="0.25" />
+      <stop offset="1" stop-color="#94a3b8" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="jacketBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b82f6" />
+      <stop offset="1" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="jacketGreen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22c55e" />
+      <stop offset="1" stop-color="#16a34a" />
+    </linearGradient>
+    <linearGradient id="jacketYellow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#facc15" />
+      <stop offset="1" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="jacketOrange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fb923c" />
+      <stop offset="1" stop-color="#f97316" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="960" height="720" rx="48" fill="url(#bg)" />
+  <ellipse cx="480" cy="612" rx="300" ry="52" fill="url(#shadow)" />
+  <g filter="url(#blur)">
+    <ellipse cx="200" cy="170" rx="110" ry="110" fill="#bfdbfe" opacity="0.35" />
+    <ellipse cx="720" cy="150" rx="160" ry="130" fill="#a7f3d0" opacity="0.3" />
+  </g>
+  <g id="team" transform="translate(180 180)">
+    <g id="pro-left" transform="translate(0 60)">
+      <path d="M120 140c-30 0-52 24-52 60v96h104v-96c0-36-22-60-52-60z" fill="url(#jacketGreen)" />
+      <path d="M120 76c-21 0-40 17-40 40s19 44 40 44 40-21 40-44-19-40-40-40z" fill="#fde68a" />
+      <path d="M120 70c-20 0-36 16-36 36 0 8 2 15 5 21 9-8 19-12 31-12s22 4 31 12c3-6 5-13 5-21 0-20-16-36-36-36z" fill="#94a3b8" opacity="0.35" />
+      <rect x="102" y="96" width="36" height="32" rx="10" fill="#1f2937" opacity="0.18" />
+    </g>
+    <g id="pro-center-left" transform="translate(150)">
+      <path d="M120 160c-34 0-60 28-60 70v116h120V230c0-42-26-70-60-70z" fill="url(#jacketBlue)" />
+      <path d="M120 78c-24 0-44 18-44 46s20 52 44 52 44-24 44-52-20-46-44-46z" fill="#fed7aa" />
+      <path d="M120 70c-26 0-48 20-48 48 0 11 3 20 7 28 11-10 25-16 41-16s30 6 41 16c4-8 7-17 7-28 0-28-22-48-48-48z" fill="#0f172a" opacity="0.18" />
+      <path d="M86 236h68l16 80h-100l16-80z" fill="#1e3a8a" opacity="0.25" />
+    </g>
+    <g id="pro-center-right" transform="translate(330)">
+      <path d="M120 160c-34 0-60 28-60 70v116h120V230c0-42-26-70-60-70z" fill="url(#jacketYellow)" />
+      <path d="M120 78c-24 0-44 18-44 46s20 52 44 52 44-24 44-52-20-46-44-46z" fill="#fef3c7" />
+      <path d="M120 70c-26 0-48 20-48 48 0 11 3 20 7 28 11-10 25-16 41-16s30 6 41 16c4-8 7-17 7-28 0-28-22-48-48-48z" fill="#0f172a" opacity="0.18" />
+      <path d="M90 236h60l18 78h-96l18-78z" fill="#f59e0b" opacity="0.22" />
+    </g>
+    <g id="pro-right" transform="translate(510 60)">
+      <path d="M120 140c-30 0-52 24-52 60v96h104v-96c0-36-22-60-52-60z" fill="url(#jacketOrange)" />
+      <path d="M120 76c-21 0-40 17-40 40s19 44 40 44 40-21 40-44-19-40-40-40z" fill="#fcd34d" />
+      <path d="M120 70c-20 0-36 16-36 36 0 8 2 15 5 21 9-8 19-12 31-12s22 4 31 12c3-6 5-13 5-21 0-20-16-36-36-36z" fill="#94a3b8" opacity="0.35" />
+      <rect x="102" y="96" width="36" height="32" rx="10" fill="#1f2937" opacity="0.18" />
+    </g>
+    <g id="tools" transform="translate(150 250)">
+      <path d="M54 40h32l12 120H42L54 40z" fill="#475569" opacity="0.2" />
+      <rect x="0" y="92" width="110" height="26" rx="13" fill="#475569" opacity="0.2" />
+      <rect x="324" y="80" width="120" height="26" rx="13" fill="#475569" opacity="0.18" />
+      <path d="M336 0h32l18 160h-68L336 0z" fill="#475569" opacity="0.22" />
+    </g>
+  </g>
+  <defs>
+    <filter id="blur" x="0" y="0" width="960" height="520" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="60" />
+    </filter>
+  </defs>
+</svg>
