@@ -32,8 +32,8 @@ const HERO_SERVICE_CARDS = [
     title: 'Emergency electricians on call',
     subtitle: 'Power restored, safety checks completed and EV chargers fitted the same day.',
     image:
-      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1080&q=80',
-    alt: 'Electrician repairing a residential fuse board with tools laid out nearby.',
+      'https://images.unsplash.com/photo-1580894897281-4db9c8f8da26?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Electrician tightening wiring inside a residential fuse board.',
     accent: 'Electricians',
     layout: 'tall',
     parallax: [32, -16]
@@ -42,8 +42,8 @@ const HERO_SERVICE_CARDS = [
     title: 'Hotel-level cleaning teams',
     subtitle: 'Spotless deep cleans, eco detergents and careful handover for homes or rentals.',
     image:
-      'https://images.unsplash.com/photo-1581578731548-57bb5d08e736?auto=format&fit=crop&w=1080&q=80',
-    alt: 'Cleaner wiping a kitchen counter with natural light filling the room.',
+      'https://images.unsplash.com/photo-1582719478250-068aa8c44cf0?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Cleaning professional wiping a marble countertop with fresh linens nearby.',
     accent: 'Cleaning crews',
     layout: 'standard',
     parallax: [22, -12]
@@ -52,8 +52,8 @@ const HERO_SERVICE_CARDS = [
     title: 'Gardens cared for all year',
     subtitle: 'Regular maintenance, lawn care and pressure washing for patios and driveways.',
     image:
-      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1080&q=80',
-    alt: 'Gardener tending plants in a landscaped outdoor space.',
+      'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Gardener trimming hedges along a landscaped garden path.',
     accent: 'Gardeners',
     layout: 'wide',
     parallax: [26, -14]
@@ -62,8 +62,8 @@ const HERO_SERVICE_CARDS = [
     title: 'Joiners for bespoke storage',
     subtitle: 'Custom cabinetry, flooring installs and detailed finish work for every room.',
     image:
-      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1080&q=80',
-    alt: 'Carpenter sanding timber boards inside a workshop.',
+      'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Carpenter measuring timber shelving inside a workshop.',
     accent: 'Carpenters',
     layout: 'standard',
     parallax: [18, -10]
