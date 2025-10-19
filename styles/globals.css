@@ -84,6 +84,13 @@ img {
   margin: 0 auto clamp(2rem, 6vw, 3.5rem);
   max-width: 760px;
 }
+.section__header--left {
+  text-align: left;
+  margin: 0 0 clamp(2rem, 6vw, 3.5rem);
+}
+.section__header--left p {
+  margin-inline: 0;
+}
 .section__eyebrow {
   display: inline-block;
   padding: 0.4rem 1rem;
@@ -309,6 +316,187 @@ img {
   transform: translateY(-3px);
   box-shadow: 0 26px 54px rgba(37, 99, 235, 0.38);
   outline: none;
+}
+
+/* === TRUST SECTION === */
+.clean-trust {
+  position: relative;
+  overflow: hidden;
+}
+
+.clean-trust::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 65%),
+    radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.16), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 255, 0.75));
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.clean-trust__layout {
+  position: relative;
+  display: grid;
+  gap: clamp(2rem, 6vw, 3.5rem);
+  align-items: center;
+}
+
+@media (min-width: 1040px) {
+  .clean-trust__layout {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  }
+}
+
+.clean-trust__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: clamp(1.6rem, 4vw, 2.2rem);
+}
+
+.clean-trust__grid {
+  display: grid;
+  gap: clamp(1.2rem, 3vw, 1.8rem);
+}
+
+@media (min-width: 640px) {
+  .clean-trust__grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+.clean-trust__grid article {
+  padding: clamp(1.4rem, 3vw, 1.8rem);
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--speed-fast) var(--ease), box-shadow var(--speed-fast) var(--ease);
+}
+
+.clean-trust__grid article:hover,
+.clean-trust__grid article:focus-within {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.clean-trust__grid h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.clean-trust__grid p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.clean-trust__visual {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.6rem);
+  justify-items: stretch;
+}
+
+.clean-trust__portrait-grid {
+  display: grid;
+  gap: clamp(0.9rem, 2vw, 1.3rem);
+  width: min(460px, 100%);
+}
+
+@media (min-width: 600px) {
+  .clean-trust__portrait-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.clean-trust__portrait-card {
+  position: relative;
+  margin: 0;
+  border-radius: var(--r-xl);
+  padding: 0.9rem;
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.88), rgba(37, 99, 235, 0.62));
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.24);
+  overflow: hidden;
+  display: grid;
+  gap: 0.75rem;
+  color: #e2e8f0;
+}
+
+.clean-trust__portrait-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(200deg, rgba(59, 130, 246, 0.35), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.clean-trust__portrait-media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: calc(var(--r-xl) - 1rem);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.25);
+  z-index: 1;
+}
+
+.clean-trust__portrait-media img {
+  object-fit: cover;
+  transition: transform var(--speed-slow) var(--ease);
+}
+
+.clean-trust__portrait-card:hover .clean-trust__portrait-media img,
+.clean-trust__portrait-card:focus-within .clean-trust__portrait-media img {
+  transform: scale(1.04);
+}
+
+.clean-trust__portrait-caption {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  position: relative;
+  z-index: 1;
+}
+
+.clean-trust__portrait-caption span {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(191, 219, 254, 0.9);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.clean-trust__badge {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
+  color: #f8fafc;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.clean-trust__badge span {
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(96, 165, 250, 0.9);
+}
+
+.clean-trust__badge p {
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 @media (min-width: 960px) {
