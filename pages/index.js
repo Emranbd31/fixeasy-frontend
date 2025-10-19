@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import ServiceCard from '../components/services/ServiceCard'
 import { SERVICE_GROUPS } from '../data/services'
 import { motion, useInView, useScroll, useTransform } from 'framer-motion'
@@ -30,55 +29,61 @@ const HERO_RIBBON = [
 
 const HERO_SERVICE_CARDS = [
   {
-    title: 'Emergency Electricians',
-    subtitle: 'Rewiring, EV chargers & safety inspections',
-    image: '/images/hero-electrician.svg',
-    alt: 'Electrician testing a residential fuse board',
-    accent: 'Electrician response',
+    title: 'Emergency electricians on call',
+    subtitle: 'Power restored, safety checks completed and EV chargers fitted the same day.',
+    image:
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Electrician repairing a residential fuse board with tools laid out nearby.',
+    accent: 'Electricians',
     layout: 'tall',
     parallax: [32, -16]
   },
   {
-    title: 'Luxury Cleaning Crews',
-    subtitle: 'Deep cleans, tenancy changeovers, eco-friendly products',
-    image: '/images/hero-cleaner.svg',
-    alt: 'Professional cleaner preparing supplies in a modern kitchen',
-    accent: 'Cleaning specialists',
+    title: 'Hotel-level cleaning teams',
+    subtitle: 'Spotless deep cleans, eco detergents and careful handover for homes or rentals.',
+    image:
+      'https://images.unsplash.com/photo-1581578731548-57bb5d08e736?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Cleaner wiping a kitchen counter with natural light filling the room.',
+    accent: 'Cleaning crews',
     layout: 'standard',
     parallax: [22, -12]
   },
   {
-    title: 'Garden & Outdoor Care',
-    subtitle: 'Landscaping, seasonal tidy-ups & pressure washing',
-    image: '/images/hero-gardener.svg',
-    alt: 'Gardener trimming hedges in a landscaped garden',
+    title: 'Gardens cared for all year',
+    subtitle: 'Regular maintenance, lawn care and pressure washing for patios and driveways.',
+    image:
+      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Gardener tending plants in a landscaped outdoor space.',
     accent: 'Gardeners',
     layout: 'wide',
     parallax: [26, -14]
   },
   {
-    title: 'Precision Carpentry',
-    subtitle: 'Custom storage, flooring installs & bespoke fit-outs',
-    image: '/images/hero-carpenter.svg',
-    alt: 'Carpenter marking timber for custom cabinetry',
+    title: 'Joiners for bespoke storage',
+    subtitle: 'Custom cabinetry, flooring installs and detailed finish work for every room.',
+    image:
+      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Carpenter sanding timber boards inside a workshop.',
     accent: 'Carpenters',
     layout: 'standard',
     parallax: [18, -10]
   },
   {
-    title: 'Roof & Gutter Response',
-    subtitle: 'Storm damage surveys, leak repairs & protective coatings',
-    image: '/images/hero-roofer.svg',
-    alt: 'Roofing specialist inspecting exterior cladding',
+    title: 'Roof and gutter specialists',
+    subtitle: 'Emergency leak repairs, fascia replacements and annual roof health surveys.',
+    image:
+      'https://images.unsplash.com/photo-1503389152951-9f343605f61e?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Roofer working on tiled roofing with safety gear.',
     accent: 'Roofing teams',
     layout: 'standard',
     parallax: [24, -12]
   },
   {
-    title: 'On-Demand Tech Support',
-    subtitle: 'Home office, WiFi optimisation & smart home setup',
-    image: '/images/hero-tech.svg',
-    alt: 'IT support specialist configuring home office equipment',
+    title: 'Tech support at your doorstep',
+    subtitle: 'Wi-Fi optimisation, smart home setup and home office troubleshooting without the jargon.',
+    image:
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1080&q=80',
+    alt: 'IT professional configuring a laptop beside networking equipment.',
     accent: 'Tech support',
     layout: 'wide',
     parallax: [20, -18]
@@ -99,12 +104,12 @@ const heroCopyVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } }
 }
 
-const heroGridVariants = {
+const heroVisualVariants = {
   hidden: { opacity: 0, y: 32 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.9, ease: 'easeOut', staggerChildren: 0.12, delayChildren: 0.2 }
+    transition: { duration: 0.9, ease: 'easeOut', delay: 0.1 }
   }
 }
 
@@ -123,6 +128,7 @@ function HeroServiceCard({ card, index }) {
 
   return (
     <motion.article
+      role="listitem"
       ref={cardRef}
       className={classNames.join(' ')}
       variants={heroCardVariants}
@@ -428,10 +434,26 @@ export default function Home() {
               </ul>
             </motion.div>
 
-            <motion.div className="clean-hero__grid" variants={heroGridVariants}>
-              {HERO_SERVICE_CARDS.map((card, index) => (
-                <HeroServiceCard key={card.title} card={card} index={index} />
-              ))}
+            <motion.div className="clean-hero__visual" variants={heroVisualVariants}>
+              <div className="clean-hero__photo-frame">
+                <Image
+                  src="/images/hero-group.svg"
+                  alt="FixEasy home service specialists ready for work"
+                  fill
+                  priority
+                  sizes="(max-width: 600px) 92vw, (max-width: 1024px) 48vw, 560px"
+                  className="clean-hero__photo-image"
+                />
+                <div className="clean-hero__photo-badge">
+                  <span>Nationwide pros</span>
+                  <p>1,200+ specialists across 28 counties</p>
+                </div>
+              </div>
+              <div className="clean-hero__grid" role="list" aria-label="Featured FixEasy services">
+                {HERO_SERVICE_CARDS.map((card, index) => (
+                  <HeroServiceCard key={card.title} card={card} index={index} />
+                ))}
+              </div>
             </motion.div>
           </div>
         </motion.section>
