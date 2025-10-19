@@ -224,6 +224,30 @@ const TRUST_HIGHLIGHTS = [
   }
 ]
 
+const TRUST_PORTRAITS = [
+  {
+    image:
+      'https://images.unsplash.com/photo-1671808161677-7bf5c44089a5?auto=format&fit=crop&w=900&q=80',
+    alt: 'AI-generated portrait of a smiling electrician wearing a FixEasy uniform',
+    role: 'Electrical specialist',
+    caption: 'Continuous background checks with insurance and on-site safety monitoring.'
+  },
+  {
+    image:
+      'https://images.unsplash.com/photo-1671808161135-fdf0b70dd5dc?auto=format&fit=crop&w=900&q=80',
+    alt: 'AI-generated portrait of a cheerful cleaner wearing eco-friendly gear',
+    role: 'Cleaning lead',
+    caption: 'Sustainability pledges, real-time client feedback, and satisfaction scoring.'
+  },
+  {
+    image:
+      'https://images.unsplash.com/photo-1671808162269-8891bc94a7ab?auto=format&fit=crop&w=900&q=80',
+    alt: 'AI-generated portrait of a confident gardener ready for work',
+    role: 'Outdoor specialist',
+    caption: 'Equipment audits, liability coverage, and predictive schedule tracking.'
+  }
+]
+
 /* === CONTACT OPTIONS === */
 const CONTACT_OPTIONS = [
   {
@@ -557,24 +581,55 @@ export default function Home() {
 
         {/* === TRUST === */}
         <section id="trust" className="section clean-trust">
-          <div className="container">
-            <header className="section__header">
-              <span className="section__eyebrow">Trust & Safety</span>
-              <h2>Safeguards for Clients, Pros, and Data</h2>
-              <p>
-                FixEasy combines compliance, insurance, and concierge oversight to
-                protect everyone.
-              </p>
-            </header>
+          <div className="container clean-trust__layout">
+            <div className="clean-trust__content">
+              <header className="section__header section__header--left">
+                <span className="section__eyebrow">Trust &amp; Safety</span>
+                <h2>Safeguards for Clients, Pros, and Data</h2>
+                <p>
+                  FixEasy blends human concierge oversight with AI-driven monitoring so every booking is transparent,
+                  insured, and secure from end to end.
+                </p>
+              </header>
 
-            <div className="clean-trust__grid">
-              {TRUST_HIGHLIGHTS.map((item) => (
-                <article key={item.title}>
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
-                </article>
-              ))}
+              <div className="clean-trust__grid">
+                {TRUST_HIGHLIGHTS.map((item) => (
+                  <article key={item.title}>
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </article>
+                ))}
+              </div>
             </div>
+
+            <aside
+              className="clean-trust__visual"
+              aria-label="AI-generated portraits representing trusted FixEasy professionals"
+            >
+              <div className="clean-trust__portrait-grid">
+                {TRUST_PORTRAITS.map((portrait, index) => (
+                  <figure key={portrait.alt} className="clean-trust__portrait-card">
+                    <div className="clean-trust__portrait-media">
+                      <Image
+                        src={portrait.image}
+                        alt={portrait.alt}
+                        fill
+                        sizes="(max-width: 600px) 80vw, (max-width: 1024px) 40vw, 320px"
+                        priority={index === 0}
+                      />
+                    </div>
+                    <figcaption className="clean-trust__portrait-caption">
+                      <span>{portrait.role}</span>
+                      {portrait.caption}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+              <div className="clean-trust__badge" aria-hidden="true">
+                <span>AI VERIFIED</span>
+                <p>1.2M+ trust signals scored monthly</p>
+              </div>
+            </aside>
           </div>
         </section>
 
