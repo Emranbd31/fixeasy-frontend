@@ -29,55 +29,61 @@ const HERO_RIBBON = [
 
 const HERO_SERVICE_CARDS = [
   {
-    title: 'Emergency Electricians',
-    subtitle: 'Rewiring, EV chargers & safety inspections',
-    image: '/images/hero-electrician.svg',
-    alt: 'Electrician testing a residential fuse board',
-    accent: 'Electrician response',
+    title: 'Emergency electricians on call',
+    subtitle: 'Power restored, safety checks completed and EV chargers fitted the same day.',
+    image:
+      'https://images.unsplash.com/photo-1580894897281-4db9c8f8da26?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Electrician tightening wiring inside a residential fuse board.',
+    accent: 'Electricians',
     layout: 'tall',
     parallax: [32, -16]
   },
   {
-    title: 'Luxury Cleaning Crews',
-    subtitle: 'Deep cleans, tenancy changeovers, eco-friendly products',
-    image: '/images/hero-cleaner.svg',
-    alt: 'Professional cleaner preparing supplies in a modern kitchen',
-    accent: 'Cleaning specialists',
+    title: 'Hotel-level cleaning teams',
+    subtitle: 'Spotless deep cleans, eco detergents and careful handover for homes or rentals.',
+    image:
+      'https://images.unsplash.com/photo-1582719478250-068aa8c44cf0?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Cleaning professional wiping a marble countertop with fresh linens nearby.',
+    accent: 'Cleaning crews',
     layout: 'standard',
     parallax: [22, -12]
   },
   {
-    title: 'Garden & Outdoor Care',
-    subtitle: 'Landscaping, seasonal tidy-ups & pressure washing',
-    image: '/images/hero-gardener.svg',
-    alt: 'Gardener trimming hedges in a landscaped garden',
+    title: 'Gardens cared for all year',
+    subtitle: 'Regular maintenance, lawn care and pressure washing for patios and driveways.',
+    image:
+      'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Gardener trimming hedges along a landscaped garden path.',
     accent: 'Gardeners',
     layout: 'wide',
     parallax: [26, -14]
   },
   {
-    title: 'Precision Carpentry',
-    subtitle: 'Custom storage, flooring installs & bespoke fit-outs',
-    image: '/images/hero-carpenter.svg',
-    alt: 'Carpenter marking timber for custom cabinetry',
+    title: 'Joiners for bespoke storage',
+    subtitle: 'Custom cabinetry, flooring installs and detailed finish work for every room.',
+    image:
+      'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Carpenter measuring timber shelving inside a workshop.',
     accent: 'Carpenters',
     layout: 'standard',
     parallax: [18, -10]
   },
   {
-    title: 'Roof & Gutter Response',
-    subtitle: 'Storm damage surveys, leak repairs & protective coatings',
-    image: '/images/hero-roofer.svg',
-    alt: 'Roofing specialist inspecting exterior cladding',
+    title: 'Roof and gutter specialists',
+    subtitle: 'Emergency leak repairs, fascia replacements and annual roof health surveys.',
+    image:
+      'https://images.unsplash.com/photo-1503389152951-9f343605f61e?auto=format&fit=crop&w=1080&q=80',
+    alt: 'Roofer working on tiled roofing with safety gear.',
     accent: 'Roofing teams',
     layout: 'standard',
     parallax: [24, -12]
   },
   {
-    title: 'On-Demand Tech Support',
-    subtitle: 'Home office, WiFi optimisation & smart home setup',
-    image: '/images/hero-tech.svg',
-    alt: 'IT support specialist configuring home office equipment',
+    title: 'Tech support at your doorstep',
+    subtitle: 'Wi-Fi optimisation, smart home setup and home office troubleshooting without the jargon.',
+    image:
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1080&q=80',
+    alt: 'IT professional configuring a laptop beside networking equipment.',
     accent: 'Tech support',
     layout: 'wide',
     parallax: [20, -18]
