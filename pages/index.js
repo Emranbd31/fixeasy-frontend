@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import ServiceCard from '../components/services/ServiceCard'
 import { SERVICE_GROUPS } from '../data/services'
 import { motion, useInView, useScroll, useTransform } from 'framer-motion'
@@ -99,12 +98,12 @@ const heroCopyVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } }
 }
 
-const heroGridVariants = {
+const heroVisualVariants = {
   hidden: { opacity: 0, y: 32 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.9, ease: 'easeOut', staggerChildren: 0.12, delayChildren: 0.2 }
+    transition: { duration: 0.9, ease: 'easeOut', delay: 0.1 }
   }
 }
 
@@ -123,6 +122,7 @@ function HeroServiceCard({ card, index }) {
 
   return (
     <motion.article
+      role="listitem"
       ref={cardRef}
       className={classNames.join(' ')}
       variants={heroCardVariants}
@@ -428,10 +428,26 @@ export default function Home() {
               </ul>
             </motion.div>
 
-            <motion.div className="clean-hero__grid" variants={heroGridVariants}>
-              {HERO_SERVICE_CARDS.map((card, index) => (
-                <HeroServiceCard key={card.title} card={card} index={index} />
-              ))}
+            <motion.div className="clean-hero__visual" variants={heroVisualVariants}>
+              <div className="clean-hero__photo-frame">
+                <Image
+                  src="/images/hero-group.svg"
+                  alt="FixEasy home service specialists ready for work"
+                  fill
+                  priority
+                  sizes="(max-width: 600px) 92vw, (max-width: 1024px) 48vw, 560px"
+                  className="clean-hero__photo-image"
+                />
+                <div className="clean-hero__photo-badge">
+                  <span>Nationwide pros</span>
+                  <p>1,200+ specialists across 28 counties</p>
+                </div>
+              </div>
+              <div className="clean-hero__grid" role="list" aria-label="Featured FixEasy services">
+                {HERO_SERVICE_CARDS.map((card, index) => (
+                  <HeroServiceCard key={card.title} card={card} index={index} />
+                ))}
+              </div>
             </motion.div>
           </div>
         </motion.section>
