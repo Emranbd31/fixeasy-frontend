@@ -20,10 +20,10 @@ export default function Home() {
         </header>
 
         {/* Hero Section */}
-        <main className="flex flex-col md:flex-row items-center justify-between px-8 md:px-20 py-16 gap-10 flex-1">
-          <div className="max-w-xl">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">Trusted Professionals.<br/>Verified for Your Peace of Mind.</h1>
-            <p className="text-lg text-gray-700 mb-8">Easily book reliable home services in your area. All professionals are vetted to ensure your safety.</p>
+        <main className="flex flex-col items-start justify-center px-8 md:px-20 py-24 gap-8 flex-1 min-h-[85vh] md:min-h-[90vh] max-w-6xl mx-auto">
+          <div className="max-w-2xl">
+            <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">Trusted Professionals.<br/>Verified for Your Peace of Mind.</h1>
+            <p className="text-xl text-gray-700 mb-10">Easily book reliable home services in your area. All professionals are vetted to ensure your safety.</p>
             <div className="flex gap-4 mb-10">
               <button className="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold shadow hover:bg-blue-700 transition-transform transform hover:-translate-x-1 duration-300">Find a Professional</button>
               <button className="px-6 py-3 bg-white text-blue-700 border border-blue-200 rounded-full font-semibold shadow hover:bg-blue-50 transition-transform transform hover:translate-x-1 duration-300">Learn More</button>
@@ -42,9 +42,6 @@ export default function Home() {
                 <div className="text-gray-600 text-sm mt-1">services available</div>
               </div>
             </div>
-          </div>
-          <div className="relative w-full max-w-md flex-shrink-0">
-            <img src="/images/worker-illustration.png.png" alt="Professional Worker" className="rounded-3xl shadow-2xl w-full animate-slideX" style={{animationDuration:'1.8s'}} />
           </div>
         </main>
 
