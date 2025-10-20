@@ -70,13 +70,13 @@ export default function Home() {
                 <img src="/icons/appliances.svg" alt="Appliances" className="w-12 h-12" />
                 <div>
                   <h3 className="font-bold text-gray-900">Appliances</h3>
-                  <p className="text-sm text-gray-600">valuable 24/7</p>
+                  <p className="text-sm text-gray-600">Available 24/7</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
-                <img src="/icons/dedwork.svg" alt="Dedwork" className="w-12 h-12" />
+                <img src="/icons/dedwork.svg" alt="Deadwork" className="w-12 h-12" />
                 <div>
-                  <h3 className="font-bold text-gray-900">Dedwork</h3>
+                  <h3 className="font-bold text-gray-900">Deskwork</h3>
                   <p className="text-sm text-gray-600">assistance</p>
                 </div>
               </div>
@@ -84,7 +84,7 @@ export default function Home() {
                 <img src="/icons/moving.svg" alt="Moving" className="w-12 h-12" />
                 <div>
                   <h3 className="font-bold text-gray-900">Moving</h3>
-                  <p className="text-sm text-gray-600">Movie cleaning</p>
+                  <p className="text-sm text-gray-600">Moving & cleaning</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
@@ -112,7 +112,7 @@ export default function Home() {
                 <img src="/icons/security.svg" alt="Security" className="w-12 h-12" />
                 <div>
                   <h3 className="font-bold text-gray-900">Security</h3>
-                  <p className="text-sm text-gray-600">remain privets</p>
+                  <p className="text-sm text-gray-600">Remain private</p>
                 </div>
               </div>
             </div>
@@ -126,11 +126,11 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
               <ul className="space-y-6">
                 <li>
-                  <h3 className="font-bold text-gray-900 mb-1">Insurance & comiinance</h3>
+                    <h3 className="font-bold text-gray-900 mb-1">Insurance & compliance</h3>
                   <p className="text-gray-600 text-sm">Industry leading coverage for all services</p>
                 </li>
                 <li>
-                  <h3 className="font-bold text-gray-900 mb-1">Dedicated assistence</h3>
+                    <h3 className="font-bold text-gray-900 mb-1">Dedicated assistance</h3>
                   <p className="text-gray-600 text-sm">Our Team is available 24/7 to help with any issues</p>
                 </li>
                 <li>
@@ -139,21 +139,83 @@ export default function Home() {
               </ul>
               <ul className="space-y-6">
                 <li>
-                  <h3 className="font-bold text-gray-900 mb-1">Seerguries for compliance</h3>
-                  <p className="text-gray-600 text-sm">We maintain required levels of insury leading security adherence to regulations</p>
+                    <h3 className="font-bold text-gray-900 mb-1">Security for compliance</h3>
+                    <p className="text-gray-600 text-sm">We maintain required levels of industry leading security adherence to regulations</p>
                 </li>
                 <li>
                   <h3 className="font-bold text-gray-900 mb-1">Anonymous ratings</h3>
-                  <p className="text-gray-600 text-sm">Leave feedback with confidence- your Identify remains private</p>
+                    <p className="text-gray-600 text-sm">Leave feedback with confidence - your identity remains private</p>
                 </li>
               </ul>
             </div>
           </div>
         </section>
 
+        {/* Contact Section */}
+        <section id="contact" className="py-16 bg-white">
+          <div className="max-w-4xl mx-auto px-8 text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Get in Touch</h2>
+            <p className="text-lg text-gray-600 mb-8">Have questions or need help? Our support team is here for you 24/7.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-6 bg-blue-50 rounded-xl border border-blue-100">
+                <div className="text-3xl mb-2">📞</div>
+                <h3 className="font-bold text-gray-900 mb-2">Phone</h3>
+                <p className="text-gray-600">+353 1 234 5678</p>
+              </div>
+              <div className="p-6 bg-blue-50 rounded-xl border border-blue-100">
+                <div className="text-3xl mb-2">✉️</div>
+                <h3 className="font-bold text-gray-900 mb-2">Email</h3>
+                <p className="text-gray-600">support@fixeasy.irish</p>
+              </div>
+              <div className="p-6 bg-blue-50 rounded-xl border border-blue-100">
+                <div className="text-3xl mb-2">📍</div>
+                <h3 className="font-bold text-gray-900 mb-2">Location</h3>
+                <p className="text-gray-600">Dublin, Ireland</p>
+              </div>
+            </div>
+            <button className="mt-8 px-8 py-3 bg-blue-600 text-white rounded-full font-semibold shadow hover:bg-blue-700 transition">Contact Us</button>
+          </div>
+        </section>
+
         {/* Footer */}
-        <footer className="py-6 text-center text-gray-500 text-sm bg-white border-t border-gray-200">
-          © {new Date().getFullYear()} FixEasy. All rights reserved.
+        <footer className="py-8 text-center bg-gray-900 text-white">
+          <div className="max-w-6xl mx-auto px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+              <div>
+                <h3 className="text-xl font-bold mb-4">FixEasy</h3>
+                <p className="text-gray-400 text-sm">Trusted professionals verified for your peace of mind.</p>
+              </div>
+              <div>
+                <h4 className="font-bold mb-4">Services</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li><a href="#" className="hover:text-white transition">Plumbing</a></li>
+                  <li><a href="#" className="hover:text-white transition">Electrical</a></li>
+                  <li><a href="#" className="hover:text-white transition">Cleaning</a></li>
+                  <li><a href="#" className="hover:text-white transition">Gardening</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold mb-4">Company</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li><a href="#" className="hover:text-white transition">About Us</a></li>
+                  <li><a href="#" className="hover:text-white transition">Careers</a></li>
+                  <li><a href="#" className="hover:text-white transition">Blog</a></li>
+                  <li><a href="#" className="hover:text-white transition">Press</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold mb-4">Legal</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
+                  <li><a href="#" className="hover:text-white transition">Terms of Service</a></li>
+                  <li><a href="#" className="hover:text-white transition">Cookie Policy</a></li>
+                </ul>
+              </div>
+            </div>
+            <div className="border-t border-gray-800 pt-6 text-sm text-gray-400">
+              © {new Date().getFullYear()} FixEasy Ireland. All rights reserved.
+            </div>
+          </div>
         </footer>
       </div>
     </>
