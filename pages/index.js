@@ -20,26 +20,38 @@ export default function Home() {
         </header>
 
         {/* Hero Section */}
-        <main className="flex flex-col items-start justify-center px-8 md:px-20 py-24 gap-8 flex-1 min-h-[85vh] md:min-h-[90vh] max-w-6xl mx-auto">
-          <div className="max-w-2xl">
-            <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">Trusted Professionals.<br/>Verified for Your Peace of Mind.</h1>
-            <p className="text-xl text-gray-700 mb-10">Easily book reliable home services in your area. All professionals are vetted to ensure your safety.</p>
-            <div className="flex gap-4 mb-10">
-              <button className="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold shadow hover:bg-blue-700 transition-transform transform hover:-translate-x-1 duration-300">Find a Professional</button>
-              <button className="px-6 py-3 bg-white text-blue-700 border border-blue-200 rounded-full font-semibold shadow hover:bg-blue-50 transition-transform transform hover:translate-x-1 duration-300">Learn More</button>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white rounded-xl shadow-md p-4 text-center border border-gray-100">
-                <div className="text-3xl font-bold text-blue-600">1,200+</div>
-                <div className="text-gray-600 text-sm mt-1">vetted professionals</div>
-              </div>
-              <div className="bg-white rounded-xl shadow-md p-4 text-center border border-gray-100">
-                <div className="text-3xl font-bold text-blue-600">150+</div>
-                <div className="text-gray-600 text-sm mt-1">cities covered</div>
-              </div>
-              <div className="bg-white rounded-xl shadow-md p-4 text-center border border-gray-100">
-                <div className="text-3xl font-bold text-blue-600">45+</div>
-                <div className="text-gray-600 text-sm mt-1">services available</div>
+        <main className="px-4 md:px-8 py-8 flex-1">
+          <div className="max-w-7xl mx-auto">
+            <div className="relative rounded-[28px] md:rounded-[40px] bg-gradient-to-br from-blue-50/80 to-slate-50/70 backdrop-blur-sm shadow-2xl ring-1 ring-black/5 overflow-hidden min-h-[90vh] flex items-center">
+              <a href="#services" className="hidden md:inline-flex absolute top-6 right-6 px-5 py-2 bg-white text-blue-700 border border-blue-200 rounded-full font-semibold shadow hover:bg-blue-50 transition">
+                Book now
+              </a>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full px-6 sm:px-10 md:px-16 py-14 md:py-20 items-center">
+                <div className="max-w-2xl">
+                  <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">Trusted Professionals.<br/>Verified for Your Peace of Mind.</h1>
+                  <p className="text-lg md:text-xl text-gray-700 mb-10">Hire experienced and vetted pros for all your home needs. All professionals are verified to ensure your safety.</p>
+                  <div className="flex gap-4 mb-12">
+                    <button className="px-7 py-3.5 bg-blue-600 text-white rounded-full font-semibold shadow hover:bg-blue-700 transition-transform transform hover:-translate-x-1 duration-300">Book a Service</button>
+                    <button className="px-7 py-3.5 bg-white text-blue-700 border border-blue-200 rounded-full font-semibold shadow hover:bg-blue-50 transition-transform transform hover:translate-x-1 duration-300">Learn More</button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
+                    <div className="bg-white rounded-2xl shadow-md p-5 text-center border border-gray-100">
+                      <div className="text-3xl font-bold text-blue-600">1,200+</div>
+                      <div className="text-gray-600 text-sm mt-1">vetted professionals</div>
+                    </div>
+                    <div className="bg-white rounded-2xl shadow-md p-5 text-center border border-gray-100">
+                      <div className="text-3xl font-bold text-blue-600">150+</div>
+                      <div className="text-gray-600 text-sm mt-1">cities covered</div>
+                    </div>
+                    <div className="bg-white rounded-2xl shadow-md p-5 text-center border border-gray-100">
+                      <div className="text-3xl font-bold text-blue-600">45+</div>
+                      <div className="text-gray-600 text-sm mt-1">services available</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="hidden md:flex justify-center items-end">
+                  <img src="/images/worker-illustration.png.png" alt="Team of professionals" className="w-full max-w-md md:max-w-lg lg:max-w-xl object-contain drop-shadow-2xl" />
+                </div>
               </div>
             </div>
           </div>
