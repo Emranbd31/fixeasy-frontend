@@ -3,42 +3,36 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 
-const heroSlides = [
+const heroGallery = [
   {
-    image: 'https://images.pexels.com/photos/5853568/pexels-photo-5853568.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    alt: 'Plumber fixing a sink'
+    image:
+      'https://images.unsplash.com/photo-1704741038104-cb122baec7b1?auto=format&fit=crop&w=1200&q=80',
+    alt: 'AI generated tradesperson installing smart lighting'
   },
   {
-    image: 'https://images.pexels.com/photos/5922715/pexels-photo-5922715.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    alt: 'Electrician repairing ceiling lights'
+    image:
+      'https://images.unsplash.com/photo-1705092181164-68a8c806dd62?auto=format&fit=crop&w=800&q=80',
+    alt: 'AI generated professional cleaner preparing eco products'
   },
   {
-    image: 'https://images.pexels.com/photos/5591510/pexels-photo-5591510.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    alt: 'Cleaner vacuuming an office'
+    image:
+      'https://images.unsplash.com/photo-1704740770411-82466e0e5c5e?auto=format&fit=crop&w=800&q=80',
+    alt: 'AI generated handyman talking with a happy customer'
+  }
+]
+
+const heroHighlights = [
+  {
+    title: 'Ireland-wide trusted pros',
+    description: 'Background-checked experts ready for urgent fixes and planned projects.'
   },
   {
-    image: 'https://images.pexels.com/photos/5769370/pexels-photo-5769370.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    alt: 'Gardener trimming plants'
+    title: 'One request, smart matching',
+    description: 'Share the details once and our platform connects you with the best-fit specialist.'
   },
   {
-    image: 'https://images.pexels.com/photos/6474363/pexels-photo-6474363.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    alt: 'Painter refreshing a wall'
-  },
-  {
-    image: 'https://images.pexels.com/photos/5973660/pexels-photo-5973660.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    alt: 'Carpenter crafting furniture'
-  },
-  {
-    image: 'https://images.pexels.com/photos/6938728/pexels-photo-6938728.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    alt: 'Handyman fixing a door'
-  },
-  {
-    image: 'https://images.pexels.com/photos/10947653/pexels-photo-10947653.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    alt: 'Roof cleaner working safely at height'
-  },
-  {
-    image: 'https://images.pexels.com/photos/8467863/pexels-photo-8467863.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    alt: 'Carpet cleaner using professional equipment'
+    title: 'Clear quotes, live tracking',
+    description: 'Approve pricing, chat with your pro, and follow every milestone in one place.'
   }
 ]
 
@@ -203,9 +197,7 @@ const contactOptions = [
 ]
 
 export default function Home() {
-  const [currentSlide, setCurrentSlide] = useState(0)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isReducedMotion, setIsReducedMotion] = useState(false)
   const [userRole, setUserRole] = useState(null)
 
   useEffect(() => {
@@ -220,20 +212,6 @@ export default function Home() {
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const updateMotionPreference = () => setIsReducedMotion(mediaQuery.matches)
-
-    updateMotionPreference()
-    mediaQuery.addEventListener('change', updateMotionPreference)
-
-    return () => {
-      mediaQuery.removeEventListener('change', updateMotionPreference)
     }
   }, [])
 
@@ -256,18 +234,6 @@ export default function Home() {
       window.removeEventListener('storage', handleStorage)
     }
   }, [])
-
-  useEffect(() => {
-    if (isReducedMotion) return
-
-    const slideInterval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
-    }, 4000)
-
-    return () => {
-      clearInterval(slideInterval)
-    }
-  }, [isReducedMotion])
 
   const isLoggedIn = useMemo(() => Boolean(userRole), [userRole])
   const dashboardHref = useMemo(() => {
@@ -323,47 +289,87 @@ export default function Home() {
 
       <main>
         <section className="homepage-hero" aria-labelledby="hero-heading">
-          <div className="hero__slides" aria-hidden="true">
-            {heroSlides.map((slide, index) => (
-              <div
-                key={slide.alt}
-                className={`hero__slide ${index === currentSlide ? 'is-active' : ''}`}
-                style={{ backgroundImage: `url(${slide.image})` }}
-              >
-                <span className="hero__slide-label">{slide.alt}</span>
+          <div className="container hero-modern">
+            <div className="hero-modern__copy">
+              <p className="hero__eyebrow">Ireland's home-service concierge</p>
+              <h1 id="hero-heading" className="hero-modern__headline">
+                Your fastest route to reliable trades and tidy homes
+              </h1>
+              <p className="hero-modern__summary">
+                Match with insured tradespeople, coordinate visits, and keep every task moving with real-time updates and
+                secure payments handled by FixEasy.
+              </p>
+              <ul className="hero-modern__highlights">
+                {heroHighlights.map((item) => (
+                  <li key={item.title}>
+                    <span aria-hidden="true" className="hero-modern__tick">
+                      ✓
+                    </span>
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p>{item.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="hero__actions" role="group" aria-label="Primary calls to action">
+                <Link href="/register/client" className="hero__cta hero__cta--primary">
+                  Book a Service
+                </Link>
+                <Link href="/register/pro" className="hero__cta hero__cta--secondary">
+                  Join as Professional
+                </Link>
               </div>
-            ))}
-          </div>
-          <div className="hero__overlay" />
-          <div className="hero__content container">
-            <p className="hero__eyebrow">Trusted Home-Service Professionals Across Ireland</p>
-            <h1 id="hero-heading">Book verified plumbers, electricians, cleaners, and more — all on one secure platform.</h1>
-            <p className="hero__summary">
-              FixEasy connects households and businesses with vetted experts for every trade, backed by live updates, secure
-              payments, and a satisfaction guarantee.
-            </p>
-            <div className="hero__actions" role="group" aria-label="Primary calls to action">
-              <Link href="/register/client" className="hero__cta hero__cta--primary">
-                Book a Service
-              </Link>
-              <Link href="/register/pro" className="hero__cta hero__cta--secondary">
-                Join as Professional
-              </Link>
+              <div className="hero__trust">
+                {trustMetrics.map((metric, index) => (
+                  <motion.div
+                    key={metric.label}
+                    className="hero__trust-item"
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                    viewport={{ once: true }}
+                  >
+                    <strong>{metric.value}</strong>
+                    <span>{metric.label}</span>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-            <div className="hero__trust">
-              {trustMetrics.map((metric, index) => (
-                <motion.div
-                  key={metric.label}
-                  className="hero__trust-item"
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                  viewport={{ once: true }}
-                >
-                  <strong>{metric.value}</strong>
-                  <span>{metric.label}</span>
-                </motion.div>
-              ))}
+            <div className="hero-modern__media" aria-hidden="true">
+              <div className="hero-modern__card">
+                <img
+                  src={heroGallery[0].image}
+                  alt=""
+                  className="hero-modern__card-image"
+                  loading="lazy"
+                />
+                <div className="hero-modern__card-body">
+                  <span className="hero-modern__badge">FixEasy is rated Excellent</span>
+                  <div className="hero-modern__rating">
+                    <span className="hero-modern__stars" aria-hidden="true">
+                      ★★★★★
+                    </span>
+                    <p>
+                      TrustScore 4.9 · 1,800+ reviews
+                      <span className="sr-only"> on TrustPilot</span>
+                    </p>
+                  </div>
+                  <blockquote>
+                    “Bookings were confirmed in minutes and the work quality was outstanding. I recommend FixEasy to every
+                    property manager I know.”
+                  </blockquote>
+                  <footer>Aoife, Facilities Lead in Dublin</footer>
+                </div>
+              </div>
+              <div className="hero-modern__gallery">
+                {heroGallery.slice(1).map((shot) => (
+                  <figure key={shot.alt} className="hero-modern__shot">
+                    <img src={shot.image} alt={shot.alt} loading="lazy" />
+                    <figcaption>{shot.alt}</figcaption>
+                  </figure>
+                ))}
+              </div>
             </div>
           </div>
         </section>
