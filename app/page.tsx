@@ -73,7 +73,7 @@ export default function HomePage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              src="/images/professionals.png"
+              src="/images/worker-illustration.png"
               alt="Professional Workers"
               className="w-full max-w-md mx-auto drop-shadow-2xl"
             />
