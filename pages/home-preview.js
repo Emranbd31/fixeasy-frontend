@@ -2,16 +2,16 @@ import React, { useState } from "react";
 import dynamic from "next/dynamic";
 
 const designs = [
-  { name: "Sky Blue Clean", component: dynamic(() => import("../components/HomeDesign1")), hero: "/hero-images/hero1.jpg" },
-  { name: "Minimalist Slate", component: dynamic(() => import("../components/HomeDesign2")), hero: "/hero-images/hero2.jpg" },
-  { name: "Irish Flag Premium", component: dynamic(() => import("../components/HomeDesign3")), hero: "/hero-images/hero3.jpg" },
-  { name: "Warm Orange", component: dynamic(() => import("../components/HomeDesign4")), hero: "/hero-images/hero4.jpg" },
-  { name: "Premium Yellow", component: dynamic(() => import("../components/HomeDesign5")), hero: "/hero-images/hero5.jpg" },
-  { name: "Modern Teal", component: dynamic(() => import("../components/HomeDesign6")), hero: "/hero-images/hero6.jpg" },
-  { name: "Elegant Pink", component: dynamic(() => import("../components/HomeDesign7")), hero: "/hero-images/hero7.jpg" },
-  { name: "Smart Purple", component: dynamic(() => import("../components/HomeDesign8")), hero: "/hero-images/hero8.jpg" },
-  { name: "Professional Gray", component: dynamic(() => import("../components/HomeDesign9")), hero: "/hero-images/hero9.jpg" },
-  { name: "Next Level Indigo", component: dynamic(() => import("../components/HomeDesign10")), hero: "/hero-images/hero10.jpg" },
+  { name: "Sky Blue Clean", component: dynamic(() => import("../components/HomeDesign1")), hero: "/hero-images/hero1.svg" },
+  { name: "Minimalist Slate", component: dynamic(() => import("../components/HomeDesign2")), hero: "/hero-images/hero2.svg" },
+  { name: "Irish Flag Premium", component: dynamic(() => import("../components/HomeDesign3")), hero: "/hero-images/hero3.svg" },
+  { name: "Warm Orange", component: dynamic(() => import("../components/HomeDesign4")), hero: "/hero-images/hero4.svg" },
+  { name: "Premium Yellow", component: dynamic(() => import("../components/HomeDesign5")), hero: "/hero-images/hero5.svg" },
+  { name: "Modern Teal", component: dynamic(() => import("../components/HomeDesign6")), hero: "/hero-images/hero6.svg" },
+  { name: "Elegant Pink", component: dynamic(() => import("../components/HomeDesign7")), hero: "/hero-images/hero7.svg" },
+  { name: "Smart Purple", component: dynamic(() => import("../components/HomeDesign8")), hero: "/hero-images/hero8.svg" },
+  { name: "Professional Gray", component: dynamic(() => import("../components/HomeDesign9")), hero: "/hero-images/hero9.svg" },
+  { name: "Next Level Indigo", component: dynamic(() => import("../components/HomeDesign10")), hero: "/hero-images/hero10.svg" }
 ];
 
 export default function HomePreview() {

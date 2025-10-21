@@ -14,7 +14,7 @@ export default function HomeDesign2() {
       </header>
       <main className="flex flex-col-reverse md:flex-row items-center justify-between flex-1 px-8 md:px-20 py-10 gap-10">
         <div className="relative w-full max-w-md flex-shrink-0">
-          <img src="/hero-images/hero2.jpg" alt="Service Team" className="rounded-3xl shadow-xl w-full animate-slideX-reverse" style={{animationDuration:'1.8s'}} />
+          <img src="/hero-images/hero2.svg" alt="Service Team" className="rounded-3xl shadow-xl w-full animate-slideX-reverse" style={{animationDuration:'1.8s'}} />
         </div>
         <div className="max-w-xl">
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">Your Home, Our Priority.<br/>Book Trusted Services Instantly.</h1>

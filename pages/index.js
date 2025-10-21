@@ -44,7 +44,12 @@ export default function Home() {
             </div>
           </div>
           <div className="relative w-full max-w-md flex-shrink-0">
-            <img src="/images/worker-illustration.png.png" alt="Professional Worker" className="rounded-3xl shadow-2xl w-full animate-slideX" style={{animationDuration:'1.8s'}} />
+            <img
+              src="/images/worker-illustration.png"
+              alt="Professional worker helping a FixEasy customer"
+              className="rounded-3xl shadow-2xl w-full animate-slideX"
+              style={{ animationDuration: "1.8s" }}
+            />
           </div>
         </main>
 
@@ -57,62 +62,63 @@ export default function Home() {
                 <img src="/icons/insurance.svg" alt="Insurance" className="w-12 h-12" />
                 <div>
                   <h3 className="font-bold text-gray-900">Comprehensive insurance</h3>
+                  <p className="text-sm text-gray-600">Coverage on every booking for peace of mind.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
                 <img src="/icons/gardening.svg" alt="Gardening" className="w-12 h-12" />
                 <div>
                   <h3 className="font-bold text-gray-900">Gardening</h3>
-                  <p className="text-sm text-gray-600">car vered</p>
+                  <p className="text-sm text-gray-600">Seasonal landscaping and outdoor care.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
-                <img src="/icons/appliances.svg" alt="Appliances" className="w-12 h-12" />
+                <img src="/icons/appliances.svg" alt="Appliance support" className="w-12 h-12" />
                 <div>
-                  <h3 className="font-bold text-gray-900">Appliances</h3>
-                  <p className="text-sm text-gray-600">valuable 24/7</p>
+                  <h3 className="font-bold text-gray-900">Appliance installs</h3>
+                  <p className="text-sm text-gray-600">Setups and repairs handled by experts.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
-                <img src="/icons/dedwork.svg" alt="Dedwork" className="w-12 h-12" />
+                <img src="/icons/dedwork.svg" alt="Handyman services" className="w-12 h-12" />
                 <div>
-                  <h3 className="font-bold text-gray-900">Dedwork</h3>
-                  <p className="text-sm text-gray-600">assistance</p>
+                  <h3 className="font-bold text-gray-900">Handyman tasks</h3>
+                  <p className="text-sm text-gray-600">Small fixes, furniture builds, and more.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
-                <img src="/icons/moving.svg" alt="Moving" className="w-12 h-12" />
+                <img src="/icons/moving.svg" alt="Moving help" className="w-12 h-12" />
                 <div>
-                  <h3 className="font-bold text-gray-900">Moving</h3>
-                  <p className="text-sm text-gray-600">Movie cleaning</p>
+                  <h3 className="font-bold text-gray-900">Moving support</h3>
+                  <p className="text-sm text-gray-600">Packing, lifting, and end-of-lease cleaning.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
-                <img src="/icons/smart-home.svg" alt="Smart Home" className="w-12 h-12" />
+                <img src="/icons/smart-home.svg" alt="Smart home" className="w-12 h-12" />
                 <div>
-                  <h3 className="font-bold text-gray-900">Smart Home</h3>
-                  <p className="text-sm text-gray-600">service</p>
+                  <h3 className="font-bold text-gray-900">Smart home setup</h3>
+                  <p className="text-sm text-gray-600">Secure installs for cameras, alarms, and more.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
                 <img src="/icons/painting.svg" alt="Painting" className="w-12 h-12" />
                 <div>
-                  <h3 className="font-bold text-gray-900">Painting</h3>
-                  <p className="text-sm text-gray-600">Heating</p>
+                  <h3 className="font-bold text-gray-900">Painting & décor</h3>
+                  <p className="text-sm text-gray-600">Refresh interiors with premium finishes.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
-                <img src="/icons/heating.svg" alt="Heating" className="w-12 h-12" />
+                <img src="/icons/heating.svg" alt="Heating and cooling" className="w-12 h-12" />
                 <div>
-                  <h3 className="font-bold text-gray-900">Heating &</h3>
-                  <p className="text-sm text-gray-600">cooling</p>
+                  <h3 className="font-bold text-gray-900">Heating & cooling</h3>
+                  <p className="text-sm text-gray-600">Certified HVAC engineers on standby.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition">
                 <img src="/icons/security.svg" alt="Security" className="w-12 h-12" />
                 <div>
-                  <h3 className="font-bold text-gray-900">Security</h3>
-                  <p className="text-sm text-gray-600">remain privets</p>
+                  <h3 className="font-bold text-gray-900">Security checks</h3>
+                  <p className="text-sm text-gray-600">Background-vetted pros with ID verification.</p>
                 </div>
               </div>
             </div>
@@ -126,12 +132,12 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
               <ul className="space-y-6">
                 <li>
-                  <h3 className="font-bold text-gray-900 mb-1">Insurance & comiinance</h3>
-                  <p className="text-gray-600 text-sm">Industry leading coverage for all services</p>
+                  <h3 className="font-bold text-gray-900 mb-1">Insurance & compliance</h3>
+                  <p className="text-gray-600 text-sm">Industry leading coverage for every service.</p>
                 </li>
                 <li>
-                  <h3 className="font-bold text-gray-900 mb-1">Dedicated assistence</h3>
-                  <p className="text-gray-600 text-sm">Our Team is available 24/7 to help with any issues</p>
+                  <h3 className="font-bold text-gray-900 mb-1">Dedicated assistance</h3>
+                  <p className="text-gray-600 text-sm">Our team is available 24/7 to help with any issues.</p>
                 </li>
                 <li>
                   <h3 className="font-bold text-gray-900">Satisfaction guaranteed</h3>
@@ -139,12 +145,12 @@ export default function Home() {
               </ul>
               <ul className="space-y-6">
                 <li>
-                  <h3 className="font-bold text-gray-900 mb-1">Seerguries for compliance</h3>
-                  <p className="text-gray-600 text-sm">We maintain required levels of insury leading security adherence to regulations</p>
+                  <h3 className="font-bold text-gray-900 mb-1">Secure for compliance</h3>
+                  <p className="text-gray-600 text-sm">We maintain required levels of industry-leading security and regulation adherence.</p>
                 </li>
                 <li>
                   <h3 className="font-bold text-gray-900 mb-1">Anonymous ratings</h3>
-                  <p className="text-gray-600 text-sm">Leave feedback with confidence- your Identify remains private</p>
+                  <p className="text-gray-600 text-sm">Leave feedback with confidence—your identity remains private.</p>
                 </li>
               </ul>
             </div>
