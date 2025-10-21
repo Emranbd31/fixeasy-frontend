@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 
+// Force fresh build - 3D gradient icons version
 export default function HomePage() {
   const services = [
     { name: "Cleaning", gradient: "from-blue-400 via-blue-500 to-cyan-500" },
