@@ -3,3 +3,10 @@ node_modules
 out
 components/HomeDesign*.jsx
 fixeasy-frontend/
+codex.js
+codex_output.txt
+clean.sh
+autodeploy.sh
+c
+main
+backend/
