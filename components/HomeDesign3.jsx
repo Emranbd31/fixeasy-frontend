@@ -36,7 +36,7 @@ export default function HomeDesign3() {
           </div>
         </div>
         <div className="relative w-full max-w-md flex-shrink-0">
-          <img src="/hero-images/hero3.jpg" alt="Irish Professional" className="rounded-3xl shadow-xl w-full animate-slideX" style={{animationDuration:'1.8s'}} />
+          <img src="/hero-images/hero3.svg" alt="Irish Professional" className="rounded-3xl shadow-xl w-full animate-slideX" style={{animationDuration:'1.8s'}} />
         </div>
       </main>
     </div>
