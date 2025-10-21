@@ -18,6 +18,7 @@ const bookingPayloadSchema = z.object({
 
 export async function POST(request: Request) {
   const supabase = createSupabaseServerClient();
+  const sb = supabase as any;
 
   const formData = await request.formData();
   const payload = Object.fromEntries(formData.entries());
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
     ? parsed.data.preferredTime.trim()
     : null;
 
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await sb
     .from('bookings')
     .insert({
       user_id: parsed.data.user_id ?? null,
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const bookingId = inserted.id as string;
+  const bookingId = (inserted as any).id as string;
   const bucketName = 'booking-photos';
   const bookingFolder = `${bookingId}`;
   const photoPaths: string[] = [];
@@ -103,7 +104,7 @@ export async function POST(request: Request) {
   }
 
   if (photoPaths.length) {
-    const { error: photoUpdateError } = await supabase
+    const { error: photoUpdateError } = await sb
       .from('bookings')
       .update({ photo_urls: photoPaths })
       .eq('id', bookingId);

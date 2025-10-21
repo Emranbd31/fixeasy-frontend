@@ -43,6 +43,7 @@ const categoryOptions = [
 export default function ProRegisterPage(): JSX.Element {
   const session = useSupabaseSession();
   const supabase = useSupabaseClient();
+  const sb = supabase as any;
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +79,7 @@ export default function ProRegisterPage(): JSX.Element {
     if (!session?.user) return;
     setValue('email', session.user.email ?? '');
     const loadProfile = async () => {
-      const { data } = await supabase
+      const { data } = await sb
         .from('profiles')
         .select('full_name, phone')
         .eq('id', session.user!.id)

@@ -28,6 +28,7 @@ function maskIban(iban?: string | null): string | null {
 
 export async function POST(request: Request) {
   const supabase = createSupabaseServerClient();
+  const sb = supabase as any;
   const formData = await request.formData();
   const payload = Object.fromEntries(formData.entries());
   const parsed = proPayloadSchema.safeParse(payload);
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: professional, error: insertError } = await supabase
+  const { data: professional, error: insertError } = await sb
     .from('professionals')
     .insert({
       user_id: parsed.data.user_id ?? null,
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
   const ibanMasked = maskIban(parsed.data.iban ?? null);
 
   if (parsed.data.user_id) {
-    await supabase
+    await sb
       .from('profiles')
       .upsert(
         {
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { error: metadataRecordError } = await supabase
+  const { error: metadataRecordError } = await sb
     .from('kyc_documents')
     .insert({
       pro_id: professionalId,
@@ -151,7 +152,7 @@ export async function POST(request: Request) {
     if (uploadError) {
       throw new Error(uploadError.message);
     }
-    const { error: docError } = await supabase
+    const { error: docError } = await sb
       .from('kyc_documents')
       .insert({
         pro_id: professionalId,

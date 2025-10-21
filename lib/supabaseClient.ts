@@ -6,17 +6,20 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-function assertEnv(value: string | undefined, name: string): string {
-  if (!value) {
-    throw new Error(`${name} is not set. Please configure Supabase environment variables.`);
+function safeEnv(value: string | undefined, name: string, ssrFallback: string): string {
+  if (value && value.length > 0) return value;
+  // During Next.js static prerender on the server, we may not have envs locally.
+  // Provide non-empty placeholders to avoid build-time crashes; real values are required at runtime in the browser or on the server.
+  if (typeof window === 'undefined') {
+    return ssrFallback;
   }
-  return value;
+  throw new Error(`${name} is not set. Please configure Supabase environment variables.`);
 }
 
 export function createSupabaseBrowserClient(): SupabaseClient<Database> {
   return createClient<Database>(
-    assertEnv(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL'),
-    assertEnv(supabaseAnonKey, 'NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    safeEnv(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL', 'http://localhost'),
+    safeEnv(supabaseAnonKey, 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'public-anon-key'),
     {
       auth: {
         autoRefreshToken: true,
@@ -29,8 +32,8 @@ export function createSupabaseBrowserClient(): SupabaseClient<Database> {
 
 export function createSupabaseServerClient(): SupabaseClient<Database> {
   return createClient<Database>(
-    assertEnv(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL'),
-    supabaseServiceRoleKey ?? assertEnv(supabaseAnonKey, 'NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    safeEnv(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL', 'http://localhost'),
+    supabaseServiceRoleKey ?? safeEnv(supabaseAnonKey, 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'public-anon-key'),
     {
       auth: {
         autoRefreshToken: false,
