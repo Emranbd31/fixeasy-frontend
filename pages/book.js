@@ -5,20 +5,68 @@ export default function Book() {
   const [form, setForm] = useState({ name: '', service: '', date: '', note: '' });
 
   useEffect(() => {
-    async function checkBackend() {
+    const defaultApiBase = 'https://api.fixeasy.irish';
+    const configuredBase = process.env.NEXT_PUBLIC_API_URL?.trim();
+
+    let statusBase = configuredBase || defaultApiBase;
+
+    let pingUrl = defaultApiBase;
+    if (configuredBase) {
       try {
-        const res = await fetch('https://api.fixeasy.irish/');
+        pingUrl = new URL('/', configuredBase).toString();
+      } catch (error) {
+        console.error('Invalid NEXT_PUBLIC_API_URL value provided:', error);
+        statusBase = defaultApiBase;
+        pingUrl = defaultApiBase;
+      }
+    }
+
+    let isMounted = true;
+
+    let activeController;
+
+    async function checkBackend() {
+      const controller = new AbortController();
+      activeController = controller;
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const res = await fetch(pingUrl, { signal: controller.signal });
         if (res.ok) {
-          const data = await res.json();
-          setStatus(`✅ Backend Live: ${data.message}`);
+          let message = 'Backend is reachable';
+          try {
+            const data = await res.json();
+            if (data?.message) {
+              message = data.message;
+            }
+          } catch (parseError) {
+            console.warn('Backend response was not JSON', parseError);
+          }
+          if (isMounted) {
+            setStatus(`✅ Backend Live @ ${statusBase}: ${message}`);
+          }
         } else {
-          setStatus('⚠️ Backend reachable but returned error');
+          if (isMounted) {
+            setStatus(`⚠️ Backend @ ${statusBase} responded with status ${res.status}`);
+          }
         }
-      } catch {
-        setStatus('❌ Backend not reachable');
+      } catch (error) {
+        if (!isMounted) return;
+        if (error?.name === 'AbortError') {
+          setStatus(`❌ Backend @ ${statusBase} timed out`);
+        } else {
+          setStatus(`❌ Backend @ ${statusBase} not reachable`);
+        }
+      } finally {
+        clearTimeout(timeout);
       }
     }
     checkBackend();
+    return () => {
+      isMounted = false;
+      if (activeController) {
+        activeController.abort();
+      }
+    };
   }, []);
 
   const handleSubmit = (e) => {
