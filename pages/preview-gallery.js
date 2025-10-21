@@ -71,33 +71,32 @@ export default function PreviewGallery() {
       preview: "/design10"
     }
   ];
-           preview: "/design7"
+
   return (
-            preview: "/design6.png"
+    <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(to bottom, #F9FAFB, #F3F4F6)',
       padding: '2rem'
     }}>
-           preview: "/design8"
-            preview: "/design7.png"
+      <style jsx global>{`
         body { font-family: system-ui, -apple-system, sans-serif; }
         .design-card {
           transition: all 0.3s ease;
           cursor: pointer;
         }
-           preview: "/design9"
+        .design-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
         }
         .color-dot {
           width: 40px;
-           preview: "/design10"
+          height: 40px;
           border-radius: 50%;
           border: 3px solid white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-      `}} />
-            preview: "/design10.png"
+      `}</style>
+      
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>

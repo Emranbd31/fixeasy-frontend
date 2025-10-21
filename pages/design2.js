@@ -10,7 +10,8 @@ export default function Design2() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
         @keyframes float {
@@ -42,7 +43,7 @@ export default function Design2() {
           maxWidth: '1280px', margin: '0 auto', padding: '1rem 2rem',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
-          <div style={{ 
+          <div style={{
             fontSize: '1.5rem', fontWeight: '700',
             background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
@@ -85,7 +86,7 @@ export default function Design2() {
             }}>
               🚀 Ireland's #1 Home Services
             </div>
-            
+
             <h1 style={{
               fontSize: '4rem', fontWeight: '900', color: 'white',
               lineHeight: '1.1', marginBottom: '1.5rem',
@@ -93,7 +94,7 @@ export default function Design2() {
               Trusted Professionals
               <br />At Your Doorstep
             </h1>
-            
+
             <p style={{
               fontSize: '1.25rem', color: 'rgba(255, 255, 255, 0.95)',
               marginBottom: '2.5rem', lineHeight: '1.8',
