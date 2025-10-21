@@ -92,7 +92,7 @@ export default function HomePage() {
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             All Home Services,
             <br />
-            One Tap Away
+            One Tap Away - NEW DESIGN
           </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-12">
