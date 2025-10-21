@@ -1,0 +1,6 @@
+{
+  "name": "@types/node",
+  "version": "0.0.0-stub",
+  "description": "Local stub for environments without npm registry access",
+  "types": "index.d.ts"
+}

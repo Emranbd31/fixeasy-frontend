@@ -4,8 +4,10 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build",
-    "start": "next start -p 3000"
+    "build": "node scripts/ensure-stubs.js && next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "autoprefixer": "^10.4.21",
@@ -16,5 +18,13 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "tailwindcss": "^3.4.18"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.4",
+    "typescript": "^5.5.4"
   }
 }
