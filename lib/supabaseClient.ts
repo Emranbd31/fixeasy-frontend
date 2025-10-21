@@ -11,26 +11,13 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 export function createSupabaseBrowserClient(): SupabaseClient<Database> {
   return createClient<Database>(
     supabaseUrl,
-    supabaseAnonKey,
-    {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-      },
-    }
+    supabaseAnonKey
   );
 }
 
 export function createSupabaseServerClient(): SupabaseClient<Database> {
   return createClient<Database>(
     supabaseUrl,
-    supabaseServiceRoleKey ?? supabaseAnonKey,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
+    supabaseServiceRoleKey ?? supabaseAnonKey
   );
 }
