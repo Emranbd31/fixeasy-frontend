@@ -2,3 +2,10 @@ node_modules
 .next
 FixEasy-V4-RealHero.zip
 .vercel
+# Local environment files
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
