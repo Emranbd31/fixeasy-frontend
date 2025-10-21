@@ -1,48 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+html,
 body {
-    font-family: 'Inter', Arial, sans-serif;
-    background: #f7f8fa;
-    color: #222;
-    margin: 0;
-    padding: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(79, 140, 255, 0.32), transparent 55%),
+    radial-gradient(circle at 85% 18%, rgba(255, 106, 182, 0.26), transparent 48%),
+    radial-gradient(circle at 12% 86%, rgba(61, 220, 255, 0.2), transparent 52%),
+    linear-gradient(180deg, rgba(5, 10, 31, 0.98), rgba(11, 16, 48, 0.96) 60%, rgba(20, 27, 63, 0.94));
+  color: rgba(250, 252, 255, 0.96);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overscroll-behavior-y: none;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+body {
+  margin: 0;
 }
 
-.section-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
-    text-align: center;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-.footer {
-    text-align: center;
-    padding: 2rem 0 1rem 0;
-    color: #888;
-    font-size: 1rem;
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(16, 24, 58, 0.65);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(79, 140, 255, 0.55);
+  border-radius: 9999px;
+}
+
+@layer base {
+  * {
+    @apply border-transparent;
+  }
+
+  body {
+    @apply bg-transparent text-white;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold text-white;
+  }
 }
 
 @layer utilities {
-    .animate-slideX {
-        animation: slideX 1.8s cubic-bezier(0.4,0,0.2,1) both;
-    }
-    .animate-slideX-reverse {
-        animation: slideX-reverse 1.8s cubic-bezier(0.4,0,0.2,1) both;
-    }
-    @keyframes slideX {
-        0% { transform: translateX(60px); opacity: 0; }
-        100% { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideX-reverse {
-        0% { transform: translateX(-60px); opacity: 0; }
-        100% { transform: translateX(0); opacity: 1; }
-    }
+  .fx-container {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8;
+  }
+
+  .glass-surface {
+    backdrop-filter: blur(28px);
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(79, 140, 255, 0.12)),
+      linear-gradient(200deg, rgba(5, 17, 47, 0.9), rgba(5, 10, 31, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: var(--fx-shadow-3d);
+  }
+
+  .fx-gradient-ring {
+    background: conic-gradient(from 90deg, rgba(79, 140, 255, 0.6), rgba(255, 106, 182, 0.6), rgba(61, 220, 255, 0.6), rgba(79, 140, 255, 0.6));
+  }
 }

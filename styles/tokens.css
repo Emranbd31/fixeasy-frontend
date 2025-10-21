@@ -1,0 +1,25 @@
+:root {
+  --fx-primary: #4f8cff;
+  --fx-primary-ink: #05112f;
+  --fx-emerald: #1fdd9f;
+  --fx-amber: #ffb547;
+  --fx-rose: #ff6ab6;
+  --fx-cyan: #3ddcff;
+  --fx-slate-1: #050a1f;
+  --fx-slate-2: #0b1030;
+  --fx-slate-3: #141b3f;
+  --fx-card-base: #10183a;
+  --fx-card: color-mix(in srgb, var(--fx-card-base) 82%, white 18%);
+  --fx-radius-lg: 14px;
+  --fx-radius-xl: 22px;
+  --fx-radius-full: 9999px;
+  --fx-shadow-3d: 0 8px 30px rgba(15, 27, 61, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --fx-transition-duration: 0.55s;
+  --fx-transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: dark;
+  }
+}
