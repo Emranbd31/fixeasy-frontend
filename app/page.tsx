@@ -28,37 +28,121 @@ const serviceIcons: Record<string, string> = {
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-blue-50 pt-20 pb-32">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}>
-              <h1 className="text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight tracking-tight">
-                Home Services,<br /><span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Made Easy</span>
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 pt-32 pb-20 lg:pt-40 lg:pb-32">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Content */}
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+              className="text-center lg:text-left"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+                className="inline-block mb-4 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold"
+              >
+                🏠 Ireland's #1 Home Service Platform
+              </motion.div>
+              
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight tracking-tight">
+                Home Services,<br />
+                <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent animate-gradient">
+                  Made Easy
+                </span>
               </h1>
-              <p className="text-xl lg:text-2xl text-gray-600 mb-10 leading-relaxed font-light">
-                Connect with trusted professionals for all your home service needs. Fast, reliable, and affordable.
+              
+              <p className="text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Connect with <span className="font-semibold text-gray-900">trusted professionals</span> for all your home service needs. Fast, reliable, and affordable.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                 <Link href="/book">
-                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-semibold text-lg shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 transition-all duration-300">
-                    Book a Service
+                  <motion.button 
+                    whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(59, 130, 246, 0.4)' }} 
+                    whileTap={{ scale: 0.95 }} 
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                    className="px-10 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-full font-bold text-lg shadow-xl shadow-blue-600/30 hover:shadow-2xl transition-all duration-300"
+                  >
+                    📅 Book a Service
                   </motion.button>
                 </Link>
                 <Link href="/pro/register">
-                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    className="px-8 py-4 bg-white text-gray-900 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl border border-gray-200 transition-all duration-300">
-                    Become a Pro
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }} 
+                    whileTap={{ scale: 0.95 }} 
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                    className="px-10 py-4 bg-white text-gray-900 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl border-2 border-gray-200 hover:border-blue-600 transition-all duration-300"
+                  >
+                    💼 Become a Pro
                   </motion.button>
                 </Link>
               </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }} className="relative">
-              <div className="relative w-full aspect-square max-w-lg mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-[3rem] blur-3xl opacity-20 animate-pulse"></div>
-                <div className="relative bg-gradient-to-br from-blue-50 to-cyan-50 rounded-[3rem] p-8 shadow-2xl">
-                  <div className="w-full h-96 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center text-9xl">👷‍♂️</div>
+
+              {/* Stats */}
+              <div className="flex flex-wrap gap-8 justify-center lg:justify-start text-center lg:text-left">
+                <div>
+                  <div className="text-3xl font-bold text-gray-900">1000+</div>
+                  <div className="text-sm text-gray-600">Happy Customers</div>
                 </div>
+                <div>
+                  <div className="text-3xl font-bold text-gray-900">500+</div>
+                  <div className="text-sm text-gray-600">Pro Workers</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-gray-900">4.9★</div>
+                  <div className="text-sm text-gray-600">Average Rating</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Image Area */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }} 
+              className="relative hidden lg:block"
+            >
+              <div className="relative w-full max-w-2xl mx-auto">
+                {/* Main Card */}
+                <div className="relative bg-white rounded-[3rem] p-8 shadow-2xl">
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Service Icons Grid */}
+                    {[
+                      { icon: '👷‍♂️', label: 'Workers', color: 'from-blue-400 to-blue-600' },
+                      { icon: '🔧', label: 'Repairs', color: 'from-orange-400 to-red-500' },
+                      { icon: '🧹', label: 'Cleaning', color: 'from-cyan-400 to-blue-500' },
+                      { icon: '⚡', label: 'Fast', color: 'from-yellow-400 to-orange-500' }
+                    ].map((item, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 + idx * 0.1, duration: 0.5 }}
+                        whileHover={{ scale: 1.05, rotate: 5 }}
+                        className={`bg-gradient-to-br ${item.color} rounded-3xl p-8 text-center shadow-lg cursor-pointer`}
+                      >
+                        <div className="text-6xl mb-3">{item.icon}</div>
+                        <div className="text-white font-bold text-lg">{item.label}</div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Floating Badge */}
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute -top-6 -right-6 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg font-bold"
+                >
+                  ✓ Verified Pros
+                </motion.div>
               </div>
             </motion.div>
           </div>
