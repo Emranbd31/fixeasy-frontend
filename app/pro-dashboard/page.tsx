@@ -16,9 +16,10 @@ export default function ProDashboardPage() {
       if (!user) { setStatus("unauth"); return; }
 
       const { data, error } = await sb.from("professionals").select("name, verified").eq("user_id", user.id).single();
-      if (!error && data) {
-        setName(data.name);
-        setVerified(!!data.verified);
+      const row: any = data as any;
+      if (!error && row) {
+        setName(row.name as string);
+        setVerified(!!row.verified);
         setStatus("ok");
       } else {
         setStatus("ok");
