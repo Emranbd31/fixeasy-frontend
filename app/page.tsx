@@ -149,30 +149,97 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-24 bg-white">
+      <section id="services" className="py-24 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-100px' }} transition={{ duration: 0.6 }} className="text-center mb-16">
-            <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-4 tracking-tight">Our Services</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">Professional home services at your fingertips</p>
+          {/* Section Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            viewport={{ once: true, margin: '-100px' }} 
+            transition={{ duration: 0.6 }} 
+            className="text-center mb-16"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="inline-block mb-4 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold"
+            >
+              🏆 12 Professional Services
+            </motion.div>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 tracking-tight">
+              Choose Your <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Service</span>
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+              Professional home services at your fingertips. Book instantly with verified pros.
+            </p>
           </motion.div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+          {/* Service Cards Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
             {services.map((service, index) => (
-              <motion.div key={service.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }}
+              <motion.div 
+                key={service.id} 
+                initial={{ opacity: 0, y: 30 }} 
+                whileInView={{ opacity: 1, y: 0 }} 
+                viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.5, delay: index * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
-                whileHover={{ scale: 1.03, y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }} whileTap={{ scale: 0.98 }} className="group cursor-pointer">
+                whileHover={{ y: -12, transition: { type: 'spring', stiffness: 400, damping: 17 } }} 
+                whileTap={{ scale: 0.97 }} 
+                className="group cursor-pointer"
+              >
                 <Link href="/book">
-                  <div className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100">
-                    <div className="relative h-40 overflow-hidden bg-gradient-to-br bg-gray-100">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-90`}></div>
+                  <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-blue-200">
+                    {/* Gradient Background */}
+                    <div className="relative h-36 md:h-40 overflow-hidden">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-100`}></div>
+                      
+                      {/* Decorative Pattern */}
+                      <div className="absolute inset-0 opacity-10">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-white rounded-full -mr-10 -mt-10"></div>
+                        <div className="absolute bottom-0 left-0 w-16 h-16 bg-white rounded-full -ml-8 -mb-8"></div>
+                      </div>
+                      
+                      {/* Icon */}
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <motion.div whileHover={{ scale: 1.1, rotate: 5 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }} className="text-6xl filter drop-shadow-lg">
+                        <motion.div 
+                          whileHover={{ scale: 1.15, rotate: 8 }} 
+                          transition={{ type: 'spring', stiffness: 400, damping: 17 }} 
+                          className="text-6xl md:text-7xl filter drop-shadow-2xl"
+                        >
                           {serviceIcons[service.name]}
                         </motion.div>
                       </div>
+
+                      {/* Popular Badge */}
+                      {index < 3 && (
+                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                          ⭐ Popular
+                        </div>
+                      )}
                     </div>
+
+                    {/* Content */}
                     <div className="p-5">
-                      <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors tracking-tight">{service.name}</h3>
-                      <p className="text-sm text-gray-600 leading-snug font-light">{service.description}</p>
+                      <h3 className="text-base md:text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors tracking-tight">
+                        {service.name}
+                      </h3>
+                      <p className="text-xs md:text-sm text-gray-600 leading-relaxed mb-3">
+                        {service.description}
+                      </p>
+                      
+                      {/* Book Button */}
+                      <div className="flex items-center text-blue-600 font-semibold text-sm group-hover:text-blue-700 transition-colors">
+                        <span>Book Now</span>
+                        <motion.span
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                          className="ml-1"
+                        >
+                          →
+                        </motion.span>
+                      </div>
                     </div>
                   </div>
                 </Link>
