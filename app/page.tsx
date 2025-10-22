@@ -20,9 +20,9 @@ const services = [
 ];
 
 const serviceIcons: Record<string, string> = {
-  'Cleaning': '', 'Handyman': '', 'Plumbing': '', 'Electrical': '',
-  'Painting': '', 'Gardening': '', 'Moving': '', 'Carpentry': '',
-  'Appliance Repair': '', 'HVAC': '', 'Pest Control': '', 'Locksmith': ''
+  'Cleaning': '🧹', 'Handyman': '🔨', 'Plumbing': '🔧', 'Electrical': '⚡',
+  'Painting': '🎨', 'Gardening': '🌿', 'Moving': '📦', 'Carpentry': '🪚',
+  'Appliance Repair': '🔌', 'HVAC': '❄️', 'Pest Control': '🐛', 'Locksmith': '🔐'
 };
 
 export default function HomePage() {
@@ -57,7 +57,7 @@ export default function HomePage() {
               <div className="relative w-full aspect-square max-w-lg mx-auto">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-[3rem] blur-3xl opacity-20 animate-pulse"></div>
                 <div className="relative bg-gradient-to-br from-blue-50 to-cyan-50 rounded-[3rem] p-8 shadow-2xl">
-                  <div className="w-full h-96 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center text-6xl"></div>
+                  <div className="w-full h-96 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center text-9xl">👷‍♂️</div>
                 </div>
               </div>
             </motion.div>
