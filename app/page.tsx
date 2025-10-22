@@ -364,28 +364,120 @@ export default function HomePage() {
 
       <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-16">
-            <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-4 tracking-tight">Why Choose FixEasy</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">We're committed to providing the best service experience</p>
+          {/* Section Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            viewport={{ once: true }} 
+            transition={{ duration: 0.6 }} 
+            className="text-center mb-20"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="inline-block mb-4 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold"
+            >
+              💎 Premium Quality Service
+            </motion.div>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 tracking-tight">
+              Why Choose <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">FixEasy</span>
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+              We're committed to providing the best home service experience in Ireland
+            </p>
           </motion.div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          {/* Features Grid */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {[
-              { icon: '', title: 'Verified Professionals', desc: 'All service providers are background checked' },
-              { icon: '', title: 'Quality Guaranteed', desc: 'We stand behind every service' },
-              { icon: '', title: 'Transparent Pricing', desc: 'No hidden fees - clear upfront costs' },
-              { icon: '', title: 'Easy Booking', desc: 'Book online in minutes' }
+              { 
+                icon: '✅', 
+                title: 'Verified Professionals', 
+                desc: 'All service providers are thoroughly background checked and certified',
+                color: 'from-green-400 to-emerald-500'
+              },
+              { 
+                icon: '🏆', 
+                title: 'Quality Guaranteed', 
+                desc: 'We stand behind every service with our satisfaction guarantee',
+                color: 'from-yellow-400 to-orange-500'
+              },
+              { 
+                icon: '💰', 
+                title: 'Transparent Pricing', 
+                desc: 'No hidden fees - see clear upfront costs before you book',
+                color: 'from-blue-400 to-cyan-500'
+              },
+              { 
+                icon: '⚡', 
+                title: 'Instant Booking', 
+                desc: 'Book your service online in just minutes, 24/7 availability',
+                color: 'from-purple-400 to-pink-500'
+              }
             ].map((feat, i) => (
-              <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}
-                whileHover={{ scale: 1.05, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
-                className="bg-gradient-to-br from-gray-50 to-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg shadow-blue-500/20">
-                  <span className="text-3xl text-white">{feat.icon}</span>
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, y: 30 }} 
+                whileInView={{ opacity: 1, y: 0 }} 
+                viewport={{ once: true }} 
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                whileHover={{ y: -10, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
+                className="group"
+              >
+                <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-gray-100 hover:border-blue-200 text-center h-full relative overflow-hidden">
+                  {/* Decorative Background */}
+                  <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${feat.color} opacity-5 rounded-full -mr-12 -mt-12`}></div>
+                  
+                  {/* Icon */}
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                    className="relative"
+                  >
+                    <div className={`w-20 h-20 bg-gradient-to-br ${feat.color} rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg group-hover:shadow-xl transition-shadow`}>
+                      <span className="text-4xl">{feat.icon}</span>
+                    </div>
+                  </motion.div>
+                  
+                  {/* Content */}
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3 tracking-tight group-hover:text-blue-600 transition-colors">
+                    {feat.title}
+                  </h3>
+                  <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                    {feat.desc}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">{feat.title}</h3>
-                <p className="text-gray-600 leading-relaxed font-light">{feat.desc}</p>
               </motion.div>
             ))}
           </div>
+
+          {/* Trust Indicators */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-16 flex flex-wrap justify-center items-center gap-8 text-center"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🛡️</span>
+              <span className="text-gray-700 font-semibold">Insured Services</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">💬</span>
+              <span className="text-gray-700 font-semibold">24/7 Support</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⭐</span>
+              <span className="text-gray-700 font-semibold">4.9/5 Rating</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🇮🇪</span>
+              <span className="text-gray-700 font-semibold">Proudly Irish</span>
+            </div>
+          </motion.div>
         </div>
       </section>
 
