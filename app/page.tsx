@@ -249,28 +249,113 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
+      <section id="how-it-works" className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-16">
-            <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-4 tracking-tight">How It Works</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">Three simple steps to get your home service done</p>
+          {/* Section Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            viewport={{ once: true }} 
+            transition={{ duration: 0.6 }} 
+            className="text-center mb-20"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="inline-block mb-4 px-4 py-2 bg-cyan-100 text-cyan-700 rounded-full text-sm font-semibold"
+            >
+              ⚡ Quick & Easy Process
+            </motion.div>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 tracking-tight">
+              How It <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Works</span>
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+              Get your home services done in three simple steps
+            </p>
           </motion.div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+          {/* Steps Grid */}
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto relative">
+            {/* Connecting Lines */}
+            <div className="hidden md:block absolute top-24 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
+            
             {[
-              { icon: '', title: 'Choose Your Service', desc: 'Select from our wide range of professional home services' },
-              { icon: '', title: 'Book Appointment', desc: 'Pick a convenient time that works for your schedule' },
-              { icon: '', title: 'Get It Done', desc: 'Our verified professionals will complete the job perfectly' }
+              { 
+                icon: '🔍', 
+                number: '01',
+                title: 'Choose Service', 
+                desc: 'Browse our 12 professional services and select what you need',
+                color: 'from-blue-500 to-cyan-500'
+              },
+              { 
+                icon: '📅', 
+                number: '02',
+                title: 'Book & Schedule', 
+                desc: 'Pick a convenient time and get instant confirmation from verified pros',
+                color: 'from-cyan-500 to-blue-600'
+              },
+              { 
+                icon: '✅', 
+                number: '03',
+                title: 'Get It Done', 
+                desc: 'Sit back while our professionals complete your service perfectly',
+                color: 'from-blue-600 to-cyan-600'
+              }
             ].map((step, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: i * 0.15 }}
-                whileHover={{ y: -12, transition: { type: 'spring', stiffness: 400, damping: 17 } }} className="relative">
-                <div className="bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-100 h-full">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mb-8 mx-auto shadow-lg shadow-blue-500/30">
-                    <span className="text-4xl">{step.icon}</span>
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, y: 40 }} 
+                whileInView={{ opacity: 1, y: 0 }} 
+                viewport={{ once: true }} 
+                transition={{ duration: 0.6, delay: i * 0.2 }}
+                whileHover={{ y: -12, transition: { type: 'spring', stiffness: 400, damping: 17 } }} 
+                className="relative"
+              >
+                {/* Step Number Badge */}
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <div className={`w-14 h-14 bg-gradient-to-br ${step.color} rounded-full flex items-center justify-center shadow-xl text-white font-bold text-lg`}>
+                    {step.number}
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center tracking-tight">{step.title}</h3>
-                  <p className="text-gray-600 text-center leading-relaxed font-light">{step.desc}</p>
                 </div>
-                {i < 2 && <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-cyan-500"></div>}
+
+                {/* Card */}
+                <div className="bg-white rounded-3xl p-8 pt-14 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-gray-100 hover:border-blue-200 h-full relative overflow-hidden">
+                  {/* Decorative Background */}
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${step.color} opacity-5 rounded-full -mr-16 -mt-16`}></div>
+                  
+                  {/* Icon */}
+                  <div className="relative">
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: 10 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                      className="w-24 h-24 bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg"
+                    >
+                      <span className="text-5xl">{step.icon}</span>
+                    </motion.div>
+                    
+                    <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 text-center tracking-tight">
+                      {step.title}
+                    </h3>
+                    <p className="text-gray-600 text-center leading-relaxed">
+                      {step.desc}
+                    </p>
+                  </div>
+
+                  {/* Arrow for connection (desktop only) */}
+                  {i < 2 && (
+                    <div className="hidden md:block absolute top-1/2 -right-6 lg:-right-8 z-20">
+                      <motion.div
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                        className="text-3xl text-blue-500"
+                      >
+                        →
+                      </motion.div>
+                    </div>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
