@@ -30,7 +30,9 @@ const services = [
   { id: 22, name: 'Pressure Washing', description: 'Deep cleaning driveways', gradient: 'from-blue-600 to-cyan-700', price: '€40', image: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=400&h=300&fit=crop' },
   { id: 23, name: 'Chimney Sweep', description: 'Chimney cleaning & inspection', gradient: 'from-stone-600 to-gray-700', price: '€60', image: 'https://images.unsplash.com/photo-1609757644538-5d5c4e93e6f1?w=400&h=300&fit=crop' },
   { id: 24, name: 'Gutter Cleaning', description: 'Gutter maintenance & repair', gradient: 'from-blue-500 to-slate-600', price: '€40', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop' },
-  { id: 25, name: 'Air Conditioning', description: 'AC installation & repair', gradient: 'from-cyan-600 to-blue-700', price: '€70', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400&h=300&fit=crop' }
+  { id: 25, name: 'Air Conditioning', description: 'AC installation & repair', gradient: 'from-cyan-600 to-blue-700', price: '€70', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400&h=300&fit=crop' },
+  { id: 26, name: 'Roof Cleaning', description: 'Roof moss removal & cleaning', gradient: 'from-green-600 to-teal-700', price: '€65', image: 'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=400&h=300&fit=crop' },
+  { id: 27, name: 'Carpet Cleaning', description: 'Deep carpet cleaning service', gradient: 'from-indigo-500 to-purple-600', price: '€50', image: 'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=400&h=300&fit=crop' }
 ];
 
 const serviceIcons: Record<string, string> = {
@@ -231,7 +233,7 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
               className="inline-block mb-4 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold"
             >
-              🏆 25 Professional Services
+              🏆 27 Professional Services
             </motion.div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 tracking-tight">
               Choose Your <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Service</span>
