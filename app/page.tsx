@@ -4,27 +4,27 @@ import { motion } from "framer-motion";
 
 export default function HomePage() {
   const services = [
-    { name: "Cleaning", gradient: "from-blue-400 via-blue-500 to-cyan-500" },
-    { name: "Handyman", gradient: "from-yellow-400 via-orange-400 to-orange-500" },
-    { name: "Plumbing", gradient: "from-emerald-400 via-teal-400 to-cyan-500" },
-    { name: "Painting", gradient: "from-blue-300 via-blue-400 to-blue-500" },
-    { name: "Gardening", gradient: "from-green-400 via-emerald-400 to-teal-400" },
-    { name: "Carpentry", gradient: "from-cyan-400 via-blue-400 to-blue-500" },
-    { name: "Appliance Repair", gradient: "from-blue-400 via-indigo-400 to-purple-400" },
-    { name: "Window & Lock Repair", gradient: "from-cyan-300 via-cyan-400 to-blue-400" },
-    { name: "Door & Lock Repair", gradient: "from-blue-400 via-cyan-400 to-teal-400" },
-    { name: "Electrical Work", gradient: "from-blue-300 via-blue-400 to-cyan-400" },
-    { name: "Lock Installation", gradient: "from-cyan-400 via-blue-400 to-blue-500" },
-    { name: "Tiling & Flooring", gradient: "from-blue-400 via-cyan-400 to-sky-400" },
-    { name: "Furniture Assembly", gradient: "from-orange-300 via-amber-400 to-yellow-400" },
-    { name: "CCTV Installation", gradient: "from-blue-400 via-blue-500 to-indigo-500" },
-    { name: "HVAC Cooling", gradient: "from-cyan-300 via-sky-400 to-blue-400" },
+    { name: "Cleaning", icon: "🧹", bg: "bg-blue-100" },
+    { name: "Handyman", icon: "🔨", bg: "bg-cyan-100" },
+    { name: "Plumbing", icon: "🚰", bg: "bg-teal-100" },
+    { name: "Painting", icon: "🎨", bg: "bg-blue-100" },
+    { name: "Gardening", icon: "🌿", bg: "bg-emerald-100" },
+    { name: "Carpentry", icon: "🪚", bg: "bg-cyan-100" },
+    { name: "Appliance Repair", icon: "🔧", bg: "bg-blue-100" },
+    { name: "Window & Lock Repair", icon: "🪟", bg: "bg-cyan-100" },
+    { name: "Door & Lock Repair", icon: "🚪", bg: "bg-blue-100" },
+    { name: "Door & Lock Repair", icon: "🔐", bg: "bg-cyan-100" },
+    { name: "Door's lock Repair", icon: "🔑", bg: "bg-blue-100" },
+    { name: "Tiling & Flooring", icon: "⬜", bg: "bg-cyan-100" },
+    { name: "Furniture Assembly", icon: "🪑", bg: "bg-blue-100" },
+    { name: "CCTV & Flooring", icon: "📹", bg: "bg-cyan-100" },
+    { name: "HVAC Cooling", icon: "❄️", bg: "bg-blue-100" },
   ];
 
   const chooseSteps = [
-    { title: "Choose Your Service", color: "from-blue-400 to-cyan-500", number: "1" },
-    { title: "Match Instantly", color: "from-cyan-400 to-blue-500", number: "2" },
-    { title: "Relax & Done", color: "from-blue-500 to-cyan-600", number: "3" },
+    { title: "Choose Your service", icon: "🔄", bg: "from-blue-400 to-cyan-400" },
+    { title: "Match Instantly", icon: "⚡", bg: "from-cyan-400 to-blue-400" },
+    { title: "Relax & Done", icon: "✅", bg: "from-blue-400 to-cyan-500" },
   ];
 
   const features = [
@@ -103,13 +103,10 @@ export default function HomePage() {
                 transition={{ duration: 0.4, delay: index * 0.05 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.05, y: -5 }}
-                className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all cursor-pointer group"
+                className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer"
               >
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${service.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg relative`}>
-                  <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm"></div>
-                  <div className="relative text-white text-3xl font-bold">
-                    {service.name.charAt(0)}
-                  </div>
+                <div className={`w-16 h-16 rounded-2xl ${service.bg} flex items-center justify-center mb-4 text-4xl shadow-md`}>
+                  {service.icon}
                 </div>
                 <h3 className="text-sm font-semibold text-gray-900 text-center leading-tight">
                   {service.name}
@@ -141,9 +138,9 @@ export default function HomePage() {
                 className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all text-center cursor-pointer"
               >
                 <div
-                  className={`w-20 h-20 bg-gradient-to-br ${step.color} rounded-2xl flex items-center justify-center text-4xl mb-6 mx-auto shadow-lg text-white font-bold`}
+                  className={`w-20 h-20 bg-gradient-to-br ${step.bg} rounded-full flex items-center justify-center text-4xl mb-6 mx-auto shadow-lg`}
                 >
-                  {step.number}
+                  {step.icon}
                 </div>
                 <h3 className="text-lg font-bold text-gray-900">{step.title}</h3>
               </motion.div>
