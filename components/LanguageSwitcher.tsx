@@ -41,14 +41,13 @@ export default function LanguageSwitcher() {
       script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
       document.body.appendChild(script)
 
-      // @ts-ignore
+      // @ts-ignore - Google Translate global
       window.googleTranslateElementInit = function() {
-        // @ts-ignore
-        new google.translate.TranslateElement(
+        // @ts-ignore - Google Translate API
+        new window.google.translate.TranslateElement(
           {
             pageLanguage: 'en',
             includedLanguages: 'en,ga,pl,ro,es,pt,fr,de',
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
             autoDisplay: false
           },
           'google_translate_element'
