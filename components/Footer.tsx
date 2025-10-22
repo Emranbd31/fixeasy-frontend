@@ -83,10 +83,10 @@ export default function Footer() {
           >
             <h4 className="font-bold text-lg mb-4 text-white">Company</h4>
             <ul className="space-y-3 text-gray-400">
-              {[
+              [
                 { label: 'How It Works', href: '/#how-it-works' },
                 { label: 'About Us', href: '/about' },
-                { label: 'Become a Pro', href: '/pro/register' },
+                { label: 'Become a Pro', href: '/register/professional' },
                 { label: 'Careers', href: '/careers' },
                 { label: 'Blog', href: '/blog' },
                 { label: 'Help Center', href: '/help' }

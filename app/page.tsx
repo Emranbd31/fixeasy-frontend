@@ -104,7 +104,7 @@ export default function HomePage() {
                     📅 Book a Service
                   </motion.button>
                 </Link>
-                <Link href="/pro/register">
+                <Link href="/register/professional">
                   <motion.button 
                     whileHover={{ scale: 1.05 }} 
                     whileTap={{ scale: 0.95 }} 
@@ -1099,7 +1099,7 @@ export default function HomePage() {
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   className="px-12 py-5 bg-white text-blue-600 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300">Book Now</motion.button>
               </Link>
-              <Link href="/pro/register">
+              <Link href="/register/professional">
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   className="px-12 py-5 bg-transparent text-white rounded-2xl font-bold text-lg border-2 border-white hover:bg-white/10 transition-all duration-300">Join as Professional</motion.button>
               </Link>
