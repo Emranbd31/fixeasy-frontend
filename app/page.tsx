@@ -5,18 +5,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const services = [
-  { id: 1, name: 'Cleaning', description: 'Professional home & office cleaning', gradient: 'from-blue-400 to-cyan-400', price: '€29' },
-  { id: 2, name: 'Handyman', description: 'Expert repair & maintenance', gradient: 'from-orange-400 to-red-400', price: '€35' },
-  { id: 3, name: 'Plumbing', description: 'Licensed plumbing services', gradient: 'from-blue-500 to-indigo-500', price: '€45' },
-  { id: 4, name: 'Electrical', description: 'Certified electrical work', gradient: 'from-yellow-400 to-orange-500', price: '€55' },
-  { id: 5, name: 'Painting', description: 'Interior & exterior painting', gradient: 'from-purple-400 to-pink-500', price: '€40' },
-  { id: 6, name: 'Gardening', description: 'Lawn care & landscaping', gradient: 'from-green-400 to-emerald-500', price: '€30' },
-  { id: 7, name: 'Moving', description: 'Reliable moving services', gradient: 'from-indigo-400 to-blue-500', price: '€60' },
-  { id: 8, name: 'Carpentry', description: 'Custom woodwork & furniture', gradient: 'from-amber-600 to-orange-600', price: '€50' },
-  { id: 9, name: 'Appliance Repair', description: 'Fix all home appliances', gradient: 'from-gray-500 to-slate-600', price: '€40' },
-  { id: 10, name: 'HVAC', description: 'Heating & cooling services', gradient: 'from-cyan-500 to-blue-600', price: '€65' },
-  { id: 11, name: 'Pest Control', description: 'Safe pest elimination', gradient: 'from-red-500 to-orange-600', price: '€45' },
-  { id: 12, name: 'Locksmith', description: 'Security & lock services', gradient: 'from-slate-600 to-gray-700', price: '€35' }
+  { id: 1, name: 'Cleaning', description: 'Professional home & office cleaning', gradient: 'from-blue-400 to-cyan-400', price: '€29', image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop' },
+  { id: 2, name: 'Handyman', description: 'Expert repair & maintenance', gradient: 'from-orange-400 to-red-400', price: '€35', image: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=400&h=300&fit=crop' },
+  { id: 3, name: 'Plumbing', description: 'Licensed plumbing services', gradient: 'from-blue-500 to-indigo-500', price: '€45', image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&h=300&fit=crop' },
+  { id: 4, name: 'Electrical', description: 'Certified electrical work', gradient: 'from-yellow-400 to-orange-500', price: '€55', image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&h=300&fit=crop' },
+  { id: 5, name: 'Painting', description: 'Interior & exterior painting', gradient: 'from-purple-400 to-pink-500', price: '€40', image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&h=300&fit=crop' },
+  { id: 6, name: 'Gardening', description: 'Lawn care & landscaping', gradient: 'from-green-400 to-emerald-500', price: '€30', image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop' },
+  { id: 7, name: 'Moving', description: 'Reliable moving services', gradient: 'from-indigo-400 to-blue-500', price: '€60', image: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=400&h=300&fit=crop' },
+  { id: 8, name: 'Carpentry', description: 'Custom woodwork & furniture', gradient: 'from-amber-600 to-orange-600', price: '€50', image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop' },
+  { id: 9, name: 'Appliance Repair', description: 'Fix all home appliances', gradient: 'from-gray-500 to-slate-600', price: '€40', image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&h=300&fit=crop' },
+  { id: 10, name: 'HVAC', description: 'Heating & cooling services', gradient: 'from-cyan-500 to-blue-600', price: '€65', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400&h=300&fit=crop' },
+  { id: 11, name: 'Pest Control', description: 'Safe pest elimination', gradient: 'from-red-500 to-orange-600', price: '€45', image: 'https://images.unsplash.com/photo-1563720223420-7984d685cd5e?w=400&h=300&fit=crop' },
+  { id: 12, name: 'Locksmith', description: 'Security & lock services', gradient: 'from-slate-600 to-gray-700', price: '€35', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop' }
 ];
 
 const serviceIcons: Record<string, string> = {
@@ -123,7 +123,7 @@ export default function HomePage() {
               </motion.div>
             </motion.div>
 
-            {/* Right Image Area */}
+            {/* Right Image Area - WITH REAL PROFESSIONAL PHOTO */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }} 
               animate={{ opacity: 1, scale: 1 }} 
@@ -131,36 +131,34 @@ export default function HomePage() {
               className="relative hidden lg:block"
             >
               <div className="relative w-full max-w-2xl mx-auto">
-                {/* Professional Image Placeholder with Real Photos Look */}
-                <div className="relative bg-gradient-to-br from-blue-100 via-white to-cyan-100 rounded-[3rem] p-8 shadow-2xl overflow-hidden">
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 left-0 w-full h-full" style={{
-                      backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.3) 0%, transparent 50%)',
-                    }}></div>
-                  </div>
+                {/* REAL PHOTO - Professional Worker */}
+                <div className="relative rounded-[3rem] overflow-hidden shadow-2xl">
+                  <img 
+                    src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&h=600&fit=crop" 
+                    alt="Professional handyman at work"
+                    className="w-full h-[500px] object-cover"
+                  />
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
                   
-                  <div className="relative grid grid-cols-2 gap-4">
-                    {/* Professional Service Display Cards */}
+                  {/* Stats Overlay on Photo */}
+                  <div className="absolute bottom-8 left-8 right-8 grid grid-cols-2 gap-4">
                     {[
-                      { icon: '👨‍🔧', label: 'Verified Pros', count: '500+', color: 'from-blue-500 to-blue-600', bg: 'bg-blue-50' },
-                      { icon: '⭐', label: 'Top Rated', count: '4.8/5', color: 'from-yellow-400 to-orange-500', bg: 'bg-yellow-50' },
-                      { icon: '✅', label: 'Jobs Done', count: '5,248+', color: 'from-green-500 to-emerald-600', bg: 'bg-green-50' },
-                      { icon: '⚡', label: 'Fast Service', count: '24/7', color: 'from-cyan-400 to-blue-500', bg: 'bg-cyan-50' }
+                      { icon: '👨‍🔧', label: 'Verified Pros', count: '500+', bg: 'bg-white/95' },
+                      { icon: '⭐', label: 'Top Rated', count: '4.8/5', bg: 'bg-white/95' },
                     ].map((item, idx) => (
                       <motion.div
                         key={idx}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 + idx * 0.1, duration: 0.5 }}
-                        whileHover={{ scale: 1.05, y: -5 }}
-                        className={`${item.bg} backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border border-white/50`}
+                        transition={{ delay: 0.8 + idx * 0.1, duration: 0.5 }}
+                        className={`${item.bg} backdrop-blur-sm rounded-xl p-4 shadow-lg`}
                       >
-                        <div className="text-4xl mb-2">{item.icon}</div>
-                        <div className={`text-2xl font-bold bg-gradient-to-r ${item.color} bg-clip-text text-transparent mb-1`}>
+                        <div className="text-2xl mb-1">{item.icon}</div>
+                        <div className="text-xl font-bold text-gray-900 mb-1">
                           {item.count}
                         </div>
-                        <div className="text-gray-700 text-sm font-semibold">{item.label}</div>
+                        <div className="text-gray-600 text-xs font-semibold">{item.label}</div>
                       </motion.div>
                     ))}
                   </div>
@@ -214,7 +212,7 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          {/* Service Cards Grid - Professional Design */}
+          {/* Service Cards Grid - WITH REAL PHOTOS */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
             {services.map((service, index) => (
               <motion.div 
@@ -229,25 +227,33 @@ export default function HomePage() {
               >
                 <Link href="/book">
                   <div className="relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border-2 border-gray-100 hover:border-blue-400 h-full">
-                    {/* Icon Circle - More Professional Look */}
-                    <div className="relative p-6 pb-4">
-                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${service.gradient} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow`}>
-                        <span className="text-3xl">{serviceIcons[service.name]}</span>
-                      </div>
+                    {/* REAL PHOTO - Like Competitors */}
+                    <div className="relative h-40 md:h-48 overflow-hidden">
+                      <img 
+                        src={service.image} 
+                        alt={service.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      {/* Gradient Overlay for Text Readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
                       
                       {/* Popular Badge */}
                       {index < 3 && (
-                        <div className="absolute top-4 right-4 bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-full">
+                        <div className="absolute top-3 right-3 bg-yellow-400 text-gray-900 text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                           ⭐ Popular
                         </div>
                       )}
+                      
+                      {/* Service Name Overlay */}
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <h3 className="text-lg md:text-xl font-bold text-white drop-shadow-lg">
+                          {service.name}
+                        </h3>
+                      </div>
                     </div>
 
                     {/* Content */}
-                    <div className="px-6 pb-6">
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                        {service.name}
-                      </h3>
+                    <div className="p-5">
                       <p className="text-sm text-gray-600 mb-4 leading-relaxed">
                         {service.description}
                       </p>
@@ -262,9 +268,9 @@ export default function HomePage() {
                         </div>
                       </div>
                       
-                      {/* Book Button - More Professional */}
+                      {/* Book Button */}
                       <div className="flex items-center justify-between text-blue-600 font-semibold text-sm">
-                        <span className="group-hover:text-blue-700 transition-colors">View Details</span>
+                        <span className="group-hover:text-blue-700 transition-colors">Book Now</span>
                         <motion.span
                           animate={{ x: [0, 4, 0] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
@@ -455,7 +461,7 @@ export default function HomePage() {
                 service: 'Cleaning',
                 rating: 5,
                 text: 'Simply amazing! Booked a cleaner within minutes. The service was professional and my house has never looked better. Highly recommend!',
-                avatar: '👩🏻'
+                avatar: 'https://i.pravatar.cc/150?img=1'
               },
               {
                 name: 'John O\'Brien',
@@ -463,7 +469,7 @@ export default function HomePage() {
                 service: 'Plumbing',
                 rating: 5,
                 text: 'Had a plumbing emergency at 9pm. Found a verified pro immediately who fixed everything the next morning. Outstanding service!',
-                avatar: '👨🏻'
+                avatar: 'https://i.pravatar.cc/150?img=12'
               },
               {
                 name: 'Emma Walsh',
@@ -471,7 +477,7 @@ export default function HomePage() {
                 service: 'Electrical',
                 rating: 5,
                 text: 'The electrician was ID-verified, arrived on time, and did excellent work. Transparent pricing with no hidden fees. Will use again!',
-                avatar: '👩🏼'
+                avatar: 'https://i.pravatar.cc/150?img=5'
               },
               {
                 name: 'Michael Byrne',
@@ -479,7 +485,7 @@ export default function HomePage() {
                 service: 'Handyman',
                 rating: 5,
                 text: 'Needed several repairs done. The handyman was skilled, friendly, and finished ahead of schedule. Great value for money!',
-                avatar: '👨🏼'
+                avatar: 'https://i.pravatar.cc/150?img=13'
               },
               {
                 name: 'Lisa Keane',
@@ -487,7 +493,7 @@ export default function HomePage() {
                 service: 'Gardening',
                 rating: 5,
                 text: 'My garden was completely transformed! The gardener was knowledgeable and the results exceeded my expectations.',
-                avatar: '👩🏻‍🦰'
+                avatar: 'https://i.pravatar.cc/150?img=9'
               },
               {
                 name: 'David Kelly',
@@ -495,7 +501,7 @@ export default function HomePage() {
                 service: 'Moving',
                 rating: 5,
                 text: 'Stress-free moving experience! The team was careful with my belongings and made the whole process smooth and easy.',
-                avatar: '👨🏻‍🦰'
+                avatar: 'https://i.pravatar.cc/150?img=14'
               }
             ].map((testimonial, i) => (
               <motion.div
@@ -519,11 +525,13 @@ export default function HomePage() {
                   "{testimonial.text}"
                 </p>
 
-                {/* Customer Info - More Professional Design */}
+                {/* Customer Info - WITH REAL PHOTO */}
                 <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
-                    {testimonial.name.charAt(0)}
-                  </div>
+                  <img 
+                    src={testimonial.avatar} 
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover shadow-md"
+                  />
                   <div className="flex-1">
                     <div className="font-bold text-gray-900">{testimonial.name}</div>
                     <div className="text-sm text-gray-500">{testimonial.location} • {testimonial.service}</div>
