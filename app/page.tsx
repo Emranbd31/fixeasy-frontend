@@ -402,11 +402,11 @@ export default function HomePage() {
             <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-8">
               As Featured In
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-12 md:gap-16 opacity-60">
-              <div className="text-2xl md:text-3xl font-bold text-gray-700">📰 Irish Times</div>
-              <div className="text-2xl md:text-3xl font-bold text-gray-700">📻 RTÉ</div>
-              <div className="text-2xl md:text-3xl font-bold text-gray-700">📱 Irish Independent</div>
-              <div className="text-2xl md:text-3xl font-bold text-gray-700">💼 The Herald</div>
+            <div className="flex flex-wrap justify-center items-center gap-12 md:gap-16">
+              <div className="text-xl md:text-2xl font-bold text-gray-400 hover:text-gray-600 transition-colors">The Irish Times</div>
+              <div className="text-xl md:text-2xl font-bold text-gray-400 hover:text-gray-600 transition-colors">RTÉ</div>
+              <div className="text-xl md:text-2xl font-bold text-gray-400 hover:text-gray-600 transition-colors">Irish Independent</div>
+              <div className="text-xl md:text-2xl font-bold text-gray-400 hover:text-gray-600 transition-colors">The Herald</div>
             </div>
           </motion.div>
         </div>
@@ -675,10 +675,10 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="mt-12 max-w-3xl mx-auto"
           >
-            <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border-3 border-green-300 rounded-3xl p-8 text-center shadow-xl">
+            <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border-4 border-green-300 rounded-3xl p-8 text-center shadow-xl">
               <div className="text-5xl mb-4">🎯</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Our Happiness Pledge</h3>
-              <p className="text-gray-700 text-lg leading-relaxed">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Our Happiness Pledge</h3>
+              <p className="text-gray-700 text-base md:text-lg leading-relaxed">
                 If you're not 100% satisfied with your service, we'll work to make it right or provide a <span className="font-bold text-green-700">full refund</span>. Your satisfaction is our guarantee.
               </p>
             </div>
