@@ -134,8 +134,8 @@ export default function HomePage() {
                 {/* REAL PHOTO - Professional Worker */}
                 <div className="relative rounded-[3rem] overflow-hidden shadow-2xl">
                   <img 
-                    src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&h=600&fit=crop" 
-                    alt="Professional handyman at work"
+                    src="https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=800&h=600&fit=crop" 
+                    alt="Friendly professional service worker smiling"
                     className="w-full h-[500px] object-cover"
                   />
                   {/* Gradient Overlay */}
