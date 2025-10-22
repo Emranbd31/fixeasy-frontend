@@ -25,6 +25,7 @@ export default function ProfessionalRegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [category, setCategory] = useState('')
+  const [customCategory, setCustomCategory] = useState('')
   const [experience, setExperience] = useState<number>(0)
   const [rate, setRate] = useState<number>(0)
   const [serviceArea, setServiceArea] = useState('')
@@ -48,8 +49,9 @@ export default function ProfessionalRegisterPage() {
       setError('Password must be at least 6 characters')
       return
     }
-    if (!category || !experience || !rate || !serviceArea) {
-      setError('Please complete your service details')
+    const chosenCategory = category === 'Other' ? customCategory.trim() : category
+    if (!chosenCategory || !experience || !rate || !serviceArea) {
+      setError('Please complete your service details (select a category or enter one)')
       return
     }
     if (!idDocument) {
@@ -113,7 +115,7 @@ export default function ProfessionalRegisterPage() {
           name,
           email,
           phone,
-          category,
+          category: category === 'Other' ? customCategory.trim() : category,
           experience: Number(experience),
           rate: Number(rate),
           service_area: serviceArea,
@@ -252,7 +254,21 @@ export default function ProfessionalRegisterPage() {
                         {cat}
                       </option>
                     ))}
+                    <option value="Other">Other (not listed)</option>
                   </select>
+                  {category === 'Other' && (
+                    <div className="mt-3">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Enter your service</label>
+                      <input
+                        type="text"
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        placeholder="e.g., Locksmith & Safe Engineer, Satellite Dish Installation"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">We'll use this as your primary category</p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
