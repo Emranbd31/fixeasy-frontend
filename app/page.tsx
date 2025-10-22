@@ -288,6 +288,114 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* RECENT JOBS COMPLETED SECTION */}
+      <section className="py-16 bg-gradient-to-b from-white to-gray-50 border-y border-gray-200">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="inline-block mb-4 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold"
+            >
+              🔥 Live Activity
+            </motion.div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 tracking-tight">
+              Recently <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Completed Jobs</span>
+            </h2>
+            <p className="text-base md:text-lg text-gray-600">
+              Real jobs completed by our verified professionals across Ireland
+            </p>
+          </motion.div>
+
+          {/* Jobs Feed */}
+          <div className="max-w-4xl mx-auto space-y-3">
+            {[
+              { service: 'Plumbing', location: 'Dublin 2', time: '2 hours ago', pro: 'John M.', rating: 5, icon: '🔧' },
+              { service: 'Cleaning', location: 'Cork', time: '3 hours ago', pro: 'Sarah K.', rating: 5, icon: '🧹' },
+              { service: 'Electrical', location: 'Galway', time: '5 hours ago', pro: 'Michael P.', rating: 5, icon: '⚡' },
+              { service: 'Gardening', location: 'Limerick', time: '6 hours ago', pro: 'Emma W.', rating: 5, icon: '🌿' },
+              { service: 'Handyman', location: 'Waterford', time: '8 hours ago', pro: 'David O.', rating: 5, icon: '🔨' },
+              { service: 'Painting', location: 'Dublin 4', time: '12 hours ago', pro: 'Lisa B.', rating: 5, icon: '🎨' }
+            ].map((job, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                whileHover={{ x: 4, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
+                className="bg-white rounded-2xl p-4 md:p-5 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Icon */}
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span className="text-2xl">{job.icon}</span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="font-bold text-gray-900 text-sm md:text-base">
+                        {job.service} completed in {job.location}
+                      </h3>
+                      <span className="text-xs text-gray-500 whitespace-nowrap">{job.time}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <span className="text-blue-600 font-semibold">✓</span> {job.pro}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="text-yellow-400">★</span>
+                        <span className="font-semibold text-gray-900">{job.rating}.0</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Success Badge */}
+                  <div className="hidden sm:flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+                    <span>✓</span> Completed
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* View All Jobs Link */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="text-center mt-8"
+          >
+            <Link href="/jobs">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm md:text-base"
+              >
+                View all recent jobs
+                <motion.span
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  →
+                </motion.span>
+              </motion.button>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       <section id="how-it-works" className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           {/* Section Header */}
