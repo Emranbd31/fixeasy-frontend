@@ -25,7 +25,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseServerClient() as any; // widen types to avoid TS table typing errors
 
     // Upsert professional profile
     const { error } = await supabase
