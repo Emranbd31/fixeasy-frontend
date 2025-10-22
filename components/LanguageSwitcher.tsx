@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const languages = [
-  { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'en', name: 'English (Ireland)', flag: '🇮🇪' },
   { code: 'ga', name: 'Gaeilge', flag: '🇮🇪' },
+  { code: 'en-GB', name: 'English (UK)', flag: '🇬🇧' },
   { code: 'pl', name: 'Polski', flag: '🇵🇱' },
   { code: 'ro', name: 'Română', flag: '🇷🇴' },
   { code: 'es', name: 'Español', flag: '🇪🇸' },
