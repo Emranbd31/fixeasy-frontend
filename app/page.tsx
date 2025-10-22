@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const services = [
-  { id: 1, name: 'Cleaning', description: 'Professional home & office cleaning', gradient: 'from-blue-400 to-cyan-400', price: '€29', image: 'https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400&h=300&fit=crop' },
+  { id: 1, name: 'Cleaning', description: 'Professional home & office cleaning', gradient: 'from-blue-400 to-cyan-400', price: '€29', image: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=400&h=300&fit=crop' },
   { id: 2, name: 'Handyman', description: 'Expert repair & maintenance', gradient: 'from-orange-400 to-red-400', price: '€35', image: 'https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?w=400&h=300&fit=crop' },
   { id: 3, name: 'Plumbing', description: 'Licensed plumbing services', gradient: 'from-blue-500 to-indigo-500', price: '€45', image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&h=300&fit=crop' },
   { id: 4, name: 'Electrical', description: 'Certified electrical work', gradient: 'from-yellow-400 to-orange-500', price: '€55', image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&h=300&fit=crop' },
