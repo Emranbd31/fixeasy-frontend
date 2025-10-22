@@ -131,38 +131,55 @@ export default function HomePage() {
               className="relative hidden lg:block"
             >
               <div className="relative w-full max-w-2xl mx-auto">
-                {/* Main Card */}
-                <div className="relative bg-white rounded-[3rem] p-8 shadow-2xl">
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Service Icons Grid */}
+                {/* Professional Image Placeholder with Real Photos Look */}
+                <div className="relative bg-gradient-to-br from-blue-100 via-white to-cyan-100 rounded-[3rem] p-8 shadow-2xl overflow-hidden">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 left-0 w-full h-full" style={{
+                      backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.3) 0%, transparent 50%)',
+                    }}></div>
+                  </div>
+                  
+                  <div className="relative grid grid-cols-2 gap-4">
+                    {/* Professional Service Display Cards */}
                     {[
-                      { icon: '👷‍♂️', label: 'Workers', color: 'from-blue-400 to-blue-600' },
-                      { icon: '🔧', label: 'Repairs', color: 'from-orange-400 to-red-500' },
-                      { icon: '🧹', label: 'Cleaning', color: 'from-cyan-400 to-blue-500' },
-                      { icon: '⚡', label: 'Fast', color: 'from-yellow-400 to-orange-500' }
+                      { icon: '👨‍🔧', label: 'Verified Pros', count: '500+', color: 'from-blue-500 to-blue-600', bg: 'bg-blue-50' },
+                      { icon: '⭐', label: 'Top Rated', count: '4.8/5', color: 'from-yellow-400 to-orange-500', bg: 'bg-yellow-50' },
+                      { icon: '✅', label: 'Jobs Done', count: '5,248+', color: 'from-green-500 to-emerald-600', bg: 'bg-green-50' },
+                      { icon: '⚡', label: 'Fast Service', count: '24/7', color: 'from-cyan-400 to-blue-500', bg: 'bg-cyan-50' }
                     ].map((item, idx) => (
                       <motion.div
                         key={idx}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 + idx * 0.1, duration: 0.5 }}
-                        whileHover={{ scale: 1.05, rotate: 5 }}
-                        className={`bg-gradient-to-br ${item.color} rounded-3xl p-8 text-center shadow-lg cursor-pointer`}
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        className={`${item.bg} backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border border-white/50`}
                       >
-                        <div className="text-6xl mb-3">{item.icon}</div>
-                        <div className="text-white font-bold text-lg">{item.label}</div>
+                        <div className="text-4xl mb-2">{item.icon}</div>
+                        <div className={`text-2xl font-bold bg-gradient-to-r ${item.color} bg-clip-text text-transparent mb-1`}>
+                          {item.count}
+                        </div>
+                        <div className="text-gray-700 text-sm font-semibold">{item.label}</div>
                       </motion.div>
                     ))}
                   </div>
                 </div>
                 
-                {/* Floating Badge */}
+                {/* Floating Badges */}
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -top-6 -right-6 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg font-bold"
+                  className="absolute -top-6 -right-6 bg-green-500 text-white px-6 py-3 rounded-full shadow-xl font-bold border-4 border-white"
                 >
-                  ✓ Verified Pros
+                  ✓ ID Verified
+                </motion.div>
+                <motion.div
+                  animate={{ y: [0, 10, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
+                  className="absolute -bottom-6 -left-6 bg-blue-600 text-white px-6 py-3 rounded-full shadow-xl font-bold border-4 border-white"
+                >
+                  🛡️ Insured
                 </motion.div>
               </div>
             </motion.div>
@@ -197,7 +214,7 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          {/* Service Cards Grid */}
+          {/* Service Cards Grid - Professional Design */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
             {services.map((service, index) => (
               <motion.div 
@@ -206,63 +223,52 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }} 
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.5, delay: index * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
-                whileHover={{ y: -12, transition: { type: 'spring', stiffness: 400, damping: 17 } }} 
-                whileTap={{ scale: 0.97 }} 
+                whileHover={{ y: -8, scale: 1.02, transition: { type: 'spring', stiffness: 400, damping: 17 } }} 
+                whileTap={{ scale: 0.98 }} 
                 className="group cursor-pointer"
               >
                 <Link href="/book">
-                  <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-blue-200">
-                    {/* Gradient Background */}
-                    <div className="relative h-36 md:h-40 overflow-hidden">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-100`}></div>
-                      
-                      {/* Decorative Pattern */}
-                      <div className="absolute inset-0 opacity-10">
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-white rounded-full -mr-10 -mt-10"></div>
-                        <div className="absolute bottom-0 left-0 w-16 h-16 bg-white rounded-full -ml-8 -mb-8"></div>
+                  <div className="relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border-2 border-gray-100 hover:border-blue-400 h-full">
+                    {/* Icon Circle - More Professional Look */}
+                    <div className="relative p-6 pb-4">
+                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${service.gradient} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow`}>
+                        <span className="text-3xl">{serviceIcons[service.name]}</span>
                       </div>
                       
-                      {/* Icon */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <motion.div 
-                          whileHover={{ scale: 1.15, rotate: 8 }} 
-                          transition={{ type: 'spring', stiffness: 400, damping: 17 }} 
-                          className="text-6xl md:text-7xl filter drop-shadow-2xl"
-                        >
-                          {serviceIcons[service.name]}
-                        </motion.div>
-                      </div>
-
                       {/* Popular Badge */}
                       {index < 3 && (
-                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                        <div className="absolute top-4 right-4 bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-full">
                           ⭐ Popular
                         </div>
                       )}
                     </div>
 
                     {/* Content */}
-                    <div className="p-5">
-                      <h3 className="text-base md:text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors tracking-tight">
+                    <div className="px-6 pb-6">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                         {service.name}
                       </h3>
-                      <p className="text-xs md:text-sm text-gray-600 leading-relaxed mb-3">
+                      <p className="text-sm text-gray-600 mb-4 leading-relaxed">
                         {service.description}
                       </p>
                       
-                      {/* Pricing */}
-                      <div className="mb-3 flex items-baseline gap-1">
-                        <span className="text-xl font-bold text-gray-900">{service.price}</span>
-                        <span className="text-xs text-gray-500">/starting from</span>
+                      {/* Pricing - More Prominent */}
+                      <div className="mb-4 pb-4 border-b border-gray-100">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                            {service.price}
+                          </span>
+                          <span className="text-xs text-gray-500">starting</span>
+                        </div>
                       </div>
                       
-                      {/* Book Button */}
-                      <div className="flex items-center text-blue-600 font-semibold text-sm group-hover:text-blue-700 transition-colors">
-                        <span>Book Now</span>
+                      {/* Book Button - More Professional */}
+                      <div className="flex items-center justify-between text-blue-600 font-semibold text-sm">
+                        <span className="group-hover:text-blue-700 transition-colors">View Details</span>
                         <motion.span
                           animate={{ x: [0, 4, 0] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
-                          className="ml-1"
+                          className="text-blue-600 group-hover:text-blue-700"
                         >
                           →
                         </motion.span>
@@ -513,15 +519,16 @@ export default function HomePage() {
                   "{testimonial.text}"
                 </p>
 
-                {/* Customer Info */}
+                {/* Customer Info - More Professional Design */}
                 <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full flex items-center justify-center text-2xl">
-                    {testimonial.avatar}
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                    {testimonial.name.charAt(0)}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <div className="font-bold text-gray-900">{testimonial.name}</div>
                     <div className="text-sm text-gray-500">{testimonial.location} • {testimonial.service}</div>
                   </div>
+                  <div className="text-green-600 font-semibold text-sm">✓ Verified</div>
                 </div>
               </motion.div>
             ))}
