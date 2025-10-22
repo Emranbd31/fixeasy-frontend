@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 
 const services = [
   { id: 1, name: 'Cleaning', description: 'Professional home & office cleaning', gradient: 'from-blue-400 to-cyan-400', price: '€29', image: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=400&h=300&fit=crop' },
@@ -39,6 +40,21 @@ const serviceIcons: Record<string, string> = {
 };
 
 export default function HomePage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredServices, setFilteredServices] = useState(services);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      setFilteredServices(services);
+    } else {
+      const filtered = services.filter(service =>
+        service.name.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredServices(filtered);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-white">
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 pt-32 pb-20 lg:pt-40 lg:pb-32">
@@ -225,9 +241,84 @@ export default function HomePage() {
             </p>
           </motion.div>
 
+          {/* SEARCH BAR */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-2xl mx-auto mb-12"
+          >
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search services... (e.g., cleaning, plumbing, electrical)"
+                className="w-full px-6 py-4 pl-14 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all shadow-lg"
+              />
+              <div className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 text-2xl">
+                🔍
+              </div>
+              {searchQuery && (
+                <button
+                  onClick={() => handleSearch('')}
+                  className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl font-bold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Search Suggestions */}
+            {searchQuery && filteredServices.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-3 bg-white rounded-xl shadow-xl border-2 border-gray-100 overflow-hidden"
+              >
+                <div className="p-3 text-sm text-gray-500 font-semibold border-b border-gray-100">
+                  {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} found
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {filteredServices.slice(0, 8).map((service) => (
+                    <Link key={service.id} href="/book">
+                      <motion.div
+                        whileHover={{ backgroundColor: '#f0f9ff' }}
+                        className="px-4 py-3 cursor-pointer border-b border-gray-50 last:border-b-0 flex items-center gap-3"
+                      >
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                          <img src={service.image} alt={service.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">{service.name}</div>
+                          <div className="text-sm text-gray-500">{service.description}</div>
+                        </div>
+                        <div className="text-blue-600 font-bold">{service.price}</div>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* No Results */}
+            {searchQuery && filteredServices.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-3 bg-white rounded-xl shadow-xl border-2 border-gray-100 p-6 text-center"
+              >
+                <div className="text-4xl mb-2">😕</div>
+                <div className="text-gray-900 font-semibold mb-1">No services found</div>
+                <div className="text-sm text-gray-500">Try searching for: cleaning, plumbing, electrical, etc.</div>
+              </motion.div>
+            )}
+          </motion.div>
+
           {/* Service Cards Grid - WITH REAL PHOTOS */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
-            {services.map((service, index) => (
+            {filteredServices.map((service, index) => (
               <motion.div 
                 key={service.id} 
                 initial={{ opacity: 0, y: 30 }} 
