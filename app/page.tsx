@@ -137,15 +137,25 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-28 pb-12 lg:pt-36 lg:pb-16 min-h-[90vh]">
+      <section className="relative overflow-hidden pt-28 pb-12 lg:pt-36 lg:pb-16 min-h-[90vh] flex items-center">
+        {/* Background Image - Full Width on All Devices */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/images/hero-professional.png" 
+            alt="Trusted FixEasy professional with happy client"
+            className="w-full h-full object-cover object-[center_top] brightness-75"
+          />
+          {/* Gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/60 to-slate-900/40"></div>
+        </div>
+
         {/* Decorative Background Elements */}
-        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse z-10"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse z-10" style={{ animationDelay: '2s' }}></div>
         
         <div className="container mx-auto px-6 md:px-8 lg:px-12 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh]">
-            
-            {/* Left Column - Text Content */}
+          <div className="max-w-3xl lg:max-w-4xl">
+            {/* Content */}
             <motion.div 
               initial={{ opacity: 0, x: -30 }} 
               animate={{ opacity: 1, x: 0 }} 
@@ -256,29 +266,6 @@ export default function HomePage() {
                 </div>
               </motion.div>
             </motion.div>
-
-            {/* Right Column - Hero Image */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-              className="relative hidden lg:flex items-center justify-center"
-            >
-              <div className="relative w-full max-w-lg">
-                {/* Glow effect behind image */}
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-3xl blur-3xl"></div>
-                
-                {/* Image container */}
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-cyan-400/20">
-                  <img 
-                    src="/images/hero-professional.png" 
-                    alt="Trusted FixEasy professional with happy client"
-                    className="w-full h-auto object-cover"
-                  />
-                </div>
-              </div>
-            </motion.div>
-
           </div>
         </div>
       </section>
