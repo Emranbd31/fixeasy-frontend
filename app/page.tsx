@@ -137,47 +137,58 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 pt-32 pb-20 lg:pt-40 lg:pb-32">
+      <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-32 min-h-[90vh]">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1920&h=1080&fit=crop" 
+            alt="Professional service worker"
+            className="w-full h-full object-cover object-center"
+          />
+          {/* Dark gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/95 via-blue-900/80 to-blue-900/60"></div>
+        </div>
+
         {/* Decorative Background Elements */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-72 h-72 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-400 rounded-full mix-blend-overlay filter blur-3xl opacity-20 animate-pulse z-10"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-overlay filter blur-3xl opacity-20 animate-pulse z-10" style={{ animationDelay: '2s' }}></div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="max-w-4xl">
             {/* Left Content */}
             <motion.div 
               initial={{ opacity: 0, x: -50 }} 
               animate={{ opacity: 1, x: 0 }} 
               transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-center lg:text-left"
+              className="text-left"
             >
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                className="inline-block mb-4 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold"
+                className="inline-block mb-4 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-semibold border border-white/30"
               >
                 🏠 Ireland's #1 Home Service Platform
               </motion.div>
               
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight tracking-tight">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
                 Home Services,<br />
-                <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent animate-gradient">
+                <span className="bg-gradient-to-r from-cyan-400 via-blue-300 to-cyan-400 bg-clip-text text-transparent animate-gradient">
                   Made Easy
                 </span>
               </h1>
               
-              <p className="text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                Connect with <span className="font-semibold text-gray-900">trusted professionals</span> for all your home service needs. Fast, reliable, and affordable.
+              <p className="text-lg md:text-xl lg:text-2xl text-white/90 mb-8 leading-relaxed max-w-2xl">
+                Connect with <span className="font-semibold text-cyan-300">trusted professionals</span> for all your home service needs. Fast, reliable, and affordable.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Link href="/book">
                   <motion.button 
-                    whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(59, 130, 246, 0.4)' }} 
+                    whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(6, 182, 212, 0.4)' }} 
                     whileTap={{ scale: 0.95 }} 
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    className="px-10 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-full font-bold text-lg shadow-xl shadow-blue-600/30 hover:shadow-2xl transition-all duration-300"
+                    className="px-10 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
                   >
                     📅 Book a Service
                   </motion.button>
@@ -187,7 +198,7 @@ export default function HomePage() {
                     whileHover={{ scale: 1.05 }} 
                     whileTap={{ scale: 0.95 }} 
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    className="px-10 py-4 bg-white text-gray-900 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl border-2 border-gray-200 hover:border-blue-600 transition-all duration-300"
+                    className="px-10 py-4 bg-white text-blue-900 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl border-2 border-white hover:bg-white/90 transition-all duration-300"
                   >
                     💼 Become a Pro
                   </motion.button>
@@ -195,42 +206,42 @@ export default function HomePage() {
               </div>
 
               {/* Live Stats - ANIMATED COUNTERS */}
-              <div className="flex flex-wrap gap-6 justify-center lg:justify-start text-center lg:text-left">
+              <div className="flex flex-wrap gap-6 text-left">
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.5, duration: 0.5 }}
-                  className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 px-6 py-4 rounded-2xl shadow-lg"
+                  className="bg-white/10 backdrop-blur-md border-2 border-white/20 px-6 py-4 rounded-2xl shadow-lg"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl animate-pulse">🔥</span>
-                    <div className="text-3xl font-bold text-red-600">{activeRequests}</div>
+                    <div className="text-3xl font-bold text-white">{activeRequests}</div>
                   </div>
-                  <div className="text-xs font-semibold text-gray-700">Active Requests Now</div>
+                  <div className="text-xs font-semibold text-white/80">Active Requests Now</div>
                 </motion.div>
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.6, duration: 0.5 }}
-                  className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 px-6 py-4 rounded-2xl shadow-lg"
+                  className="bg-white/10 backdrop-blur-md border-2 border-white/20 px-6 py-4 rounded-2xl shadow-lg"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl">👷</span>
-                    <div className="text-3xl font-bold text-green-600">{professionalsOnline}</div>
+                    <div className="text-3xl font-bold text-white">{professionalsOnline}</div>
                   </div>
-                  <div className="text-xs font-semibold text-gray-700">Professionals Online</div>
+                  <div className="text-xs font-semibold text-white/80">Professionals Online</div>
                 </motion.div>
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.7, duration: 0.5 }}
-                  className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 px-6 py-4 rounded-2xl shadow-lg"
+                  className="bg-white/10 backdrop-blur-md border-2 border-white/20 px-6 py-4 rounded-2xl shadow-lg"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl">✅</span>
-                    <div className="text-3xl font-bold text-blue-600">{servicesCompleted}</div>
+                    <div className="text-3xl font-bold text-white">{servicesCompleted}</div>
                   </div>
-                  <div className="text-xs font-semibold text-gray-700">Services Today</div>
+                  <div className="text-xs font-semibold text-white/80">Services Today</div>
                 </motion.div>
               </div>
 
@@ -239,80 +250,21 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
-                className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start"
+                className="mt-8 flex flex-wrap gap-3"
               >
-                <div className="flex items-center gap-2 bg-green-50 border-2 border-green-200 px-4 py-2 rounded-full">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border-2 border-white/30 px-4 py-2 rounded-full">
                   <span className="text-lg">✅</span>
-                  <span className="text-sm font-semibold text-green-800">ID Verified</span>
+                  <span className="text-sm font-semibold text-white">ID Verified</span>
                 </div>
-                <div className="flex items-center gap-2 bg-blue-50 border-2 border-blue-200 px-4 py-2 rounded-full">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border-2 border-white/30 px-4 py-2 rounded-full">
                   <span className="text-lg">🛡️</span>
-                  <span className="text-sm font-semibold text-blue-800">Insured</span>
+                  <span className="text-sm font-semibold text-white">Insured</span>
                 </div>
-                <div className="flex items-center gap-2 bg-purple-50 border-2 border-purple-200 px-4 py-2 rounded-full">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border-2 border-white/30 px-4 py-2 rounded-full">
                   <span className="text-lg">💳</span>
-                  <span className="text-sm font-semibold text-purple-800">Secure Payment</span>
+                  <span className="text-sm font-semibold text-white">Secure Payment</span>
                 </div>
               </motion.div>
-            </motion.div>
-
-            {/* Right Image Area - WITH REAL PROFESSIONAL PHOTO */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }} 
-              animate={{ opacity: 1, scale: 1 }} 
-              transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }} 
-              className="relative hidden lg:block"
-            >
-              <div className="relative w-full max-w-2xl mx-auto">
-                {/* REAL PHOTO - Professional Worker */}
-                <div className="relative rounded-[3rem] overflow-hidden shadow-2xl">
-                  <img 
-                    src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop" 
-                    alt="Professional working with satisfied customer in background"
-                    className="w-full h-[500px] object-cover"
-                  />
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                  
-                  {/* Stats Overlay on Photo */}
-                  <div className="absolute bottom-8 left-8 right-8 grid grid-cols-2 gap-4">
-                    {[
-                      { icon: '👨‍🔧', label: 'Verified Pros', count: '500+', bg: 'bg-white/95' },
-                      { icon: '⭐', label: 'Top Rated', count: '4.8/5', bg: 'bg-white/95' },
-                    ].map((item, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8 + idx * 0.1, duration: 0.5 }}
-                        className={`${item.bg} backdrop-blur-sm rounded-xl p-4 shadow-lg`}
-                      >
-                        <div className="text-2xl mb-1">{item.icon}</div>
-                        <div className="text-xl font-bold text-gray-900 mb-1">
-                          {item.count}
-                        </div>
-                        <div className="text-gray-600 text-xs font-semibold">{item.label}</div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Floating Badges */}
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -top-6 -right-6 bg-green-500 text-white px-6 py-3 rounded-full shadow-xl font-bold border-4 border-white"
-                >
-                  ✓ ID Verified
-                </motion.div>
-                <motion.div
-                  animate={{ y: [0, 10, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-                  className="absolute -bottom-6 -left-6 bg-blue-600 text-white px-6 py-3 rounded-full shadow-xl font-bold border-4 border-white"
-                >
-                  🛡️ Insured
-                </motion.div>
-              </div>
             </motion.div>
           </div>
         </div>
