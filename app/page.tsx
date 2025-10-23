@@ -139,14 +139,14 @@ export default function HomePage() {
     <main className="min-h-screen bg-white">
       <section className="relative overflow-hidden pt-28 pb-12 lg:pt-36 lg:pb-16 min-h-[90vh] flex items-center">
         {/* Background Image */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 bg-slate-900">
           <img 
             src="/images/hero-professional.png" 
             alt="Trusted FixEasy professional with happy client"
-            className="w-full h-full object-cover object-[55%_50%] brightness-90"
+            className="w-full h-full object-contain md:object-cover md:object-[45%_center] brightness-90"
           />
           {/* Gradient overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-transparent"></div>
         </div>
 
         {/* Decorative Background Elements */}
