@@ -137,24 +137,24 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden pt-28 pb-12 lg:pt-36 lg:pb-16 min-h-[95vh] flex items-center">
+      <section className="relative overflow-hidden pt-28 pb-12 lg:pt-36 lg:pb-16 min-h-[90vh] flex items-center">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
             src="/images/hero-professional.png" 
-            alt="Professional service worker"
-            className="w-full h-full object-cover object-[60%_5%]"
+            alt="Trusted professional with happy client"
+            className="w-full h-full object-cover object-center md:object-[60%_center] brightness-95"
           />
-          {/* Improved gradient overlay - darker for better text contrast */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/88 via-slate-900/68 to-slate-900/35"></div>
+          {/* Gradient overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent"></div>
         </div>
 
         {/* Decorative Background Elements */}
-        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-25 animate-pulse z-10"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-25 animate-pulse z-10" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse z-10"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse z-10" style={{ animationDelay: '2s' }}></div>
         
-        <div className="container mx-auto px-8 lg:px-12 relative z-10">
-          <div className="max-w-3xl lg:max-w-4xl pl-2">
+        <div className="container mx-auto px-6 md:px-20 relative z-10">
+          <div className="max-w-3xl lg:max-w-4xl">
             {/* Content - Better positioned and styled */}
             <motion.div 
               initial={{ opacity: 0, y: 30 }} 
