@@ -8,7 +8,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-2xl border-b border-gray-200/50 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-md border-b border-white/10 shadow-sm">
       <nav className="container mx-auto px-4 lg:px-6 py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -19,7 +19,7 @@ export default function Header() {
               className="flex items-center gap-2 text-2xl font-bold"
             >
               <span className="text-3xl">🛠️</span>
-              <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
                 FixEasy
               </span>
             </motion.div>
@@ -27,13 +27,13 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="/#services" className="text-gray-700 hover:text-blue-600 transition-colors font-medium text-sm">
+            <Link href="/#services" className="text-white hover:text-cyan-300 transition-colors font-medium text-sm">
               Services
             </Link>
-            <Link href="/#how-it-works" className="text-gray-700 hover:text-blue-600 transition-colors font-medium text-sm">
+            <Link href="/#how-it-works" className="text-white hover:text-cyan-300 transition-colors font-medium text-sm">
               How It Works
             </Link>
-            <Link href="/login" className="text-gray-700 hover:text-blue-600 transition-colors font-medium text-sm">
+            <Link href="/login" className="text-white hover:text-cyan-300 transition-colors font-medium text-sm">
               Login
             </Link>
             <Link href="/book">
@@ -50,7 +50,7 @@ export default function Header() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
+            className="md:hidden p-2 text-white hover:text-cyan-300 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {mobileMenuOpen ? (
