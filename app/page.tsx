@@ -143,7 +143,7 @@ export default function HomePage() {
           <img 
             src="/images/hero-professional.png" 
             alt="Trusted FixEasy professional with happy client"
-            className="w-full h-full object-contain md:object-[55%] brightness-90"
+            className="w-full h-full object-cover object-[55%_50%] brightness-90"
           />
           {/* Gradient overlay for better text readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent"></div>
