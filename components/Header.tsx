@@ -10,7 +10,7 @@ export default function Header() {
     return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-md border-b border-white/10 shadow-sm">
             <nav className="container mx-auto px-4 lg:px-6 py-1">
-                        <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                     {/* Logo */}
                     <Link href="/">
                         <motion.div
@@ -25,15 +25,15 @@ export default function Header() {
                         </motion.div>
                     </Link>
 
-                            {/* Center Badge (desktop only) */}
-                            <div className="hidden md:flex flex-1 justify-center">
-                                <span className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold border border-white/10 backdrop-blur-sm whitespace-nowrap">
-                                    🏆 Ireland's #1 Home Service Platform
-                                </span>
-                            </div>
+                    {/* Center Badge (desktop only) */}
+                    <div className="hidden md:flex flex-1 justify-center">
+                        <span className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold border border-white/10 backdrop-blur-sm whitespace-nowrap">
+                            🏆 Ireland's #1 Home Service Platform
+                        </span>
+                    </div>
 
                     {/* Desktop Navigation */}
-                                <div className="hidden md:flex items-center gap-8">
+                    <div className="hidden md:flex items-center gap-8">
                         <Link href="/#services" className="text-white hover:text-cyan-300 transition-colors font-medium text-sm">
                             Services
                         </Link>
