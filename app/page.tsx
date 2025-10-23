@@ -143,11 +143,10 @@ export default function HomePage() {
           <img 
             src="/images/hero-professional.png" 
             alt="Professional service worker"
-            className="w-auto h-full object-contain object-right"
-            style={{ transform: 'scale(0.85)', transformOrigin: 'right center' }}
+            className="w-full h-full object-cover object-[60%_5%]"
           />
           {/* Improved gradient overlay - darker for better text contrast */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/88 via-slate-900/68 to-slate-900/35"></div>
         </div>
 
         {/* Decorative Background Elements */}
