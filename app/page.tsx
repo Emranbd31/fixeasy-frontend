@@ -137,28 +137,18 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden pt-28 pb-12 lg:pt-36 lg:pb-16 min-h-[90vh] flex items-center">
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0 bg-slate-900">
-          <img 
-            src="/images/hero-professional.png" 
-            alt="Trusted FixEasy professional with happy client"
-            className="w-full h-full object-contain md:object-cover md:object-[45%_center] brightness-90"
-          />
-          {/* Gradient overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-transparent"></div>
-        </div>
-
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-28 pb-12 lg:pt-36 lg:pb-16 min-h-[90vh]">
         {/* Decorative Background Elements */}
-        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse z-10"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse z-10" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
         
-        <div className="container mx-auto px-6 md:px-20 relative z-10">
-          <div className="max-w-3xl lg:max-w-4xl">
-            {/* Content - Better positioned and styled */}
+        <div className="container mx-auto px-6 md:px-8 lg:px-12 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh]">
+            
+            {/* Left Column - Text Content */}
             <motion.div 
-              initial={{ opacity: 0, y: 30 }} 
-              animate={{ opacity: 1, y: 0 }} 
+              initial={{ opacity: 0, x: -30 }} 
+              animate={{ opacity: 1, x: 0 }} 
               transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
               className="text-left space-y-6"
             >
@@ -171,14 +161,14 @@ export default function HomePage() {
                 🏠 Ireland's #1 Home Service Platform
               </motion.div>
               
-              <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-white mb-4 leading-[1.05] tracking-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white mb-4 leading-[1.05] tracking-tight">
                 Home Services,<br />
                 <span className="bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-200 bg-clip-text text-transparent drop-shadow-lg">
                   Made Easy
                 </span>
               </h1>
               
-              <p className="text-lg md:text-xl lg:text-2xl text-gray-200 mb-6 leading-relaxed max-w-2xl font-light">
+              <p className="text-lg md:text-xl text-gray-200 mb-6 leading-relaxed max-w-xl font-light">
                 Connect with <span className="font-bold text-cyan-300">trusted professionals</span> for all your home service needs. Fast, reliable, and affordable.
               </p>
               
@@ -205,7 +195,7 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Live Stats - ANIMATED COUNTERS - Compact and visible */}
+              {/* Live Stats - ANIMATED COUNTERS - Compact */}
               <div className="flex flex-wrap gap-4 text-left">
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
@@ -266,6 +256,29 @@ export default function HomePage() {
                 </div>
               </motion.div>
             </motion.div>
+
+            {/* Right Column - Hero Image */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              className="relative hidden lg:flex items-center justify-center"
+            >
+              <div className="relative w-full max-w-lg">
+                {/* Glow effect behind image */}
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-3xl blur-3xl"></div>
+                
+                {/* Image container */}
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-cyan-400/20">
+                  <img 
+                    src="/images/hero-professional.png" 
+                    alt="Trusted FixEasy professional with happy client"
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              </div>
+            </motion.div>
+
           </div>
         </div>
       </section>
