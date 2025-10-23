@@ -42,8 +42,22 @@ export default function LoginPage() {
         <div className="space-y-4 bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
           <input className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 outline-none" placeholder="Email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
           <input className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 outline-none" placeholder="Password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
-          <button disabled={loading} onClick={onLogin} className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold">{loading ? "Logging in…" : "Login"}</button>
-          <div className="text-sm text-gray-600">New professional? <Link className="text-blue-600" href="/register/professional">Register here</Link></div>
+          <button disabled={loading} onClick={onLogin} className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50">{loading ? "Logging in…" : "Login"}</button>
+          
+          <div className="pt-4 border-t border-gray-200 space-y-2">
+            <p className="text-sm text-gray-600 text-center">
+              Don't have an account?{' '}
+              <Link className="text-blue-600 font-semibold hover:text-blue-700 transition" href="/register/user">
+                Sign Up as User
+              </Link>
+            </p>
+            <p className="text-sm text-gray-600 text-center">
+              Are you a professional?{' '}
+              <Link className="text-green-600 font-semibold hover:text-green-700 transition" href="/register/professional">
+                Register as Pro
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </main>
