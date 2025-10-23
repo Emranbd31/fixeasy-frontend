@@ -107,13 +107,13 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden pt-16 pb-12 lg:pt-20 lg:pb-16 min-h-[90vh] flex items-center">
+      <section className="relative overflow-hidden pt-12 pb-12 lg:pt-16 lg:pb-16 min-h-[90vh] flex items-center">
         {/* Background Image - Full Width on All Devices */}
         <div className="absolute inset-0 z-0">
           <img 
             src="/images/hero-professional.png" 
             alt="Trusted FixEasy professional with happy client"
-            className="w-full h-full object-cover object-[50%_10%] brightness-75"
+            className="w-full h-full object-cover object-[50%_15%] brightness-75"
           />
           {/* Gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/60 to-slate-900/40"></div>
