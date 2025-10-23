@@ -200,7 +200,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="services" className="py-24 bg-gradient-to-b from-white to-gray-50">
+      <section id="services" className="py-8 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
           {/* Section Header */}
           <motion.div 
@@ -208,7 +208,7 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }} 
             viewport={{ once: true, margin: '-100px' }} 
             transition={{ duration: 0.6 }} 
-            className="text-center mb-16"
+            className="text-center mb-8"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -233,7 +233,7 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="max-w-2xl mx-auto mb-12"
+            className="max-w-2xl mx-auto mb-6"
           >
             <div className="relative">
               <input
@@ -577,7 +577,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="how-it-works" className="py-24 bg-gradient-to-b from-gray-50 to-white">
+      <section id="how-it-works" className="py-8 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           {/* Section Header */}
           <motion.div 
@@ -585,7 +585,7 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }} 
             viewport={{ once: true }} 
             transition={{ duration: 0.6 }} 
-            className="text-center mb-20"
+            className="text-center mb-8"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -888,7 +888,7 @@ export default function HomePage() {
       </section>
 
       {/* CUSTOMER TESTIMONIALS SECTION */}
-      <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-8 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           {/* Section Header */}
           <motion.div 
@@ -896,7 +896,7 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }} 
             viewport={{ once: true }} 
             transition={{ duration: 0.6 }} 
-            className="text-center mb-16"
+            className="text-center mb-8"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -1028,7 +1028,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-24 bg-white">
+      <section className="py-8 bg-white">
         <div className="container mx-auto px-4">
           {/* Section Header */}
           <motion.div 
@@ -1036,7 +1036,7 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }} 
             viewport={{ once: true }} 
             transition={{ duration: 0.6 }} 
-            className="text-center mb-20"
+            className="text-center mb-8"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
