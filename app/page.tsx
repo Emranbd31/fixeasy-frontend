@@ -117,8 +117,8 @@ export default function HomePage() {
               className="w-full h-full object-cover object-left brightness-90"
             />
           </div>
-            {/* Gradient overlay - more transparent and polished */}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/60 to-transparent"></div>
+            {/* Smooth gradient overlay - no visible border */}
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 via-slate-900/40 to-transparent"></div>
         </div>
 
           {/* Decorative Background Elements - More subtle */}
