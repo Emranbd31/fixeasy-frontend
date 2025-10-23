@@ -143,7 +143,7 @@ export default function HomePage() {
           <img 
             src="/images/hero-professional.png" 
             alt="Professional service worker"
-            className="w-full h-full object-cover object-[50%_15%]"
+            className="w-full h-full object-cover object-[65%_10%]"
           />
           {/* Improved gradient overlay - darker for better text contrast */}
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/65 to-slate-900/40"></div>
