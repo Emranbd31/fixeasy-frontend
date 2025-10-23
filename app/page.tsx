@@ -117,8 +117,10 @@ export default function HomePage() {
               className="w-full h-full object-cover object-left brightness-90"
             />
           </div>
-            {/* Smooth gradient overlay - no visible border */}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 via-slate-900/40 to-transparent"></div>
+          {/* Wide, soft gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/80 via-slate-900/40 to-transparent"></div>
+          {/* Blurred edge for seamless transition */}
+          <div className="absolute left-[58%] top-0 h-full w-24 pointer-events-none z-10" style={{background: 'linear-gradient(to right, #1e293b 60%, rgba(30,41,59,0.0) 100%)', filter: 'blur(16px)', opacity: 0.7}}></div>
         </div>
 
           {/* Decorative Background Elements - More subtle */}
