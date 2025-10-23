@@ -63,10 +63,6 @@ export default function HomePage() {
   const [activeRequests, setActiveRequests] = useState(0);
   const [professionalsOnline, setProfilessionalsOnline] = useState(0);
   const [servicesCompleted, setServicesCompleted] = useState(0);
-  
-  // Toast notification state
-  const [currentToast, setCurrentToast] = useState<typeof liveRequests[0] | null>(null);
-  const [showToast, setShowToast] = useState(false);
 
   // Animate counters on mount
   useEffect(() => {
@@ -95,32 +91,6 @@ export default function HomePage() {
     }, interval);
 
     return () => clearInterval(timer);
-  }, []);
-
-  // Show toast notifications
-  useEffect(() => {
-    const showRandomToast = () => {
-      const randomRequest = liveRequests[Math.floor(Math.random() * liveRequests.length)];
-      setCurrentToast(randomRequest);
-      setShowToast(true);
-
-      setTimeout(() => {
-        setShowToast(false);
-      }, 5000); // Hide after 5 seconds
-    };
-
-    // Show first toast after 3 seconds
-    const initialTimeout = setTimeout(showRandomToast, 3000);
-
-    // Then show new toast every 10-15 seconds
-    const toastInterval = setInterval(() => {
-      showRandomToast();
-    }, Math.random() * 5000 + 10000); // Random between 10-15 seconds
-
-    return () => {
-      clearTimeout(initialTimeout);
-      clearInterval(toastInterval);
-    };
   }, []);
 
   const handleSearch = (query: string) => {
@@ -1212,52 +1182,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
-
-      {/* FLOATING TOAST NOTIFICATIONS */}
-      <AnimatePresence>
-        {showToast && currentToast && (
-          <motion.div
-            initial={{ x: 400, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 400, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed bottom-8 right-8 z-50 max-w-sm"
-          >
-            <div className="bg-white rounded-2xl shadow-2xl border-2 border-blue-200 p-5 backdrop-blur-xl">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-3xl flex-shrink-0 shadow-lg">
-                  {currentToast.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-bold text-gray-900 text-sm">{currentToast.name}</p>
-                    {currentToast.urgent && (
-                      <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
-                        URGENT
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-600 mb-1">
-                    just booked <span className="font-semibold text-blue-600">{currentToast.service}</span>
-                  </p>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span className="text-gray-500">📍 {currentToast.location}</span>
-                    <span className="font-bold text-green-600">{currentToast.budget}</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowToast(false)}
-                  className="text-gray-400 hover:text-gray-600 transition flex-shrink-0"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </main>
   );
 }
