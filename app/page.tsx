@@ -143,18 +143,18 @@ export default function HomePage() {
           <img 
             src="/images/hero-professional.png" 
             alt="Professional service worker"
-            className="w-full h-full object-cover object-[50%_35%]"
+            className="w-full h-full object-cover object-[50%_25%]"
           />
           {/* Improved gradient overlay - darker for better text contrast */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/92 via-slate-900/75 to-slate-900/45"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-slate-900/50"></div>
         </div>
 
         {/* Decorative Background Elements */}
         <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-25 animate-pulse z-10"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-25 animate-pulse z-10" style={{ animationDelay: '2s' }}></div>
         
-        <div className="container mx-auto px-6 lg:px-8 relative z-10">
-          <div className="max-w-3xl lg:max-w-4xl">
+        <div className="container mx-auto px-8 lg:px-12 relative z-10">
+          <div className="max-w-3xl lg:max-w-4xl pl-2">
             {/* Content - Better positioned and styled */}
             <motion.div 
               initial={{ opacity: 0, y: 30 }} 
