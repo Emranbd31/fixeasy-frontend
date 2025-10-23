@@ -141,7 +141,7 @@ export default function HomePage() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="/images/hero image.png" 
+            src="/images/hero-professional.png" 
             alt="Professional service worker"
             className="w-full h-full object-cover object-[center_right]"
           />
