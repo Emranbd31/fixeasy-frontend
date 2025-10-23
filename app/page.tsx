@@ -205,46 +205,6 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Live Stats - ANIMATED COUNTERS - Compact */}
-              <div className="flex flex-wrap gap-4 text-left">
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.5 }}
-                  className="bg-gradient-to-br from-orange-500/20 to-red-500/20 backdrop-blur-xl border-2 border-orange-400/40 px-5 py-3 rounded-xl shadow-xl"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl animate-pulse">🔥</span>
-                    <div className="text-3xl font-black text-orange-300">{activeRequests}</div>
-                  </div>
-                  <div className="text-xs font-bold text-orange-200">Active Requests</div>
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6, duration: 0.5 }}
-                  className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-400/40 px-5 py-3 rounded-xl shadow-xl"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">👷</span>
-                    <div className="text-3xl font-black text-green-300">{professionalsOnline}</div>
-                  </div>
-                  <div className="text-xs font-bold text-green-200">Pros Online</div>
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7, duration: 0.5 }}
-                  className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-xl border-2 border-cyan-400/40 px-5 py-3 rounded-xl shadow-xl"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">✅</span>
-                    <div className="text-3xl font-black text-cyan-300">{servicesCompleted}</div>
-                  </div>
-                  <div className="text-xs font-bold text-cyan-200">Today</div>
-                </motion.div>
-              </div>
-
               {/* Trust Badges - Compact */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
