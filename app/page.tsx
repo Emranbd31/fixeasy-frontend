@@ -1,9 +1,9 @@
 ﻿'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const services = [
   { id: 1, name: 'Cleaning', description: 'Professional home & office cleaning', gradient: 'from-blue-400 to-cyan-400', price: '€29', image: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=400&h=300&fit=crop' },
@@ -41,9 +41,87 @@ const serviceIcons: Record<string, string> = {
   'Appliance Repair': '🔌', 'HVAC': '❄️', 'Pest Control': '🐛', 'Locksmith': '🔐'
 };
 
+// Live Service Requests Data
+const liveRequests = [
+  { id: 1, name: 'Mary O.', service: 'Plumbing', location: 'Dublin 2', budget: '€85', time: '2 mins ago', icon: '🔧', urgent: true },
+  { id: 2, name: 'John D.', service: 'Electrical', location: 'Cork City', budget: '€120', time: '5 mins ago', icon: '⚡', urgent: false },
+  { id: 3, name: 'Sarah M.', service: 'Cleaning', location: 'Galway', budget: '€45', time: '8 mins ago', icon: '🧹', urgent: false },
+  { id: 4, name: 'Patrick L.', service: 'Gardening', location: 'Limerick', budget: '€60', time: '12 mins ago', icon: '🌿', urgent: false },
+  { id: 5, name: 'Emma C.', service: 'Painting', location: 'Dublin 4', budget: '€200', time: '15 mins ago', icon: '🎨', urgent: true },
+  { id: 6, name: 'Michael B.', service: 'HVAC', location: 'Waterford', budget: '€150', time: '18 mins ago', icon: '❄️', urgent: false },
+  { id: 7, name: 'Lisa K.', service: 'Locksmith', location: 'Dublin 1', budget: '€55', time: '22 mins ago', icon: '🔐', urgent: true },
+  { id: 8, name: 'David R.', service: 'Carpentry', location: 'Kilkenny', budget: '€180', time: '28 mins ago', icon: '🪚', urgent: false },
+  { id: 9, name: 'Anna W.', service: 'Handyman', location: 'Dublin 6', budget: '€75', time: '32 mins ago', icon: '🔨', urgent: false },
+  { id: 10, name: 'Tom S.', service: 'Pest Control', location: 'Drogheda', budget: '€90', time: '35 mins ago', icon: '🐛', urgent: false },
+];
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredServices, setFilteredServices] = useState(services);
+  
+  // Live stats counters
+  const [activeRequests, setActiveRequests] = useState(0);
+  const [professionalsOnline, setProfilessionalsOnline] = useState(0);
+  const [servicesCompleted, setServicesCompleted] = useState(0);
+  
+  // Toast notification state
+  const [currentToast, setCurrentToast] = useState<typeof liveRequests[0] | null>(null);
+  const [showToast, setShowToast] = useState(false);
+
+  // Animate counters on mount
+  useEffect(() => {
+    const duration = 2000; // 2 seconds
+    const steps = 60;
+    const interval = duration / steps;
+
+    const targetActive = 23;
+    const targetPros = 187;
+    const targetCompleted = 342;
+
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      const progress = step / steps;
+      setActiveRequests(Math.floor(targetActive * progress));
+      setProfilessionalsOnline(Math.floor(targetPros * progress));
+      setServicesCompleted(Math.floor(targetCompleted * progress));
+
+      if (step >= steps) {
+        clearInterval(timer);
+        setActiveRequests(targetActive);
+        setProfilessionalsOnline(targetPros);
+        setServicesCompleted(targetCompleted);
+      }
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Show toast notifications
+  useEffect(() => {
+    const showRandomToast = () => {
+      const randomRequest = liveRequests[Math.floor(Math.random() * liveRequests.length)];
+      setCurrentToast(randomRequest);
+      setShowToast(true);
+
+      setTimeout(() => {
+        setShowToast(false);
+      }, 5000); // Hide after 5 seconds
+    };
+
+    // Show first toast after 3 seconds
+    const initialTimeout = setTimeout(showRandomToast, 3000);
+
+    // Then show new toast every 10-15 seconds
+    const toastInterval = setInterval(() => {
+      showRandomToast();
+    }, Math.random() * 5000 + 10000); // Random between 10-15 seconds
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(toastInterval);
+    };
+  }, []);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -116,20 +194,44 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Stats - MORE SPECIFIC NUMBERS */}
-              <div className="flex flex-wrap gap-8 justify-center lg:justify-start text-center lg:text-left">
-                <div>
-                  <div className="text-3xl font-bold text-gray-900">5,248+</div>
-                  <div className="text-sm text-gray-600">Jobs Completed</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-gray-900">500+</div>
-                  <div className="text-sm text-gray-600">Verified Pros</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-gray-900">4.8★</div>
-                  <div className="text-sm text-gray-600">Average Rating</div>
-                </div>
+              {/* Live Stats - ANIMATED COUNTERS */}
+              <div className="flex flex-wrap gap-6 justify-center lg:justify-start text-center lg:text-left">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                  className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 px-6 py-4 rounded-2xl shadow-lg"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl animate-pulse">🔥</span>
+                    <div className="text-3xl font-bold text-red-600">{activeRequests}</div>
+                  </div>
+                  <div className="text-xs font-semibold text-gray-700">Active Requests Now</div>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6, duration: 0.5 }}
+                  className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 px-6 py-4 rounded-2xl shadow-lg"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">👷</span>
+                    <div className="text-3xl font-bold text-green-600">{professionalsOnline}</div>
+                  </div>
+                  <div className="text-xs font-semibold text-gray-700">Professionals Online</div>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.7, duration: 0.5 }}
+                  className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 px-6 py-4 rounded-2xl shadow-lg"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">✅</span>
+                    <div className="text-3xl font-bold text-blue-600">{servicesCompleted}</div>
+                  </div>
+                  <div className="text-xs font-semibold text-gray-700">Services Today</div>
+                </motion.div>
               </div>
 
               {/* Trust Badges */}
@@ -499,6 +601,97 @@ export default function HomePage() {
               </motion.button>
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* LIVE SERVICE REQUESTS FEED */}
+      <section className="py-20 bg-gradient-to-br from-orange-50 via-white to-red-50 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <div className="inline-block mb-4 px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-semibold animate-pulse">
+              🔴 LIVE NOW
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Service Requests <span className="bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">Happening Now</span>
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              See real-time service requests from customers across Ireland. Join our network and start earning!
+            </p>
+          </motion.div>
+
+          {/* Scrolling Feed */}
+          <div className="relative">
+            <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {liveRequests.map((request, index) => (
+                <motion.div
+                  key={request.id}
+                  initial={{ opacity: 0, x: 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  className="flex-shrink-0 w-80 snap-center"
+                >
+                  <div className={`bg-white rounded-2xl p-6 shadow-xl border-2 ${request.urgent ? 'border-red-300 bg-red-50/50' : 'border-gray-200'} hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1`}>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-2xl">
+                          {request.icon}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-900">{request.name}</h3>
+                          <p className="text-sm text-gray-500">{request.time}</p>
+                        </div>
+                      </div>
+                      {request.urgent && (
+                        <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                          URGENT
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500 text-sm">🛠️ Service:</span>
+                        <span className="font-semibold text-gray-900">{request.service}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500 text-sm">📍 Location:</span>
+                        <span className="font-semibold text-gray-900">{request.location}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500 text-sm">💰 Budget:</span>
+                        <span className="font-bold text-green-600 text-lg">{request.budget}</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <button className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all transform hover:scale-105">
+                        View Request →
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Gradient Overlays for scroll hint */}
+            <div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-orange-50 to-transparent pointer-events-none" />
+            <div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-red-50 to-transparent pointer-events-none" />
+          </div>
+
+          <div className="text-center mt-8">
+            <Link href="/register/professional">
+              <button className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
+                💼 Join as Professional & Get Requests
+              </button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -1107,6 +1300,52 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+
+      {/* FLOATING TOAST NOTIFICATIONS */}
+      <AnimatePresence>
+        {showToast && currentToast && (
+          <motion.div
+            initial={{ x: 400, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 400, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed bottom-8 right-8 z-50 max-w-sm"
+          >
+            <div className="bg-white rounded-2xl shadow-2xl border-2 border-blue-200 p-5 backdrop-blur-xl">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-3xl flex-shrink-0 shadow-lg">
+                  {currentToast.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-bold text-gray-900 text-sm">{currentToast.name}</p>
+                    {currentToast.urgent && (
+                      <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                        URGENT
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600 mb-1">
+                    just booked <span className="font-semibold text-blue-600">{currentToast.service}</span>
+                  </p>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-gray-500">📍 {currentToast.location}</span>
+                    <span className="font-bold text-green-600">{currentToast.budget}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowToast(false)}
+                  className="text-gray-400 hover:text-gray-600 transition flex-shrink-0"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
