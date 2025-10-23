@@ -143,10 +143,10 @@ export default function HomePage() {
           <img 
             src="/images/hero image.png" 
             alt="Professional service worker"
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover object-[center_right]"
           />
-          {/* Dark gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/95 via-blue-900/80 to-blue-900/60"></div>
+          {/* Dark gradient overlay for text readability - lighter on left where text is */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-900/70 to-transparent"></div>
         </div>
 
         {/* Decorative Background Elements */}
