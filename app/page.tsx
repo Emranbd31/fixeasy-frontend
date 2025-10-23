@@ -137,21 +137,21 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden pt-24 pb-16 lg:pt-32 lg:pb-24 min-h-screen flex items-center">
+      <section className="relative overflow-hidden pt-28 pb-12 lg:pt-36 lg:pb-16 min-h-[95vh] flex items-center">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
             src="/images/hero-professional.png" 
             alt="Professional service worker"
-            className="w-full h-full object-cover object-[65%_center]"
+            className="w-full h-full object-cover object-[55%_center]"
           />
           {/* Improved gradient overlay - darker for better text contrast */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/85 to-slate-900/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/93 via-slate-900/80 to-slate-900/50"></div>
         </div>
 
         {/* Decorative Background Elements */}
-        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-30 animate-pulse z-10"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-30 animate-pulse z-10" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-25 animate-pulse z-10"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full mix-blend-soft-light filter blur-3xl opacity-25 animate-pulse z-10" style={{ animationDelay: '2s' }}></div>
         
         <div className="container mx-auto px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl lg:max-w-4xl">
@@ -160,7 +160,7 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 30 }} 
               animate={{ opacity: 1, y: 0 }} 
               transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-left space-y-8"
+              className="text-left space-y-6"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -171,24 +171,24 @@ export default function HomePage() {
                 🏠 Ireland's #1 Home Service Platform
               </motion.div>
               
-              <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-white mb-6 leading-[1.1] tracking-tight">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-white mb-4 leading-[1.05] tracking-tight">
                 Home Services,<br />
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-200 bg-clip-text text-transparent drop-shadow-lg">
                   Made Easy
                 </span>
               </h1>
               
-              <p className="text-xl md:text-2xl lg:text-3xl text-gray-200 mb-10 leading-relaxed max-w-2xl font-light">
-                Connect with <span className="font-bold text-cyan-400">trusted professionals</span> for all your home service needs. Fast, reliable, and affordable.
+              <p className="text-lg md:text-xl lg:text-2xl text-gray-200 mb-6 leading-relaxed max-w-2xl font-light">
+                Connect with <span className="font-bold text-cyan-300">trusted professionals</span> for all your home service needs. Fast, reliable, and affordable.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-5 mb-10">
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <Link href="/book">
                   <motion.button 
                     whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(6, 182, 212, 0.5)' }} 
                     whileTap={{ scale: 0.95 }} 
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    className="px-12 py-5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full font-bold text-xl shadow-2xl hover:shadow-cyan-500/50 transition-all duration-300"
+                    className="px-10 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full font-bold text-lg shadow-2xl hover:shadow-cyan-500/50 transition-all duration-300"
                   >
                     📅 Book a Service
                   </motion.button>
@@ -198,71 +198,71 @@ export default function HomePage() {
                     whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(255, 255, 255, 0.3)' }} 
                     whileTap={{ scale: 0.95 }} 
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    className="px-12 py-5 bg-white text-slate-900 rounded-full font-bold text-xl shadow-2xl hover:bg-cyan-50 border-2 border-white transition-all duration-300"
+                    className="px-10 py-4 bg-white text-slate-900 rounded-full font-bold text-lg shadow-2xl hover:bg-cyan-50 border-2 border-white transition-all duration-300"
                   >
                     💼 Become a Pro
                   </motion.button>
                 </Link>
               </div>
 
-              {/* Live Stats - ANIMATED COUNTERS - Better styling */}
-              <div className="flex flex-wrap gap-5 text-left">
+              {/* Live Stats - ANIMATED COUNTERS - Compact and visible */}
+              <div className="flex flex-wrap gap-4 text-left">
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.5 }}
-                  className="bg-gradient-to-br from-orange-500/20 to-red-500/20 backdrop-blur-xl border-2 border-orange-400/40 px-7 py-5 rounded-2xl shadow-2xl"
+                  className="bg-gradient-to-br from-orange-500/20 to-red-500/20 backdrop-blur-xl border-2 border-orange-400/40 px-5 py-3 rounded-xl shadow-xl"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl animate-pulse">🔥</span>
-                    <div className="text-4xl font-black text-orange-300">{activeRequests}</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl animate-pulse">🔥</span>
+                    <div className="text-3xl font-black text-orange-300">{activeRequests}</div>
                   </div>
-                  <div className="text-sm font-bold text-orange-200">Active Requests Now</div>
+                  <div className="text-xs font-bold text-orange-200">Active Requests</div>
                 </motion.div>
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6, duration: 0.5 }}
-                  className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-400/40 px-7 py-5 rounded-2xl shadow-2xl"
+                  className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-400/40 px-5 py-3 rounded-xl shadow-xl"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl">👷</span>
-                    <div className="text-4xl font-black text-green-300">{professionalsOnline}</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">👷</span>
+                    <div className="text-3xl font-black text-green-300">{professionalsOnline}</div>
                   </div>
-                  <div className="text-sm font-bold text-green-200">Professionals Online</div>
+                  <div className="text-xs font-bold text-green-200">Pros Online</div>
                 </motion.div>
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7, duration: 0.5 }}
-                  className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-xl border-2 border-cyan-400/40 px-7 py-5 rounded-2xl shadow-2xl"
+                  className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-xl border-2 border-cyan-400/40 px-5 py-3 rounded-xl shadow-xl"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl">✅</span>
-                    <div className="text-4xl font-black text-cyan-300">{servicesCompleted}</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">✅</span>
+                    <div className="text-3xl font-black text-cyan-300">{servicesCompleted}</div>
                   </div>
-                  <div className="text-sm font-bold text-cyan-200">Services Today</div>
+                  <div className="text-xs font-bold text-cyan-200">Today</div>
                 </motion.div>
               </div>
 
-              {/* Trust Badges */}
+              {/* Trust Badges - Compact */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
-                className="mt-8 flex flex-wrap gap-4"
+                className="mt-4 flex flex-wrap gap-3"
               >
-                <div className="flex items-center gap-2 bg-green-500/20 backdrop-blur-md border-2 border-green-400/40 px-5 py-3 rounded-full shadow-lg">
-                  <span className="text-xl">✅</span>
-                  <span className="text-sm font-bold text-green-300">ID Verified</span>
+                <div className="flex items-center gap-2 bg-green-500/20 backdrop-blur-md border-2 border-green-400/40 px-4 py-2 rounded-full shadow-lg">
+                  <span className="text-lg">✅</span>
+                  <span className="text-xs font-bold text-green-300">ID Verified</span>
                 </div>
-                <div className="flex items-center gap-2 bg-blue-500/20 backdrop-blur-md border-2 border-blue-400/40 px-5 py-3 rounded-full shadow-lg">
-                  <span className="text-xl">🛡️</span>
-                  <span className="text-sm font-bold text-blue-300">Insured</span>
+                <div className="flex items-center gap-2 bg-blue-500/20 backdrop-blur-md border-2 border-blue-400/40 px-4 py-2 rounded-full shadow-lg">
+                  <span className="text-lg">🛡️</span>
+                  <span className="text-xs font-bold text-blue-300">Insured</span>
                 </div>
-                <div className="flex items-center gap-2 bg-purple-500/20 backdrop-blur-md border-2 border-purple-400/40 px-5 py-3 rounded-full shadow-lg">
-                  <span className="text-xl">💳</span>
-                  <span className="text-sm font-bold text-purple-300">Secure Payment</span>
+                <div className="flex items-center gap-2 bg-purple-500/20 backdrop-blur-md border-2 border-purple-400/40 px-4 py-2 rounded-full shadow-lg">
+                  <span className="text-lg">💳</span>
+                  <span className="text-xs font-bold text-purple-300">Secure Payment</span>
                 </div>
               </motion.div>
             </motion.div>
