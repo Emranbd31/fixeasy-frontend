@@ -5,6 +5,20 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabaseClient'
 
+// Map of required certifications by trade
+const tradeCertRequirements: Record<string, { label: string; required: boolean; }> = {
+  'Electrician': { label: 'Safe Electric (RECI) registration', required: true },
+  'Plumbing': { label: 'RGII Gas Installer ID (for gas work)', required: true },
+  'Heating': { label: 'RGII Gas Installer ID (for gas work)', required: true },
+  'Builder': { label: 'CIF or SOLAS qualification', required: false },
+  'Roofer': { label: 'CIF or SOLAS qualification', required: false },
+  'Pest Control': { label: 'PMU / IPCA certification', required: true },
+  'Locksmith': { label: 'PSA (Private Security Authority) Licence', required: true },
+  'CCTV Installation': { label: 'PSA Licence', required: true },
+  'Alarm Installer': { label: 'PSA Licence', required: true },
+  // All other trades: no mandatory cert
+};
+
 const categories = [
   'Cleaning', 'Handyman', 'Plumbing', 'Electrical', 'Painting', 'Gardening',
   'Moving', 'Carpentry', 'Appliance Repair', 'HVAC', 'Pest Control', 'Locksmith',
@@ -29,6 +43,9 @@ export default function ProfessionalRegisterPage() {
   const [experience, setExperience] = useState<number>(0)
   const [rate, setRate] = useState<number>(0)
   const [serviceArea, setServiceArea] = useState('')
+  const [workingHours, setWorkingHours] = useState('')
+  const [workingDays, setWorkingDays] = useState<string[]>([])
+  const [abilities, setAbilities] = useState('')
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [idDocument, setIdDocument] = useState<File | null>(null)
   const [addressProof, setAddressProof] = useState<File | null>(null)
@@ -57,6 +74,11 @@ export default function ProfessionalRegisterPage() {
     if (!idDocument) {
       setError('Photo ID is required for verification')
       return
+    }
+    // Require trade cert for regulated trades
+    if (tradeCertRequirements[category] && tradeCertRequirements[category].required && !qualificationFile) {
+      setError(`${tradeCertRequirements[category].label} is required for ${category}`)
+      return;
     }
 
     setLoading(true)
@@ -316,15 +338,113 @@ export default function ProfessionalRegisterPage() {
                   />
                   <p className="text-xs text-gray-500 mt-1">Specify counties, cities, or Eircodes you serve</p>
                 </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Working Hours</label>
+                    <input
+                      type="text"
+                      value={workingHours}
+                      onChange={(e) => setWorkingHours(e.target.value)}
+                      placeholder="e.g., 08:00 - 18:00, Flexible, On Call"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Enter your typical working hours or availability</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Days Available</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(day => (
+                        <label key={day} className="flex items-center gap-1 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={workingDays.includes(day)}
+                            onChange={e => {
+                              setWorkingDays(
+                                e.target.checked
+                                  ? [...workingDays, day]
+                                  : workingDays.filter(d => d !== day)
+                              )
+                            }}
+                          />
+                          {day}
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Select all days you are available to work</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Abilities / Skills</label>
+                    <input
+                      type="text"
+                      value={abilities}
+                      onChange={(e) => setAbilities(e.target.value)}
+                      placeholder="e.g., Safe Electric certified, RGII gas installer, roof repairs, deep cleaning, etc."
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Briefly describe your main skills or abilities</p>
+                  </div>
               </div>
             </div>
 
             <hr className="my-10 border-gray-200" />
 
-            {/* Documents */}
+            {/* Qualification or Trade Certification (Step 3) */}
             <div className="mb-10">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                 <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">3</span>
+                Qualification or Trade Certification <span className="text-gray-500 text-base ml-2">(Recommended for skilled trades)</span>
+              </h2>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                <p className="text-sm text-yellow-800">
+                  Some trades must have professional certification under Irish or EU regulations. Upload your certificate below if applicable.
+                </p>
+              </div>
+              <div className="overflow-x-auto mb-6">
+                <table className="min-w-full border border-gray-200 rounded text-sm">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-2 text-left">Trade</th>
+                      <th className="px-4 py-2 text-left">Required Certification</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border-t px-4 py-2">Electrician</td>
+                      <td className="border-t px-4 py-2">Safe Electric (RECI) registration</td>
+                    </tr>
+                    <tr>
+                      <td className="border-t px-4 py-2">Plumber / Heating</td>
+                      <td className="border-t px-4 py-2">RGII Gas Installer ID (for gas work)</td>
+                    </tr>
+                    <tr>
+                      <td className="border-t px-4 py-2">Builder / Roofer</td>
+                      <td className="border-t px-4 py-2">CIF or SOLAS qualification (recommended)</td>
+                    </tr>
+                    <tr>
+                      <td className="border-t px-4 py-2">Pest Control</td>
+                      <td className="border-t px-4 py-2">PMU / IPCA certification</td>
+                    </tr>
+                    <tr>
+                      <td className="border-t px-4 py-2">Locksmith</td>
+                      <td className="border-t px-4 py-2">PSA (Private Security Authority) Licence</td>
+                    </tr>
+                    <tr>
+                      <td className="border-t px-4 py-2">CCTV / Alarm Installer</td>
+                      <td className="border-t px-4 py-2">PSA Licence (mandatory)</td>
+                    </tr>
+                    <tr>
+                      <td className="border-t px-4 py-2">Cleaning / Handyman / Painting</td>
+                      <td className="border-t px-4 py-2">No licence required, but insurance advised</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-gray-600">If you have a trade certificate, license, or diploma, please upload it below (optional).</p>
+            </div>
+
+            {/* Documents (Step 4) */}
+            <div className="mb-10">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">4</span>
                 Verification Documents
               </h2>
 
@@ -378,15 +498,25 @@ export default function ProfessionalRegisterPage() {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Qualifications/Certifications <span className="text-gray-500 text-xs">(Optional)</span>
+                    Qualifications/Certifications
+                    {(() => {
+                      const cert = tradeCertRequirements[category];
+                      if (cert && cert.required) {
+                        return <span className="text-red-500 ml-2">(Required for {category})</span>;
+                      }
+                      return <span className="text-gray-500 text-xs">(Optional)</span>;
+                    })()}
                   </label>
                   <input
                     type="file"
                     onChange={(e) => setQualificationFile(e.target.files?.[0] || null)}
                     accept="image/*,.pdf"
                     className="w-full text-sm text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-gray-100 file:text-gray-700 file:font-semibold hover:file:bg-gray-200 file:cursor-pointer cursor-pointer"
+                    required={!!(tradeCertRequirements[category] && tradeCertRequirements[category].required)}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Trade certificates, licenses, or diplomas</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {tradeCertRequirements[category]?.label || 'Trade certificates, licenses, or diplomas'}
+                  </p>
                 </div>
 
                 <div>
