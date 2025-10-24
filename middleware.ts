@@ -1,0 +1,47 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+	process.env.NEXT_PUBLIC_SUPABASE_URL!,
+	process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+export async function middleware(req: NextRequest) {
+	const { pathname } = req.nextUrl;
+	if (!pathname.startsWith('/admin')) return NextResponse.next();
+
+	// Get session from cookies
+	const access_token = req.cookies.get('sb-access-token')?.value;
+	if (!access_token) {
+		const loginUrl = req.nextUrl.clone();
+		loginUrl.pathname = '/login';
+		return NextResponse.redirect(loginUrl);
+	}
+
+	// Get user from Supabase
+	const { data: { user }, error } = await supabase.auth.getUser(access_token);
+	if (error || !user) {
+		const loginUrl = req.nextUrl.clone();
+		loginUrl.pathname = '/login';
+		return NextResponse.redirect(loginUrl);
+	}
+
+	// Check role in profiles table
+	const { data: profile, error: profileError } = await supabase
+		.from('profiles')
+		.select('role')
+		.eq('id', user.id)
+		.single();
+	if (profileError || !profile || profile.role !== 'admin') {
+		const forbiddenUrl = req.nextUrl.clone();
+		forbiddenUrl.pathname = '/403';
+		return NextResponse.redirect(forbiddenUrl);
+	}
+
+	return NextResponse.next();
+}
+
+export const config = {
+	matcher: ['/admin/:path*'],
+};

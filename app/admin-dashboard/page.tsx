@@ -1,45 +1,48 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-
 git commit -m "fix: correct function structure in admin dashboard"
 git push origin mainAdminDashboardPage() {
+
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { supabase } from "../../lib/supabaseClient";
+
 export default function AdminDashboardPage() {
-    // Admin access logic (admin code or role)
-    "use client";
     const [ready, setReady] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    // Placeholder data for demonstration
     const [users, setUsers] = useState<any[]>([]);
     const [pros, setPros] = useState<any[]>([]);
     const [bookings, setBookings] = useState<any[]>([]);
     const [payments, setPayments] = useState<any[]>([]);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
-        const saved = sessionStorage.getItem("ADMIN_SECRET") || "";
-        if (saved) setAdminSecret(saved);
-        // TODO: Replace with real Supabase queries
-        setUsers([{ id: 1, name: "Jane Client", email: "jane@example.com" }]);
-        setPros([{ id: 2, name: "John Pro", email: "john@pro.com", verified: true }]);
-        setBookings([{ id: 1, service: "Plumbing", client: "Jane Client", pro: "John Pro", date: "2025-10-28", status: "Completed" }]);
-        setPayments([{ id: 1, amount: 80, service: "Plumbing", client: "Jane Client", pro: "John Pro", date: "2025-10-28", status: "Paid" }]);
-        setReady(true);
+        const checkAdmin = async () => {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error || !user) {
+                setError("You must be logged in as an admin to access this page.");
+                setLoading(false);
+                return;
+            }
+            // Check user metadata for admin role
+            if (user.user_metadata && user.user_metadata.role === "admin") {
+                setIsAdmin(true);
+                // TODO: Replace with real Supabase queries
+                setUsers([{ id: 1, name: "Jane Client", email: "jane@example.com" }]);
+                setPros([{ id: 2, name: "John Pro", email: "john@pro.com", verified: true }]);
+                setBookings([{ id: 1, service: "Plumbing", client: "Jane Client", pro: "John Pro", date: "2025-10-28", status: "Completed" }]);
+                setPayments([{ id: 1, amount: 80, service: "Plumbing", client: "Jane Client", pro: "John Pro", date: "2025-10-28", status: "Paid" }]);
+            } else {
+                setError("You do not have admin access.");
+            }
+            setLoading(false);
+        };
+        checkAdmin();
     }, []);
 
-    if (!ready) return <div className="p-10">Loading…</div>;
-    if (!adminSecret) return (
-        <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-16">
-            <div className="container mx-auto px-4 max-w-md">
-                <h1 className="text-3xl font-bold mb-4">Admin Login</h1>
-                <p className="text-gray-600 mb-4">Enter your admin access code to continue.</p>
-                <input className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 outline-none mb-3" placeholder="Admin access code" onChange={(e) => setAdminSecret(e.target.value)} />
-                <button className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold" onClick={() => { sessionStorage.setItem("ADMIN_SECRET", adminSecret); setReady(true); }}>Continue</button>
-            </div>
-        </main>
-	);
-}
+    if (loading) return <div className="p-10">Loading…</div>;
+    if (error) return <div className="p-10 text-red-600">{error}</div>;
+    if (!isAdmin) return null;
 
     return (
         <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
