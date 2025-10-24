@@ -149,6 +149,6 @@ export default function AdminDashboardPage() {
                     <Link href="/" className="text-blue-600 font-semibold hover:text-blue-700 transition">Go to FixEasy Home</Link>
                 </div>
             </div>
-        </main>
-    );
+    </main>
+
 
