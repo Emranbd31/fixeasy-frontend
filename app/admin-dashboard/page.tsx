@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
+git commit -m "fix: correct function structure in admin dashboard"
+git push origin mainAdminDashboardPage() {
 export default function AdminDashboardPage() {
     // Admin access logic (admin code or role)
     const [adminSecret, setAdminSecret] = useState<string>("");
