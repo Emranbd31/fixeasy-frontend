@@ -36,7 +36,8 @@ export default function AdminDashboardPage() {
                 <button className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold" onClick={() => { sessionStorage.setItem("ADMIN_SECRET", adminSecret); setReady(true); }}>Continue</button>
             </div>
         </main>
-    );
+	);
+}
 
     return (
         <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
