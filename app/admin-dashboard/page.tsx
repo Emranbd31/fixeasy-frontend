@@ -1,155 +1,154 @@
 "use client";
 
-import { useEffect, useState } from "react";
 
-type Pro = {
-    user_id: string;
-    name: string;
-    email: string;
-    phone: string;
-    category: string;
-    experience: number | null;
-    rate: number | null;
-    service_area: string | null;
-    id_document: string | null;
-    address_proof: string | null;
-    qualification_file: string | null;
-    insurance_file: string | null;
-    portfolio_files: string[] | null;
-    profile_photo: string | null;
-    verified: boolean;
-    created_at?: string;
-};
+import Link from "next/link";
 
-export default function AdminDashboard() {
+export default function AdminDashboardPage() {
+    // Admin access logic (admin code or role)
     const [adminSecret, setAdminSecret] = useState<string>("");
     const [ready, setReady] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [pros, setPros] = useState<Pro[]>([]);
     const [error, setError] = useState<string | null>(null);
+    // Placeholder data for demonstration
+    const [users, setUsers] = useState<any[]>([]);
+    const [pros, setPros] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<any[]>([]);
+    const [payments, setPayments] = useState<any[]>([]);
 
     useEffect(() => {
         const saved = sessionStorage.getItem("ADMIN_SECRET") || "";
         if (saved) setAdminSecret(saved);
+        // TODO: Replace with real Supabase queries
+        setUsers([{ id: 1, name: "Jane Client", email: "jane@example.com" }]);
+        setPros([{ id: 2, name: "John Pro", email: "john@pro.com", verified: true }]);
+        setBookings([{ id: 1, service: "Plumbing", client: "Jane Client", pro: "John Pro", date: "2025-10-28", status: "Completed" }]);
+        setPayments([{ id: 1, amount: 80, service: "Plumbing", client: "Jane Client", pro: "John Pro", date: "2025-10-28", status: "Paid" }]);
         setReady(true);
     }, []);
 
-    async function loadPending() {
-        if (!adminSecret) return;
-        setLoading(true);
-        setError(null);
-        try {
-            const res = await fetch("/api/admin/professionals?status=pending", {
-                headers: { "x-admin-secret": adminSecret },
-            });
-            if (!res.ok) throw new Error(`${res.status}`);
-            const j = await res.json();
-            setPros(j.rows || []);
-        } catch (e: any) {
-            setError("Unauthorized or failed to load");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function verify(user_id: string) {
-        if (!adminSecret) return;
-        const res = await fetch("/api/admin/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "x-admin-secret": adminSecret },
-            body: JSON.stringify({ user_id, verified: true }),
-        });
-        if (res.ok) {
-            setPros((p) => p.filter((r) => r.user_id !== user_id));
-        } else {
-            alert("Failed to verify");
-        }
-    }
-
-    async function viewFile(path: string | null) {
-        if (!path || !adminSecret) return;
-        const res = await fetch("/api/admin/sign-url", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "x-admin-secret": adminSecret },
-            body: JSON.stringify({ path }),
-        });
-        const j = await res.json();
-        if (j.url) {
-            window.open(j.url, "_blank");
-        } else {
-            alert("Could not generate link");
-        }
-    }
-
-    if (!ready) return null;
-
-    if (!adminSecret) {
-        return (
-            <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-16">
-                <div className="container mx-auto px-4 max-w-md">
-                    <h1 className="text-3xl font-bold mb-4">Admin Login</h1>
-                    <p className="text-gray-600 mb-4">Enter your admin access code to continue.</p>
-                    <input className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 outline-none mb-3" placeholder="Admin access code" onChange={(e) => setAdminSecret(e.target.value)} />
-                    <button className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold" onClick={() => { sessionStorage.setItem("ADMIN_SECRET", adminSecret); loadPending(); }}>Continue</button>
-                </div>
-            </main>
-        );
-    }
-
-    return (
-        <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12">
-            <div className="container mx-auto px-4">
-                <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-                    <button className="px-4 py-2 rounded-lg border-2 border-gray-200" onClick={loadPending}>{loading ? "Loading…" : "Reload"}</button>
-                </div>
-                {error && <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700">{error}</div>}
-
-                <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
-                    <h2 className="text-xl font-bold mb-4">Pending Professionals</h2>
-                    {pros.length === 0 ? (
-                        <p className="text-gray-600">No pending profiles. Click Reload to refresh.</p>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full text-sm">
-                                <thead>
-                                    <tr className="text-left border-b">
-                                        <th className="py-2 pr-4">Name</th>
-                                        <th className="py-2 pr-4">Email</th>
-                                        <th className="py-2 pr-4">Category</th>
-                                        <th className="py-2 pr-4">Docs</th>
-                                        <th className="py-2 pr-4">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {pros.map((p) => (
-                                        <tr key={p.user_id} className="border-b last:border-0">
-                                            <td className="py-2 pr-4 font-semibold">{p.name}</td>
-                                            <td className="py-2 pr-4">{p.email}</td>
-                                            <td className="py-2 pr-4">{p.category}</td>
-                                            <td className="py-2 pr-4">
-                                                <div className="flex flex-wrap gap-2">
-                                                    <button className="badge" onClick={() => viewFile(p.id_document)}>Photo ID</button>
-                                                    {p.address_proof && <button className="badge" onClick={() => viewFile(p.address_proof!)}>Address</button>}
-                                                    {p.qualification_file && <button className="badge" onClick={() => viewFile(p.qualification_file!)}>Qualification</button>}
-                                                    {p.insurance_file && <button className="badge" onClick={() => viewFile(p.insurance_file!)}>Insurance</button>}
-                                                </div>
-                                            </td>
-                                            <td className="py-2 pr-4">
-                                                <button className="px-3 py-2 rounded-lg bg-green-600 text-white" onClick={() => verify(p.user_id)}>Verify ✓</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                <style jsx global>{`
-          .badge { @apply px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold; }
-        `}</style>
+    if (!ready) return <div className="p-10">Loading…</div>;
+    if (!adminSecret) return (
+        <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-16">
+            <div className="container mx-auto px-4 max-w-md">
+                <h1 className="text-3xl font-bold mb-4">Admin Login</h1>
+                <p className="text-gray-600 mb-4">Enter your admin access code to continue.</p>
+                <input className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 outline-none mb-3" placeholder="Admin access code" onChange={(e) => setAdminSecret(e.target.value)} />
+                <button className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold" onClick={() => { sessionStorage.setItem("ADMIN_SECRET", adminSecret); setReady(true); }}>Continue</button>
             </div>
         </main>
     );
+
+    return (
+        <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+            <div className="container mx-auto px-4 max-w-6xl">
+                <h1 className="text-4xl font-bold mb-6 text-gray-900">Admin Dashboard</h1>
+                <div className="grid md:grid-cols-2 gap-8 mb-12">
+                    {/* Users */}
+                    <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+                        <h2 className="font-bold text-lg mb-3">All Users</h2>
+                        <table className="min-w-full border border-gray-200 rounded text-sm mb-2">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">Name</th>
+                                    <th className="px-4 py-2 text-left">Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map(u => (
+                                    <tr key={u.id}>
+                                        <td className="border-t px-4 py-2">{u.name}</td>
+                                        <td className="border-t px-4 py-2">{u.email}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <Link href="/register/user" className="text-blue-600 text-xs">Add User</Link>
+                    </div>
+                    {/* Professionals */}
+                    <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+                        <h2 className="font-bold text-lg mb-3">All Professionals</h2>
+                        <table className="min-w-full border border-gray-200 rounded text-sm mb-2">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">Name</th>
+                                    <th className="px-4 py-2 text-left">Email</th>
+                                    <th className="px-4 py-2 text-left">Verified</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {pros.map(p => (
+                                    <tr key={p.id}>
+                                        <td className="border-t px-4 py-2">{p.name}</td>
+                                        <td className="border-t px-4 py-2">{p.email}</td>
+                                        <td className="border-t px-4 py-2">{p.verified ? "Yes" : "No"}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <Link href="/register/professional" className="text-blue-600 text-xs">Add Professional</Link>
+                    </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-8 mb-12">
+                    {/* Bookings */}
+                    <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+                        <h2 className="font-bold text-lg mb-3">All Bookings</h2>
+                        <table className="min-w-full border border-gray-200 rounded text-sm mb-2">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">Service</th>
+                                    <th className="px-4 py-2 text-left">Client</th>
+                                    <th className="px-4 py-2 text-left">Professional</th>
+                                    <th className="px-4 py-2 text-left">Date</th>
+                                    <th className="px-4 py-2 text-left">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {bookings.map(b => (
+                                    <tr key={b.id}>
+                                        <td className="border-t px-4 py-2">{b.service}</td>
+                                        <td className="border-t px-4 py-2">{b.client}</td>
+                                        <td className="border-t px-4 py-2">{b.pro}</td>
+                                        <td className="border-t px-4 py-2">{b.date}</td>
+                                        <td className="border-t px-4 py-2">{b.status}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {/* Payments */}
+                    <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+                        <h2 className="font-bold text-lg mb-3">All Payments</h2>
+                        <table className="min-w-full border border-gray-200 rounded text-sm mb-2">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">Service</th>
+                                    <th className="px-4 py-2 text-left">Client</th>
+                                    <th className="px-4 py-2 text-left">Professional</th>
+                                    <th className="px-4 py-2 text-left">Date</th>
+                                    <th className="px-4 py-2 text-left">Amount (€)</th>
+                                    <th className="px-4 py-2 text-left">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {payments.map(p => (
+                                    <tr key={p.id}>
+                                        <td className="border-t px-4 py-2">{p.service}</td>
+                                        <td className="border-t px-4 py-2">{p.client}</td>
+                                        <td className="border-t px-4 py-2">{p.pro}</td>
+                                        <td className="border-t px-4 py-2">{p.date}</td>
+                                        <td className="border-t px-4 py-2">{p.amount}</td>
+                                        <td className="border-t px-4 py-2">{p.status}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div className="mt-8 text-center">
+                    <Link href="/" className="text-blue-600 font-semibold hover:text-blue-700 transition">Go to FixEasy Home</Link>
+                </div>
+            </div>
+        </main>
+    );
+}
 }
