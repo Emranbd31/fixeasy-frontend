@@ -43,6 +43,9 @@ export default function Header() {
                         <Link href="/login" className="text-white hover:text-cyan-300 transition-colors font-medium text-sm">
                             Login
                         </Link>
+                        <Link href="/signup" className="text-white hover:text-cyan-300 transition-colors font-medium text-sm">
+                            Sign Up
+                        </Link>
                         <Link href="/book">
                             <motion.button
                                 whileHover={{ scale: 1.05, boxShadow: '0 10px 40px rgba(59, 130, 246, 0.35)' }}
@@ -85,6 +88,9 @@ export default function Header() {
                         </Link>
                         <Link href="/login" className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2">
                             Login
+                        </Link>
+                        <Link href="/signup" className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2">
+                            Sign Up
                         </Link>
                         <Link href="/book" className="block">
                             <button className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-full font-semibold shadow-lg">
