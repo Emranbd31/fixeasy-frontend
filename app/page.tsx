@@ -311,7 +311,7 @@ export default function HomePage() {
               </h1>
 
               <p className="text-base md:text-lg lg:text-xl text-gray-200 mb-4 md:mb-6 leading-relaxed max-w-xl font-light">
-                Book <span className="font-bold text-cyan-300">trusted professionals</span> for cleaning, repairs, and more. Quick booking, clear pricing, and verified pros.
+                Book <span className="font-bold text-cyan-300">trusted professionals</span> for cleaning, repairs, and more. Quick booking, clear pricing, and verified professionals.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
@@ -332,7 +332,7 @@ export default function HomePage() {
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                     className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-white/90 backdrop-blur-sm text-slate-900 rounded-full font-bold text-base md:text-lg shadow-2xl hover:bg-white transition-all duration-300"
                   >
-                    💼 Become a Pro
+                    💼 Become a Professional
                   </motion.button>
                 </Link>
               </div>
@@ -385,7 +385,7 @@ export default function HomePage() {
               Choose Your <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Service</span>
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-              Professional home services at your fingertips. Book instantly with verified pros.
+              Professional home services at your fingertips. Book instantly with verified professionals.
             </p>
           </motion.div>
 
