@@ -1,6 +1,172 @@
 ﻿'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+// Removed duplicate useState import
+const serviceSuggestions: Record<string, Array<{ name: string; description: string }>> = {
+  Builder: [
+    { name: '🏗️ Home Construction', description: 'Build new homes and extensions.' },
+    { name: '🔨 Renovation', description: 'Renovate and remodel existing spaces.' },
+    { name: '🚧 Site Preparation', description: 'Prepare sites for construction.' },
+    { name: '✨ Other', description: 'Describe your building needs in the booking description box.' },
+  ],
+  Cleaning: [
+    { name: '🏠 House Cleaning', description: 'Full home cleaning, bedrooms, bathrooms, kitchen, living areas.' },
+    { name: '🏢 Office Cleaning', description: 'Workspace, desks, meeting rooms, restrooms.' },
+    { name: '🌳 Garden Cleaning', description: 'Lawn mowing, hedge trimming, leaf removal.' },
+    { name: '✨ Other', description: 'Describe your custom cleaning needs in the booking description box.' },
+  ],
+  Handyman: [
+    { name: '🔨 Furniture Assembly', description: 'Expert assembly of all types of furniture.' },
+    { name: '🪛 Minor Repairs', description: 'Small fixes around the house.' },
+    { name: '🧰 TV Mounting', description: 'Secure TV wall mounting.' },
+    { name: '✨ Other', description: 'Describe your handyman needs in the booking description box.' },
+  ],
+  Plumbing: [
+    { name: '🚰 Leak Repair', description: 'Fixing leaking pipes and faucets.' },
+    { name: '🛁 Bathroom Plumbing', description: 'Install/repair bathroom fixtures.' },
+    { name: '🔩 Pipe Installation', description: 'New pipe installation and replacement.' },
+    { name: '✨ Other', description: 'Describe your plumbing needs in the booking description box.' },
+  ],
+  Electrical: [
+    { name: '💡 Light Installation', description: 'Install new lights and fixtures.' },
+    { name: '🔌 Socket Repair', description: 'Fix or replace electrical sockets.' },
+    { name: '⚡ Circuit Breaker', description: 'Circuit breaker installation/repair.' },
+    { name: '✨ Other', description: 'Describe your electrical needs in the booking description box.' },
+  ],
+  Painting: [
+    { name: '🎨 Interior Painting', description: 'Painting walls, ceilings, and trim.' },
+    { name: '🖌️ Exterior Painting', description: 'Painting outside walls and fences.' },
+    { name: '🪑 Furniture Painting', description: 'Painting or refinishing furniture.' },
+    { name: '✨ Other', description: 'Describe your painting needs in the booking description box.' },
+  ],
+  Gardening: [
+    { name: '🌱 Lawn Mowing', description: 'Regular lawn mowing and care.' },
+    { name: '🌷 Flower Planting', description: 'Planting and maintaining flowers.' },
+    { name: '🌳 Hedge Trimming', description: 'Trimming and shaping hedges.' },
+    { name: '✨ Other', description: 'Describe your gardening needs in the booking description box.' },
+  ],
+  Moving: [
+    { name: '🚚 House Moving', description: 'Full house moving service.' },
+    { name: '📦 Packing Service', description: 'Professional packing for your move.' },
+    { name: '🪑 Furniture Moving', description: 'Moving large furniture items.' },
+    { name: '✨ Other', description: 'Describe your moving needs in the booking description box.' },
+  ],
+  Carpentry: [
+    { name: '🪚 Custom Furniture', description: 'Design and build custom furniture.' },
+    { name: '🚪 Door Installation', description: 'Install or repair doors.' },
+    { name: '🛠️ Shelving', description: 'Build and install shelves.' },
+    { name: '✨ Other', description: 'Describe your carpentry needs in the booking description box.' },
+  ],
+  'Appliance Repair': [
+     { name: '🧺 Washing Machine Repair', description: 'Repair and maintenance of washing machines.' },
+     { name: '🧊 Refrigerator Repair', description: 'Fixing refrigerator cooling and leaks.' },
+     { name: '🔥 Oven/Stove Repair', description: 'Repair ovens, stoves, and cooktops.' },
+     { name: '✨ Other', description: 'Describe your appliance repair needs in the booking description box.' },
+  ],
+  HVAC: [
+    { name: '❄️ AC Installation', description: 'Install new air conditioning units.' },
+    { name: '🔥 Heating Repair', description: 'Repair heating systems and radiators.' },
+    { name: '🧊 Cooling Maintenance', description: 'Service and maintain cooling systems.' },
+    { name: '✨ Other', description: 'Describe your HVAC needs in the booking description box.' },
+  ],
+  'Pest Control': [
+    { name: '🐜 Ant Removal', description: 'Remove ants from your home.' },
+    { name: '🦟 Mosquito Control', description: 'Mosquito elimination.' },
+    { name: '🐭 Rodent Removal', description: 'Get rid of mice and rats.' },
+    { name: '✨ Other', description: 'Describe your pest control needs in the booking description box.' },
+  ],
+  Locksmith: [
+    { name: '🔐 Lock Installation', description: 'Install new locks for doors and windows.' },
+    { name: '🗝️ Key Duplication', description: 'Duplicate or replace lost keys.' },
+    { name: '🚪 Emergency Unlock', description: 'Emergency door unlocking service.' },
+    { name: '✨ Other', description: 'Describe your locksmith needs in the booking description box.' },
+  ],
+  Welding: [
+    { name: '🔩 Metal Fabrication', description: 'Custom metal fabrication and welding.' },
+    { name: '🛠️ Equipment Repair', description: 'Repair metal equipment and tools.' },
+    { name: '🚗 Auto Welding', description: 'Welding for vehicles and auto parts.' },
+    { name: '✨ Other', description: 'Describe your welding needs in the booking description box.' },
+  ],
+  'CCTV Installation': [
+    { name: '📹 Home CCTV', description: 'Install CCTV for home security.' },
+    { name: '🏢 Office CCTV', description: 'Install CCTV for offices and businesses.' },
+    { name: '🔧 System Maintenance', description: 'CCTV system maintenance and repair.' },
+    { name: '✨ Other', description: 'Describe your CCTV needs in the booking description box.' },
+  ],
+  'Solar Panels': [
+    { name: '🔆 Panel Installation', description: 'Install new solar panels.' },
+    { name: '🔋 Battery Setup', description: 'Install and configure solar batteries.' },
+    { name: '🛠️ System Maintenance', description: 'Solar panel system maintenance.' },
+    { name: '✨ Other', description: 'Describe your solar panel needs in the booking description box.' },
+  ],
+  Roofing: [
+    { name: '🏠 Roof Repair', description: 'Repair damaged roofs.' },
+    { name: '🪜 Roof Installation', description: 'Install new roofing.' },
+    { name: '🧹 Roof Cleaning', description: 'Clean moss and debris from roofs.' },
+    { name: '✨ Other', description: 'Describe your roofing needs in the booking description box.' },
+  ],
+  Flooring: [
+    { name: '🪵 Wood Flooring', description: 'Install and repair wood floors.' },
+    { name: '🧽 Tile Flooring', description: 'Install and repair tile floors.' },
+    { name: '🛋️ Carpet Installation', description: 'Install new carpets.' },
+    { name: '✨ Other', description: 'Describe your flooring needs in the booking description box.' },
+  ],
+  Tiling: [
+    { name: '🧱 Wall Tiling', description: 'Install tiles on walls.' },
+    { name: '🛁 Bathroom Tiling', description: 'Tile bathrooms and showers.' },
+    { name: '🍽️ Kitchen Tiling', description: 'Tile kitchen floors and backsplashes.' },
+    { name: '✨ Other', description: 'Describe your tiling needs in the booking description box.' },
+  ],
+  Plastering: [
+    { name: '🧑‍🎨 Wall Plastering', description: 'Plaster and finish walls.' },
+    { name: '🏠 Ceiling Plastering', description: 'Plaster and finish ceilings.' },
+    { name: '🛠️ Repair Cracks', description: 'Repair cracks and holes in plaster.' },
+    { name: '✨ Other', description: 'Describe your plastering needs in the booking description box.' },
+  ],
+  'Window Cleaning': [
+    { name: '🪟 Exterior Windows', description: 'Clean exterior windows.' },
+    { name: '🧼 Interior Windows', description: 'Clean interior windows.' },
+    { name: '🏢 Office Windows', description: 'Clean office and commercial windows.' },
+    { name: '✨ Other', description: 'Describe your window cleaning needs in the booking description box.' },
+  ],
+  'Pressure Washing': [
+    { name: '🚗 Driveway Washing', description: 'Pressure wash driveways.' },
+    { name: '🏡 Patio Cleaning', description: 'Pressure wash patios and decks.' },
+    { name: '🧱 Wall Cleaning', description: 'Pressure wash exterior walls.' },
+    { name: '✨ Other', description: 'Describe your pressure washing needs in the booking description box.' },
+  ],
+  'Chimney Sweep': [
+    { name: '🔥 Chimney Cleaning', description: 'Clean and sweep chimneys.' },
+    { name: '🧹 Soot Removal', description: 'Remove soot and debris.' },
+    { name: '🔍 Inspection', description: 'Inspect chimney for safety.' },
+    { name: '✨ Other', description: 'Describe your chimney needs in the booking description box.' },
+  ],
+  'Gutter Cleaning': [
+    { name: '🧹 Gutter Cleaning', description: 'Clean gutters and downspouts.' },
+    { name: '🔧 Gutter Repair', description: 'Repair damaged gutters.' },
+    { name: '🪜 Gutter Installation', description: 'Install new gutters.' },
+    { name: '✨ Other', description: 'Describe your gutter needs in the booking description box.' },
+  ],
+  'Air Conditioning': [
+    { name: '❄️ AC Installation', description: 'Install new air conditioning units.' },
+    { name: '🧊 AC Repair', description: 'Repair and maintain AC units.' },
+    { name: '🧹 Filter Cleaning', description: 'Clean and replace AC filters.' },
+    { name: '✨ Other', description: 'Describe your air conditioning needs in the booking description box.' },
+  ],
+  'Roof Cleaning': [
+    { name: '🧹 Moss Removal', description: 'Remove moss from roof.' },
+    { name: '💧 Roof Washing', description: 'Wash and clean roof surfaces.' },
+    { name: '🪜 Gutter Cleaning', description: 'Clean gutters as part of roof cleaning.' },
+    { name: '✨ Other', description: 'Describe your roof cleaning needs in the booking description box.' },
+  ],
+  'Carpet Cleaning': [
+    { name: '🧼 Deep Cleaning', description: 'Deep clean carpets and rugs.' },
+    { name: '🧽 Stain Removal', description: 'Remove stains from carpets.' },
+    { name: '🪟 Odor Removal', description: 'Eliminate odors from carpets.' },
+    { name: '✨ Other', description: 'Describe your carpet cleaning needs in the booking description box.' },
+  ],
+  // Add more as needed for other services
+};
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
@@ -58,6 +224,7 @@ const liveRequests = [
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredServices, setFilteredServices] = useState(services);
+  const [showServiceModal, setShowServiceModal] = useState<{ open: boolean; service: string | null }>({ open: false, service: null });
 
   // Live stats counters
   const [activeRequests, setActiveRequests] = useState(0);
@@ -299,18 +466,32 @@ export default function HomePage() {
 
           {/* Service Cards Grid - WITH REAL PHOTOS */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
-            {filteredServices.map((service, index) => (
-              <motion.div
-                key={service.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.5, delay: index * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
-                whileHover={{ y: -8, scale: 1.02, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
-                whileTap={{ scale: 0.98 }}
-                className="group cursor-pointer"
-              >
-                <Link href="/book">
+            {filteredServices.map((service, index) => {
+              // Add emoji for each service type
+              let emoji = '';
+              if (service.name === 'Cleaning') emoji = '🧼';
+              if (service.name === 'Handyman') emoji = '🔨';
+              if (service.name === 'Plumbing') emoji = '🔧';
+              if (service.name === 'Electrical') emoji = '💡';
+              if (service.name === 'Painting') emoji = '🎨';
+              if (service.name === 'Gardening') emoji = '🌿';
+              if (service.name === 'Moving') emoji = '🚚';
+              if (service.name === 'Carpentry') emoji = '🪚';
+              if (service.name === 'Appliance Repair') emoji = '🛠️';
+              if (service.name === 'Pest Control') emoji = '🐜';
+              if (service.name === 'Other') emoji = '✨';
+              return (
+                <motion.div
+                  key={service.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.5, delay: index * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
+                  whileHover={{ y: -8, scale: 1.02, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
+                  whileTap={{ scale: 0.98 }}
+                  className="group cursor-pointer"
+                  onClick={() => setShowServiceModal({ open: true, service: service.name })}
+                >
                   <div className="relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border-2 border-gray-100 hover:border-blue-400 h-full">
                     {/* REAL PHOTO - Like Competitors */}
                     <div className="relative h-40 md:h-48 overflow-hidden">
@@ -331,16 +512,16 @@ export default function HomePage() {
 
                       {/* Service Name Overlay */}
                       <div className="absolute bottom-3 left-3 right-3">
-                        <h3 className="text-lg md:text-xl font-bold text-white drop-shadow-lg">
-                          {service.name}
+                        <h3 className="text-lg md:text-xl font-bold text-white drop-shadow-lg flex items-center gap-2">
+                          <span>{emoji}</span> {service.name}
                         </h3>
                       </div>
                     </div>
 
                     {/* Content */}
                     <div className="p-5">
-                      <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                        {service.description}
+                      <p className="text-sm text-gray-600 mb-4 leading-relaxed flex items-center gap-2">
+                        <span>{emoji}</span> {service.description}
                       </p>
 
                       {/* Pricing - More Prominent */}
@@ -366,9 +547,31 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                </Link>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
+
+            {/* Service Modal for all services */}
+            {showServiceModal.open && showServiceModal.service && (
+              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative">
+                  <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => setShowServiceModal({ open: false, service: null })}>×</button>
+                  <h2 className="text-2xl font-bold mb-4 text-blue-600 flex items-center gap-2">
+                    {serviceIcons[showServiceModal.service] || '✨'} Choose {showServiceModal.service} Option
+                  </h2>
+                  <div className="space-y-4">
+                    {(serviceSuggestions[showServiceModal.service] || [
+                      { name: '✨ Other', description: 'Describe your needs in the booking description box.' }
+                    ]).map(opt => (
+                      <button key={opt.name} className="w-full text-left px-4 py-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-all flex flex-col gap-1" onClick={() => { setShowServiceModal({ open: false, service: null }); window.location.href = '/book?type=' + encodeURIComponent(opt.name); }}>
+                        <div className="font-bold flex items-center gap-2">{opt.name}</div>
+                        <div className="text-sm text-blue-500">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
