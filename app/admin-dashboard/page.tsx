@@ -7,7 +7,7 @@ git commit -m "fix: correct function structure in admin dashboard"
 git push origin mainAdminDashboardPage() {
 export default function AdminDashboardPage() {
     // Admin access logic (admin code or role)
-    const [adminSecret, setAdminSecret] = useState<string>("");
+    "use client";
     const [ready, setReady] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
