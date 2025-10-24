@@ -41,7 +41,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
-        <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">Sign Up</h1>
+        <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center mt-16">Sign Up</h1>
         {error && <div className="mb-4 p-3 rounded-xl bg-red-50 border-l-4 border-red-500 text-red-700">{error}</div>}
         {success ? (
           <div className="text-center">
