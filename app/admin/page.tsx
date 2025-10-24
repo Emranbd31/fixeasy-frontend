@@ -22,65 +22,67 @@ const tabs = [
 ];
 
 
-// --- Data state ---
-const [stats, setStats] = useState({ users: '-', professionals: '-', bookings: '-', payments: '-', totalRevenue: '-' });
-const [professionals, setProfessionals] = useState([]);
-const [clients, setClients] = useState([]);
-const [bookings, setBookings] = useState([]);
-const [payments, setPayments] = useState([]);
-const [logs, setLogs] = useState([]);
-const [loading, setLoading] = useState(true);
-const [actionLoading, setActionLoading] = useState(false);
-const [toast, setToast] = useState<{ type: 'success'|'error', message: string }|null>(null);
+export default function AdminDashboard() {
+	// --- Data state ---
+	const [tab, setTab] = useState("professionals");
+	const [stats, setStats] = useState({ users: '-', professionals: '-', bookings: '-', payments: '-', totalRevenue: '-' });
+	const [professionals, setProfessionals] = useState([]);
+	const [clients, setClients] = useState([]);
+	const [bookings, setBookings] = useState([]);
+	const [payments, setPayments] = useState([]);
+	const [logs, setLogs] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [actionLoading, setActionLoading] = useState(false);
+	const [toast, setToast] = useState<{ type: 'success'|'error', message: string }|null>(null);
 
-// --- Fetch functions ---
-const fetchAll = async () => {
-	setLoading(true);
-	try {
-		const statsRes = await fetch('/api/admin/stats').then(r => r.json());
-		setStats(statsRes);
-		const prosRes = await fetch('/api/admin/professionals').then(r => r.json());
-		setProfessionals(prosRes.professionals || []);
-		const clientsRes = await fetch('/api/admin/clients').then(r => r.json());
-		setClients(clientsRes.clients || []);
-		const bookingsRes = await fetch('/api/admin/bookings').then(r => r.json());
-		setBookings(bookingsRes.bookings || []);
-		const paymentsRes = await fetch('/api/admin/payments').then(r => r.json());
-		setPayments(paymentsRes.payments || []);
-		const logsRes = await fetch('/api/admin/activity').then(r => r.json());
-		setLogs(logsRes.logs || []);
-	} catch (e) {
-		setToast({ type: 'error', message: 'Failed to load data' });
-	}
-	setLoading(false);
-};
+	// --- Fetch functions ---
+	const fetchAll = async () => {
+		setLoading(true);
+		try {
+			const statsRes = await fetch('/api/admin/stats').then(r => r.json());
+			setStats(statsRes);
+			const prosRes = await fetch('/api/admin/professionals').then(r => r.json());
+			setProfessionals(prosRes.professionals || []);
+			const clientsRes = await fetch('/api/admin/clients').then(r => r.json());
+			setClients(clientsRes.clients || []);
+			const bookingsRes = await fetch('/api/admin/bookings').then(r => r.json());
+			setBookings(bookingsRes.bookings || []);
+			const paymentsRes = await fetch('/api/admin/payments').then(r => r.json());
+			setPayments(paymentsRes.payments || []);
+			const logsRes = await fetch('/api/admin/activity').then(r => r.json());
+			setLogs(logsRes.logs || []);
+		} catch (e) {
+			setToast({ type: 'error', message: 'Failed to load data' });
+		}
+		setLoading(false);
+	};
 
-useEffect(() => { fetchAll(); }, []);
+	useEffect(() => { fetchAll(); }, []);
 
-// --- Action handlers ---
-const handleApprove = async (proId: string) => {
-	setActionLoading(true);
-	const res = await fetch('/api/admin/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ proId }) }).then(r => r.json());
-	if (res.ok) { setToast({ type: 'success', message: 'Professional approved!' }); fetchAll(); }
-	else setToast({ type: 'error', message: res.error || 'Failed to approve' });
-	setActionLoading(false);
-};
-const handleDeactivate = async (userId: string, active: boolean) => {
-	setActionLoading(true);
-	const res = await fetch('/api/admin/deactivate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, active }) }).then(r => r.json());
-	if (res.ok) { setToast({ type: 'success', message: active ? 'User activated' : 'User deactivated' }); fetchAll(); }
-	else setToast({ type: 'error', message: res.error || 'Failed to update user' });
-	setActionLoading(false);
-};
-const handleResetPassword = async (email: string) => {
-	setActionLoading(true);
-	const res = await fetch('/api/admin/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }).then(r => r.json());
-	if (res.ok) setToast({ type: 'success', message: 'Password reset link sent!' });
-	else setToast({ type: 'error', message: res.error || 'Failed to reset password' });
-	setActionLoading(false);
-};
+	// --- Action handlers ---
+	const handleApprove = async (proId: string) => {
+		setActionLoading(true);
+		const res = await fetch('/api/admin/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ proId }) }).then(r => r.json());
+		if (res.ok) { setToast({ type: 'success', message: 'Professional approved!' }); fetchAll(); }
+		else setToast({ type: 'error', message: res.error || 'Failed to approve' });
+		setActionLoading(false);
+	};
+	const handleDeactivate = async (userId: string, active: boolean) => {
+		setActionLoading(true);
+		const res = await fetch('/api/admin/deactivate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, active }) }).then(r => r.json());
+		if (res.ok) { setToast({ type: 'success', message: active ? 'User activated' : 'User deactivated' }); fetchAll(); }
+		else setToast({ type: 'error', message: res.error || 'Failed to update user' });
+		setActionLoading(false);
+	};
+	const handleResetPassword = async (email: string) => {
+		setActionLoading(true);
+		const res = await fetch('/api/admin/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }).then(r => r.json());
+		if (res.ok) setToast({ type: 'success', message: 'Password reset link sent!' });
+		else setToast({ type: 'error', message: res.error || 'Failed to reset password' });
+		setActionLoading(false);
+	};
 
-return (
+	return (
 	<div className="min-h-screen bg-gray-50">
 		{/* Header */}
 		<header className="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
