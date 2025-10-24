@@ -19,6 +19,11 @@ export default function UserRegisterPage() {
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
 
+    function validatePassword(pw: string) {
+        // At least 8 chars, one special symbol, one number, one uppercase
+        return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(pw)
+    }
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         setError(null)
@@ -29,8 +34,8 @@ export default function UserRegisterPage() {
             return
         }
 
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters')
+        if (!validatePassword(password)) {
+            setError('Password must be at least 8 characters, include an uppercase letter, a number, and a special symbol')
             return
         }
 
@@ -182,11 +187,11 @@ export default function UserRegisterPage() {
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Minimum 6 characters"
+                                    placeholder="Min. 8 chars, 1 uppercase, 1 number, 1 symbol"
                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
                                     required
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Use a strong password with letters and numbers</p>
+                                <p className="text-xs text-gray-500 mt-1">Use a strong password with letters, numbers, and symbols</p>
                             </div>
 
                             <div>
@@ -204,6 +209,19 @@ export default function UserRegisterPage() {
                             </div>
                         </div>
 
+                        {/* Social Login */}
+                        <div className="mb-8">
+                            <div className="flex flex-col gap-4">
+                                <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
+                                    <img src="/images/services/google-logo.png" alt="Google" className="w-6 h-6" />
+                                    Sign up with Google
+                                </button>
+                                <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
+                                    <img src="/images/services/apple-logo.png" alt="Apple" className="w-6 h-6" />
+                                    Sign up with Apple
+                                </button>
+                            </div>
+                        </div>
                         {/* Terms & Submit */}
                         <div className="pt-6 mt-6 border-t border-gray-200">
                             <div className="bg-gray-50 rounded-xl p-6 mb-6">
@@ -234,7 +252,7 @@ export default function UserRegisterPage() {
                                         Creating Your Account...
                                     </span>
                                 ) : (
-                                    '🚀 Create Account'
+                                    '680 Create Account'
                                 )}
                             </button>
 
@@ -242,6 +260,10 @@ export default function UserRegisterPage() {
                                 Already have an account?{' '}
                                 <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-700 transition">
                                     Sign In
+                                </Link>
+                                {' '}|{' '}
+                                <Link href="/forgot-password" className="text-blue-600 font-semibold hover:text-blue-700 transition">
+                                    Forgot/Reset Password?
                                 </Link>
                             </p>
 

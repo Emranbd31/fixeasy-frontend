@@ -38,6 +38,7 @@ export default function ProfessionalRegisterPage() {
     const [email, setEmail] = useState('')
     const [phone, setPhone] = useState('')
     const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [category, setCategory] = useState('')
     const [customCategory, setCustomCategory] = useState('')
     const [experience, setExperience] = useState<number>(0)
@@ -53,17 +54,26 @@ export default function ProfessionalRegisterPage() {
     const [insuranceFile, setInsuranceFile] = useState<File | null>(null)
     const [portfolioFiles, setPortfolioFiles] = useState<File[]>([])
 
+    function validatePassword(pw: string) {
+        // At least 8 chars, one special symbol, one number, one uppercase
+        return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(pw)
+    }
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         setError(null)
 
         // Basic validation
-        if (!name || !email || !phone || !password) {
+        if (!name || !email || !phone || !password || !confirmPassword) {
             setError('Please fill in all required personal information')
             return
         }
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters')
+        if (!validatePassword(password)) {
+            setError('Password must be at least 8 characters, include an uppercase letter, a number, and a special symbol')
+            return
+        }
+        if (password !== confirmPassword) {
+            setError('Passwords do not match')
             return
         }
         const chosenCategory = category === 'Other' ? customCategory.trim() : category
@@ -243,7 +253,20 @@ export default function ProfessionalRegisterPage() {
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Min. 6 characters"
+                                        placeholder="Min. 8 chars, 1 uppercase, 1 number, 1 symbol"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Confirm Password <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        placeholder="Re-enter password"
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
                                         required
                                     />
@@ -251,6 +274,19 @@ export default function ProfessionalRegisterPage() {
                             </div>
                         </div>
 
+                        {/* Social Login */}
+                        <div className="mb-8">
+                            <div className="flex flex-col gap-4">
+                                <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
+                                    <img src="/images/services/google-logo.png" alt="Google" className="w-6 h-6" />
+                                    Sign up with Google
+                                </button>
+                                <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
+                                    <img src="/images/services/apple-logo.png" alt="Apple" className="w-6 h-6" />
+                                    Sign up with Apple
+                                </button>
+                            </div>
+                        </div>
                         <hr className="my-10 border-gray-200" />
 
                         {/* Service Details */}
@@ -586,6 +622,10 @@ export default function ProfessionalRegisterPage() {
                                 Already have an account?{' '}
                                 <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-700 transition">
                                     Sign In
+                                </Link>
+                                {' '}|{' '}
+                                <Link href="/forgot-password" className="text-blue-600 font-semibold hover:text-blue-700 transition">
+                                    Forgot/Reset Password?
                                 </Link>
                             </p>
                         </div>
