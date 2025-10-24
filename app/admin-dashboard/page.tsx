@@ -1,6 +1,3 @@
-git commit -m "fix: correct function structure in admin dashboard"
-git push origin mainAdminDashboardPage() {
-
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -153,7 +150,9 @@ export default function AdminDashboardPage() {
                 <div className="mt-8 text-center">
                     <Link href="/" className="text-blue-600 font-semibold hover:text-blue-700 transition">Go to FixEasy Home</Link>
                 </div>
-            </div>
-    </main>
+			</div>
+		</main>
+        );
+}
 
 
