@@ -79,6 +79,18 @@ Go to: https://vercel.com/dashboard
 → Select: **fixeasy-backend** (different project!)
 → Click: **Settings** → **Environment Variables**
 
+### Python dependencies
+
+Deployments that target the backend project should install the Python packages listed in
+`backend/Backend--main/requirements.txt`:
+
+```bash
+python3 -m pip install -r backend/Backend--main/requirements.txt
+```
+
+If the build environment does not provide a `pip` shim, the `python3 -m pip` form works
+consistently across Vercel and local setups.
+
 ---
 
 **Variable 1:**

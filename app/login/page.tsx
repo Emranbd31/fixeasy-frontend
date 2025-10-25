@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 import Link from "next/link";
 
 export default function LoginPage() {
-    const sb = createSupabaseBrowserClient();
+    const supabase = useMemo(() => createSupabaseBrowserClient(), []);
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(supabase ? null : "Login is currently unavailable while our backend is offline. Please try again later.");
     const [loading, setLoading] = useState(false);
 
     function validatePassword(pw: string) {
@@ -19,6 +19,11 @@ export default function LoginPage() {
     }
 
     async function onLogin() {
+        if (!supabase) {
+            setError("Login is currently unavailable while our backend is offline. Please try again later.");
+            return;
+        }
+
         try {
             setLoading(true);
             setError(null);
@@ -27,7 +32,7 @@ export default function LoginPage() {
                 setLoading(false);
                 return;
             }
-            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
             const user = data.user;
             const role = user?.user_metadata?.role || "client";
@@ -61,7 +66,7 @@ export default function LoginPage() {
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Password <span className="text-red-500">*</span></label>
                         <input className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 outline-none transition" placeholder="Min. 8 chars, 1 uppercase, 1 number, 1 symbol" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
-                    <button disabled={loading} onClick={onLogin} className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-lg hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/30 transform hover:scale-[1.02] disabled:transform-none">
+                    <button disabled={loading || !supabase} onClick={onLogin} className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-lg hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/30 transform hover:scale-[1.02] disabled:transform-none">
                         {loading ? (
                             <span className="flex items-center justify-center">
                                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

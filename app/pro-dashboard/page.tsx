@@ -1,21 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 import Link from "next/link";
 
 export default function ProDashboardPage() {
-    const sb = createSupabaseBrowserClient();
+    const supabase = useMemo(() => createSupabaseBrowserClient(), []);
     const [status, setStatus] = useState<"loading" | "ok" | "unauth">("loading");
     const [verified, setVerified] = useState<boolean | null>(null);
     const [name, setName] = useState<string>("");
 
     useEffect(() => {
+        if (!supabase) {
+            setStatus("unauth");
+            return;
+        }
+
         (async () => {
-            const { data: { user } } = await sb.auth.getUser();
+            const { data: { user } } = await supabase.auth.getUser();
             if (!user) { setStatus("unauth"); return; }
 
-            const { data, error } = await sb.from("professionals").select("name, verified").eq("user_id", user.id).single();
+            const { data, error } = await supabase.from("professionals").select("name, verified").eq("user_id", user.id).single();
             const row: any = data as any;
             if (!error && row) {
                 setName(row.name as string);
@@ -25,7 +30,16 @@ export default function ProDashboardPage() {
                 setStatus("ok");
             }
         })();
-    }, []);
+    }, [supabase]);
+
+    if (!supabase) {
+        return (
+            <main className="p-10">
+                <h1 className="text-2xl font-semibold mb-2">Professional dashboard temporarily unavailable</h1>
+                <p className="text-gray-600 max-w-xl">We couldn't connect to the backend services. Please try again later.</p>
+            </main>
+        );
+    }
 
     if (status === "loading") return <div className="p-10">Loading…</div>;
     if (status === "unauth") return (

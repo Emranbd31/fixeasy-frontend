@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabaseClient'
@@ -29,9 +29,9 @@ const categories = [
 
 export default function ProfessionalRegisterPage() {
     const router = useRouter()
+    const supabase = useMemo(() => createSupabaseBrowserClient(), [])
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const sb = createSupabaseBrowserClient()
+    const [error, setError] = useState<string | null>(supabase ? null : 'Professional registration is temporarily unavailable while our backend is offline. Please try again later.')
 
     // Form fields
     const [name, setName] = useState('')
@@ -93,8 +93,12 @@ export default function ProfessionalRegisterPage() {
 
         setLoading(true)
         try {
+            if (!supabase) {
+                throw new Error('Professional registration is temporarily unavailable while our backend is offline. Please try again later.')
+            }
+            const client = supabase as any
             // 1. Create auth user
-            const { data: signUpData, error: signUpError } = await sb.auth.signUp({
+            const { data: signUpData, error: signUpError } = await client.auth.signUp({
                 email,
                 password,
                 options: {
@@ -118,7 +122,7 @@ export default function ProfessionalRegisterPage() {
             async function uploadOne(file: File | null, key: string): Promise<string | null> {
                 if (!file) return null
                 const path = `pros/${userId}/${key}-${timestamp}-${file.name}`
-                const { error: upErr } = await sb.storage.from(bucket).upload(path, file, {
+                const { error: upErr } = await client.storage.from(bucket).upload(path, file, {
                     cacheControl: '3600',
                     upsert: true
                 })
@@ -602,7 +606,7 @@ export default function ProfessionalRegisterPage() {
 
                             <button
                                 type="submit"
-                                disabled={loading}
+                                disabled={loading || !supabase}
                                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl"
                             >
                                 {loading ? (

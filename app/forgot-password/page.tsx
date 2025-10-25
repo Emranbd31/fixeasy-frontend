@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 export default function ForgotPasswordPage() {
-    const sb = createSupabaseBrowserClient();
+    const supabase = useMemo(() => createSupabaseBrowserClient(), []);
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(supabase ? null : "Password resets are unavailable while our backend is offline. Please try again later.");
     const [success, setSuccess] = useState(false);
     const [phoneSuccess, setPhoneSuccess] = useState(false);
     const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -19,8 +19,13 @@ export default function ForgotPasswordPage() {
         setError(null);
         setSuccess(false);
         setLoading(true);
+        if (!supabase) {
+            setError("Password resets are unavailable while our backend is offline. Please try again later.");
+            setLoading(false);
+            return;
+        }
         try {
-            const { error } = await sb.auth.resetPasswordForEmail(email, {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: `${window.location.origin}/reset-password`
             });
             if (error) throw error;
@@ -73,7 +78,7 @@ export default function ForgotPasswordPage() {
                             </div>
                             <button
                                 type="submit"
-                                disabled={loading}
+                                disabled={loading || !supabase}
                                 className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? "Sending..." : "Send Reset Link"}

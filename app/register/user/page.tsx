@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabaseClient'
 
 export default function UserRegisterPage() {
     const router = useRouter()
-    const sb = createSupabaseBrowserClient()
+    const supabase = useMemo(() => createSupabaseBrowserClient(), [])
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(supabase ? null : 'User registration is temporarily unavailable while our backend is offline. Please try again later.')
     const [success, setSuccess] = useState(false)
 
     // Form fields
@@ -60,8 +60,11 @@ export default function UserRegisterPage() {
 
         setLoading(true)
         try {
+            if (!supabase) {
+                throw new Error('User registration is temporarily unavailable while our backend is offline. Please try again later.')
+            }
             // Create auth user with email verification
-            const { data: signUpData, error: signUpError } = await sb.auth.signUp({
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -240,7 +243,7 @@ export default function UserRegisterPage() {
 
                             <button
                                 type="submit"
-                                disabled={loading}
+                                disabled={loading || !supabase}
                                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl"
                             >
                                 {loading ? (
