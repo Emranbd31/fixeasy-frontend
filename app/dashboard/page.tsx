@@ -14,7 +14,8 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { createSupabaseBrowserClient } from '@/lib/supabaseClient';
+import { createSupabaseBrowserClient, type Database } from '@/lib/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 type BookingStatus = 'Pending' | 'Scheduled' | 'Completed';
 
@@ -50,13 +51,29 @@ type UserProfile = {
 
 export default function ClientDashboardPage() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
-  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(supabase ? null : false);
 
   useEffect(() => {
+    if (!supabase) {
+      return;
+    }
+
     supabase.auth.getUser().then(({ data: { user } }) => {
       setIsAuthed(!!user);
     });
   }, [supabase]);
+
+  if (!supabase) {
+    return (
+      <main className="p-10">
+        <h1 className="text-2xl font-semibold mb-2">Dashboard temporarily unavailable</h1>
+        <p className="text-gray-600 max-w-xl">
+          We couldn&apos;t connect to the FixEasy backend. Please try again later or reach out to support if the
+          issue persists.
+        </p>
+      </main>
+    );
+  }
 
   if (isAuthed === null) {
     return <div className="p-10">Loading…</div>;
@@ -89,7 +106,11 @@ export default function ClientDashboardPage() {
   const history = bookings.filter((booking) => booking.status === 'Completed');
 
   useEffect(() => {
-    const channel = supabase.channel('bookings-realtime');
+    if (!supabase) {
+      return;
+    }
+
+    const channel = (supabase as SupabaseClient<Database>).channel('bookings-realtime');
 
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
       console.log('Booking update:', payload);
@@ -160,14 +181,25 @@ export default function ClientDashboardPage() {
     setSupportLoading(true);
     setSupportSuccess(false);
 
+    if (!supabase) {
+      setSupportLoading(false);
+      setSupportSuccess(false);
+      console.warn('Support form submission skipped because Supabase is not configured.');
+      return;
+    }
+
     try {
-      await (supabase as any).from('support_tickets').insert([
-        {
-          user_email: userProfile.email,
-          message: supportMessage,
-          created_at: new Date().toISOString(),
-        },
-      ]);
+      const client = supabase as any;
+
+      await client
+        .from('support_tickets')
+        .insert([
+          {
+            user_email: userProfile.email,
+            message: supportMessage,
+            created_at: new Date().toISOString(),
+          },
+        ]);
       setSupportSuccess(true);
       setSupportMessage('');
     } catch (error) {

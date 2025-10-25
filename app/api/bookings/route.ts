@@ -18,7 +18,11 @@ const bookingPayloadSchema = z.object({
 
 export async function POST(request: Request) {
   const supabase = createSupabaseServerClient();
+  if (!supabase) {
+    return NextResponse.json({ error: 'Supabase backend is not configured.' }, { status: 503 });
+  }
   const sb = supabase as any;
+  const storage = sb.storage;
 
   const formData = await request.formData();
   const payload = Object.fromEntries(formData.entries());
@@ -70,7 +74,7 @@ export async function POST(request: Request) {
     phone: parsed.data.phone,
   });
 
-  const { error: contactUploadError } = await supabase.storage
+  const { error: contactUploadError } = await storage
     .from(bucketName)
     .upload(`${bookingFolder}/contact.json`, contactPayload, {
       contentType: 'application/json',
@@ -88,7 +92,7 @@ export async function POST(request: Request) {
     if (!key.startsWith('photos_')) continue;
     if (!(value instanceof File)) continue;
     const path = `${bookingFolder}/${Date.now()}_${value.name}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await storage
       .from(bucketName)
       .upload(path, value, {
         contentType: value.type,

@@ -12,8 +12,12 @@ export async function POST(req: Request) {
         if (!checkSecret(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         const { path } = await req.json();
         if (!path) return NextResponse.json({ error: 'path required' }, { status: 400 });
-        const supabase = createSupabaseServerClient() as any;
-        const { data, error } = await supabase.storage.from('pro-uploads').createSignedUrl(path, 60);
+        const supabase = createSupabaseServerClient();
+        if (!supabase) {
+            return NextResponse.json({ error: 'Supabase backend is not configured.' }, { status: 503 });
+        }
+        const sb = supabase as any;
+        const { data, error } = await sb.storage.from('pro-uploads').createSignedUrl(path, 60);
         if (error) throw error;
         return NextResponse.json({ url: data?.signedUrl });
     } catch (e: any) {

@@ -25,10 +25,15 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const supabase = createSupabaseServerClient() as any; // widen types to avoid TS table typing errors
+        const supabase = createSupabaseServerClient();
+        if (!supabase) {
+            return NextResponse.json({ error: 'Supabase backend is not configured.' }, { status: 503 });
+        }
+
+        const sb = supabase as any; // widen types to avoid TS table typing errors
 
         // Upsert professional profile
-        const { error } = await supabase
+        const { error } = await sb
             .from('professionals')
             .upsert({
                 user_id,

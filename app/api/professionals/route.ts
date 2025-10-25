@@ -28,7 +28,11 @@ function maskIban(iban?: string | null): string | null {
 
 export async function POST(request: Request) {
   const supabase = createSupabaseServerClient();
+  if (!supabase) {
+    return NextResponse.json({ error: 'Supabase backend is not configured.' }, { status: 503 });
+  }
   const sb = supabase as any;
+  const storage = sb.storage;
   const formData = await request.formData();
   const payload = Object.fromEntries(formData.entries());
   const parsed = proPayloadSchema.safeParse(payload);
@@ -115,7 +119,7 @@ export async function POST(request: Request) {
     ibanMasked,
   });
 
-  const { error: metadataUploadError } = await supabase.storage
+  const { error: metadataUploadError } = await storage
     .from('kyc')
     .upload(`${professionalId}/profile.json`, metadataPayload, {
       contentType: 'application/json',
@@ -146,7 +150,7 @@ export async function POST(request: Request) {
 
   const uploadDocument = async (file: File, type: string) => {
     const path = `${professionalId}/${type}_${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await storage
       .from('kyc')
       .upload(path, file, { contentType: file.type, upsert: true });
     if (uploadError) {

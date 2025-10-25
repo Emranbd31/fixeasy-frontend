@@ -13,8 +13,12 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { user_id, verified } = body || {};
         if (!user_id) return NextResponse.json({ error: 'user_id required' }, { status: 400 });
-        const supabase = createSupabaseServerClient() as any;
-        const { error } = await supabase.from('professionals').update({ verified: !!verified }).eq('user_id', user_id);
+        const supabase = createSupabaseServerClient();
+        if (!supabase) {
+            return NextResponse.json({ error: 'Supabase backend is not configured.' }, { status: 503 });
+        }
+        const sb = supabase as any;
+        const { error } = await sb.from('professionals').update({ verified: !!verified }).eq('user_id', user_id);
         if (error) throw error;
         return NextResponse.json({ ok: true });
     } catch (e: any) {

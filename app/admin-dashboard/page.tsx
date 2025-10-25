@@ -1,10 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/supabaseClient";
+import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 export default function AdminDashboardPage() {
-    const [ready, setReady] = useState(false);
+    const supabase = useMemo(() => createSupabaseBrowserClient(), []);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [users, setUsers] = useState<any[]>([]);
@@ -14,6 +14,12 @@ export default function AdminDashboardPage() {
     const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
+        if (!supabase) {
+            setError("Admin tools are temporarily unavailable while the backend is offline.");
+            setLoading(false);
+            return;
+        }
+
         const checkAdmin = async () => {
             const { data: { user }, error } = await supabase.auth.getUser();
             if (error || !user) {
@@ -35,7 +41,7 @@ export default function AdminDashboardPage() {
             setLoading(false);
         };
         checkAdmin();
-    }, []);
+    }, [supabase]);
 
     if (loading) return <div className="p-10">Loading…</div>;
     if (error) return <div className="p-10 text-red-600">{error}</div>;
