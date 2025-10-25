@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 
-export default function LoginPage() {
-    const sb = createSupabaseBrowserClient();
+function LoginPage() {
+    const sb = supabase;
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -71,7 +71,7 @@ export default function LoginPage() {
                                 Logging in...
                             </span>
                         ) : (
-                            '510 Login'
+                            'Login'
                         )}
                     </button>
 
@@ -111,3 +111,5 @@ export default function LoginPage() {
         </main>
     );
 }
+
+export default LoginPage;

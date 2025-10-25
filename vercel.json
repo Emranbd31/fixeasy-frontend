@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "ignoreCommand": "if [ -f backend/Backend--main/requirements.txt ]; then echo 'Ignore Python build'; fi"
+}

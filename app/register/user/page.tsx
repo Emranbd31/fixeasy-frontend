@@ -1,13 +1,13 @@
-'use client'
 
+"use client";
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createSupabaseBrowserClient } from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 
-export default function UserRegisterPage() {
+function UserRegisterPage() {
     const router = useRouter()
-    const sb = createSupabaseBrowserClient()
+    const sb = supabase
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
@@ -252,7 +252,7 @@ export default function UserRegisterPage() {
                                         Creating Your Account...
                                     </span>
                                 ) : (
-                                    '680 Create Account'
+                                    'Create Account'
                                 )}
                             </button>
 
@@ -299,3 +299,5 @@ export default function UserRegisterPage() {
         </div>
     )
 }
+
+export default UserRegisterPage;

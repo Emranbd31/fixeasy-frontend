@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
-export default function ForgotPasswordPage() {
-    const sb = createSupabaseBrowserClient();
+function ForgotPasswordPage() {
+    const sb = supabase;
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
     const [loading, setLoading] = useState(false);
@@ -119,3 +119,5 @@ export default function ForgotPasswordPage() {
         </main>
     );
 }
+
+export default ForgotPasswordPage;
