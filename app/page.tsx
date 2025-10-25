@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 // Removed duplicate useState import
 const serviceSuggestions: Record<string, Array<{ name: string; description: string }>> = {
   Builder: [
@@ -202,9 +203,33 @@ const services = [
 ];
 
 const serviceIcons: Record<string, string> = {
-  'Cleaning': '🧹', 'Handyman': '🔨', 'Plumbing': '🔧', 'Electrical': '⚡',
-  'Painting': '🎨', 'Gardening': '🌿', 'Moving': '📦', 'Carpentry': '🪚',
-  'Appliance Repair': '🔌', 'HVAC': '❄️', 'Pest Control': '🐛', 'Locksmith': '🔐'
+  Cleaning: '🧹',
+  Handyman: '🔨',
+  Plumbing: '🔧',
+  Electrical: '⚡',
+  Painting: '🎨',
+  Gardening: '🌿',
+  Moving: '📦',
+  Carpentry: '🪚',
+  'Appliance Repair': '🔌',
+  HVAC: '❄️',
+  'Pest Control': '🐛',
+  Locksmith: '🔐',
+  Welding: '🔩',
+  'CCTV Installation': '📹',
+  'Solar Panels': '🔆',
+  Builder: '🏗️',
+  Roofing: '🏠',
+  Flooring: '🪵',
+  Tiling: '🧱',
+  Plastering: '🧑‍🎨',
+  'Window Cleaning': '🪟',
+  'Pressure Washing': '🚿',
+  'Chimney Sweep': '🔥',
+  'Gutter Cleaning': '🧹',
+  'Air Conditioning': '❄️',
+  'Roof Cleaning': '🪜',
+  'Carpet Cleaning': '🧼',
 };
 
 // Live Service Requests Data
@@ -222,13 +247,14 @@ const liveRequests = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredServices, setFilteredServices] = useState(services);
   const [showServiceModal, setShowServiceModal] = useState<{ open: boolean; service: string | null }>({ open: false, service: null });
 
   // Live stats counters
   const [activeRequests, setActiveRequests] = useState(0);
-  const [professionalsOnline, setProfilessionalsOnline] = useState(0);
+  const [professionalsOnline, setProfessionalsOnline] = useState(0);
   const [servicesCompleted, setServicesCompleted] = useState(0);
 
   // Animate counters on mount
@@ -246,13 +272,13 @@ export default function HomePage() {
       step++;
       const progress = step / steps;
       setActiveRequests(Math.floor(targetActive * progress));
-      setProfilessionalsOnline(Math.floor(targetPros * progress));
+      setProfessionalsOnline(Math.floor(targetPros * progress));
       setServicesCompleted(Math.floor(targetCompleted * progress));
 
       if (step >= steps) {
         clearInterval(timer);
         setActiveRequests(targetActive);
-        setProfilessionalsOnline(targetPros);
+        setProfessionalsOnline(targetPros);
         setServicesCompleted(targetCompleted);
       }
     }, interval);
@@ -467,19 +493,7 @@ export default function HomePage() {
           {/* Service Cards Grid - WITH REAL PHOTOS */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
             {filteredServices.map((service, index) => {
-              // Add emoji for each service type
-              let emoji = '';
-              if (service.name === 'Cleaning') emoji = '🧼';
-              if (service.name === 'Handyman') emoji = '🔨';
-              if (service.name === 'Plumbing') emoji = '🔧';
-              if (service.name === 'Electrical') emoji = '💡';
-              if (service.name === 'Painting') emoji = '🎨';
-              if (service.name === 'Gardening') emoji = '🌿';
-              if (service.name === 'Moving') emoji = '🚚';
-              if (service.name === 'Carpentry') emoji = '🪚';
-              if (service.name === 'Appliance Repair') emoji = '🛠️';
-              if (service.name === 'Pest Control') emoji = '🐜';
-              if (service.name === 'Other') emoji = '✨';
+              const emoji = serviceIcons[service.name] || '✨';
               return (
                 <motion.div
                   key={service.id}
@@ -552,26 +566,51 @@ export default function HomePage() {
             })}
 
             {/* Service Modal for all services */}
-            {showServiceModal.open && showServiceModal.service && (
-              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative">
-                  <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => setShowServiceModal({ open: false, service: null })}>×</button>
-                  <h2 className="text-2xl font-bold mb-4 text-blue-600 flex items-center gap-2">
-                    {serviceIcons[showServiceModal.service] || '✨'} Choose {showServiceModal.service} Option
-                  </h2>
-                  <div className="space-y-4">
-                    {(serviceSuggestions[showServiceModal.service] || [
-                      { name: '✨ Other', description: 'Describe your needs in the booking description box.' }
-                    ]).map(opt => (
-                      <button key={opt.name} className="w-full text-left px-4 py-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-all flex flex-col gap-1" onClick={() => { setShowServiceModal({ open: false, service: null }); window.location.href = '/book?type=' + encodeURIComponent(opt.name); }}>
-                        <div className="font-bold flex items-center gap-2">{opt.name}</div>
-                        <div className="text-sm text-blue-500">{opt.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {showServiceModal.open && showServiceModal.service && (
+                <motion.div
+                  className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <motion.div
+                    className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative"
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                  >
+                    <button
+                      className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold"
+                      onClick={() => setShowServiceModal({ open: false, service: null })}
+                    >
+                      ×
+                    </button>
+                    <h2 className="text-2xl font-bold mb-4 text-blue-600 flex items-center gap-2">
+                      {serviceIcons[showServiceModal.service] || '✨'} Choose {showServiceModal.service} Option
+                    </h2>
+                    <div className="space-y-4">
+                      {(serviceSuggestions[showServiceModal.service] || [
+                        { name: '✨ Other', description: 'Describe your needs in the booking description box.' }
+                      ]).map((opt) => (
+                        <button
+                          key={opt.name}
+                          className="w-full text-left px-4 py-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-all flex flex-col gap-1"
+                          onClick={() => {
+                            setShowServiceModal({ open: false, service: null });
+                            router.push(`/book?type=${encodeURIComponent(opt.name)}`);
+                          }}
+                        >
+                          <div className="font-bold flex items-center gap-2">{opt.name}</div>
+                          <div className="text-sm text-blue-500">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </section>
