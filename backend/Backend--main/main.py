@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uvicorn
 
-from app import app
+from backend_app import app
 
 
 if __name__ == "__main__":

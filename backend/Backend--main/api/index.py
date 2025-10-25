@@ -1,5 +1,14 @@
 """Vercel serverless entrypoint for the FixEasy backend."""
 
-from app import app as app
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+BACKEND_ROOT = Path(__file__).resolve().parent.parent
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
+
+from backend_app import app as app
 
 __all__ = ["app"]

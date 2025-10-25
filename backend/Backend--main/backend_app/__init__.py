@@ -4,20 +4,20 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timezone
-from typing import Iterable, List
+from typing import Iterable
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-_DEFAULT_ALLOWED_ORIGINS: List[str] = [
+_DEFAULT_ALLOWED_ORIGINS: list[str] = [
     "https://fixeasy.irish",
     "https://www.fixeasy.irish",
     "http://localhost:3000",
 ]
 
 
-def _get_allowed_origins() -> List[str]:
-    env_value = os.getenv("ALLOWED_ORIGINS", "")
+def _get_allowed_origins() -> list[str]:
+    env_value = os.getenv("CORS_ALLOWED_ORIGINS") or os.getenv("ALLOWED_ORIGINS", "")
     if not env_value:
         return _DEFAULT_ALLOWED_ORIGINS.copy()
 
