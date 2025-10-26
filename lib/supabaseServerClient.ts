@@ -1,5 +1,4 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-
 import type { Database } from './supabase.types';
 
 function safeEnv(value: string | undefined, fallback: string): string {
@@ -9,10 +8,12 @@ function safeEnv(value: string | undefined, fallback: string): string {
 
   if (process.env.NODE_ENV === 'production') {
     console.warn(
-      'Supabase environment variables are not configured. Falling back to placeholder values; server-side data will be unavailable until real keys are provided.'
+      '⚠️ Supabase environment variables are not configured. Falling back to placeholder values; server-side data may be unavailable until real keys are provided.'
     );
+    throw new Error('Missing Supabase configuration in production.');
   }
 
+  // Allow fallback values in local/dev environment
   return fallback;
 }
 
@@ -33,7 +34,7 @@ export function createSupabaseServerClient(): SupabaseClient<Database> {
 
 export function createSupabaseAdminClient(): SupabaseClient<Database> | null {
   if (!supabaseServiceRoleKey) {
-    console.warn('Supabase service role credentials are not configured.');
+    console.warn('⚠️ Supabase service role credentials are not configured.');
     return null;
   }
 

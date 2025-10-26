@@ -1,7 +1,6 @@
 'use client';
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-
 import type { Database } from './supabase.types';
 
 function safeEnv(value: string | undefined, fallback: string): string {
@@ -11,10 +10,12 @@ function safeEnv(value: string | undefined, fallback: string): string {
 
   if (process.env.NODE_ENV === 'production') {
     console.warn(
-      'Supabase environment variables are not configured. Falling back to placeholder values; authentication will be disabled until real keys are provided.'
+      '⚠️ Supabase environment variables are not configured. Falling back to placeholder values — authentication may not work until valid keys are provided.'
     );
+    throw new Error('Missing Supabase configuration in production.');
   }
 
+  // In development, fallback is okay for local use
   return fallback;
 }
 
