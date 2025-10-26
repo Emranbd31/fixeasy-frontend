@@ -30,13 +30,34 @@ export default function LoginPage() {
             const { data, error } = await sb.auth.signInWithPassword({ email, password });
             if (error) throw error;
             const user = data.user;
-            const role = user?.user_metadata?.role || "client";
-
-            if (role === "professional") {
-                router.push("/pro-dashboard");
-            } else {
-                router.push("/dashboard");
+            if (!user) {
+                throw new Error('Unable to load your account. Please try again.');
             }
+
+            let destination = "/dashboard";
+            try {
+                const { data: profile, error: profileError } = await sb
+                    .from("profiles")
+                    .select("role")
+                    .eq("id", user.id)
+                    .maybeSingle();
+
+                if (profileError) {
+                    console.warn("Failed to fetch profile after login", profileError.message);
+                }
+
+                const resolvedRole = profile?.role ?? user.user_metadata?.role ?? "client";
+
+                if (resolvedRole === "admin") {
+                    destination = "/super-admin";
+                } else if (resolvedRole === "professional") {
+                    destination = "/pro-dashboard";
+                }
+            } catch (profileLookupError) {
+                console.warn("Unexpected error while determining user role", profileLookupError);
+            }
+
+            router.push(destination);
         } catch (e: any) {
             setError(e.message);
         } finally {
