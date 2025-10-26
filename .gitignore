@@ -9,3 +9,4 @@ FixEasy-V4-RealHero.zip
 .env.production
 .env.development
 .env.test
+tsconfig.tsbuildinfo
