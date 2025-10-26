@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { createSupabaseServerClient } from '@/lib/supabaseClient';
+import { createSupabaseServerClient } from '@/lib/supabaseServerClient';
 
 const bookingPayloadSchema = z.object({
   service: z.string().min(1),
