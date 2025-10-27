@@ -2,22 +2,25 @@
 import { useEffect, useState } from "react";
 
 const STATUS = {
-  OK: "✅",
-  FAIL: "❌",
+  OK: "✅ Live",
+  FAIL: "❌ Down",
 };
 
 export default function StatusPage() {
-  const [backend, setBackend] = useState<string | null>(null);
-  const [supabase, setSupabase] = useState<string | null>(null);
+  const [backend, setBackend] = useState<string>("Checking...");
+  const [supabase, setSupabase] = useState<string>("Checking...");
 
   useEffect(() => {
     // Check backend
     fetch("https://fixeasy-backend.onrender.com", { method: "HEAD" })
       .then((res) => setBackend(res.ok ? STATUS.OK : STATUS.FAIL))
       .catch(() => setBackend(STATUS.FAIL));
-    // Check Supabase env
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      setSupabase(STATUS.OK);
+    // Check Supabase
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (supabaseUrl) {
+      fetch(supabaseUrl + "/rest/v1/", { method: "HEAD" })
+        .then((res) => setSupabase(res.ok ? STATUS.OK : STATUS.FAIL))
+        .catch(() => setSupabase(STATUS.FAIL));
     } else {
       setSupabase(STATUS.FAIL);
     }
@@ -34,11 +37,11 @@ export default function StatusPage() {
           </div>
           <div className="flex justify-between text-lg">
             <span>Backend</span>
-            <span>{backend ?? "..."}</span>
+            <span>{backend}</span>
           </div>
           <div className="flex justify-between text-lg">
             <span>Supabase</span>
-            <span>{supabase ?? "..."}</span>
+            <span>{supabase}</span>
           </div>
         </div>
       </div>
