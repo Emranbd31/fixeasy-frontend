@@ -1,90 +1,58 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
-
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { createSupabaseBrowserClient } from '@/lib/supabaseClient'
 
 // Map of required certifications by trade
-const tradeCertRequirements: Record<string, { label: string; required: boolean }> = {
-    Electrician: { label: "Safe Electric (RECI) registration", required: true },
-    Plumbing: { label: "RGII Gas Installer ID (for gas work)", required: true },
-    Heating: { label: "RGII Gas Installer ID (for gas work)", required: true },
-    Builder: { label: "CIF or SOLAS qualification", required: false },
-    Roofer: { label: "CIF or SOLAS qualification", required: false },
-    "Pest Control": { label: "PMU / IPCA certification", required: true },
-    Locksmith: { label: "PSA (Private Security Authority) Licence", required: true },
-    "CCTV Installation": { label: "PSA Licence", required: true },
-    "Alarm Installer": { label: "PSA Licence", required: true },
+const tradeCertRequirements: Record<string, { label: string; required: boolean; }> = {
+    'Electrician': { label: 'Safe Electric (RECI) registration', required: true },
+    'Plumbing': { label: 'RGII Gas Installer ID (for gas work)', required: true },
+    'Heating': { label: 'RGII Gas Installer ID (for gas work)', required: true },
+    'Builder': { label: 'CIF or SOLAS qualification', required: false },
+    'Roofer': { label: 'CIF or SOLAS qualification', required: false },
+    'Pest Control': { label: 'PMU / IPCA certification', required: true },
+    'Locksmith': { label: 'PSA (Private Security Authority) Licence', required: true },
+    'CCTV Installation': { label: 'PSA Licence', required: true },
+    'Alarm Installer': { label: 'PSA Licence', required: true },
     // All other trades: no mandatory cert
 };
 
 const categories = [
-    "Cleaning",
-    "Handyman",
-    "Plumbing",
-    "Electrical",
-    "Painting",
-    "Gardening",
-    "Moving",
-    "Carpentry",
-    "Appliance Repair",
-    "HVAC",
-    "Pest Control",
-    "Locksmith",
-    "Welding",
-    "CCTV Installation",
-    "Solar Panels",
-    "Builder",
-    "Roofing",
-    "Flooring",
-    "Tiling",
-    "Plastering",
-    "Window Cleaning",
-    "Pressure Washing",
-    "Chimney Sweep",
-    "Gutter Cleaning",
-    "Air Conditioning",
-    "Roof Cleaning",
-    "Carpet Cleaning",
-];
-function ProfessionalRegisterPage() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const sb = supabase;
+    'Cleaning', 'Handyman', 'Plumbing', 'Electrical', 'Painting', 'Gardening',
+    'Moving', 'Carpentry', 'Appliance Repair', 'HVAC', 'Pest Control', 'Locksmith',
+    'Welding', 'CCTV Installation', 'Solar Panels', 'Builder', 'Roofing', 'Flooring',
+    'Tiling', 'Plastering', 'Window Cleaning', 'Pressure Washing', 'Chimney Sweep',
+    'Gutter Cleaning', 'Air Conditioning', 'Roof Cleaning', 'Carpet Cleaning'
+]
+
+export default function ProfessionalRegisterPage() {
+    const router = useRouter()
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const sb = createSupabaseBrowserClient()
 
     // Form fields
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [category, setCategory] = useState("");
-    const [customCategory, setCustomCategory] = useState("");
-    const [experience, setExperience] = useState<number>(0);
-    const [rate, setRate] = useState<number>(0);
-    const [serviceArea, setServiceArea] = useState("");
-    const [workingHours, setWorkingHours] = useState("");
-    const [workingDays, setWorkingDays] = useState<string[]>([]);
-    const [abilities, setAbilities] = useState("");
-    const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
-    const [idDocument, setIdDocument] = useState<File | null>(null);
-    const [addressProof, setAddressProof] = useState<File | null>(null);
-    const [qualificationFile, setQualificationFile] = useState<File | null>(null);
-    const [insuranceFile, setInsuranceFile] = useState<File | null>(null);
-    const [portfolioFiles, setPortfolioFiles] = useState<File[]>([]);
-
-
-
-    return (
-        // ...existing JSX code (no changes needed here)...
-        <>
-            {/* The entire JSX from the original file goes here, unchanged */}
-            {/* ... */}
-        </>
-    );
+    const [name, setName] = useState('')
+    const [email, setEmail] = useState('')
+    const [phone, setPhone] = useState('')
+    const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+    const [category, setCategory] = useState('')
+    const [customCategory, setCustomCategory] = useState('')
+    const [experience, setExperience] = useState<number>(0)
+    const [rate, setRate] = useState<number>(0)
+    const [serviceArea, setServiceArea] = useState('')
+    const [workingHours, setWorkingHours] = useState('')
+    const [workingDays, setWorkingDays] = useState<string[]>([])
+    const [abilities, setAbilities] = useState('')
+    const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
+    const [idDocument, setIdDocument] = useState<File | null>(null)
+    const [addressProof, setAddressProof] = useState<File | null>(null)
+    const [qualificationFile, setQualificationFile] = useState<File | null>(null)
+    const [insuranceFile, setInsuranceFile] = useState<File | null>(null)
+    const [portfolioFiles, setPortfolioFiles] = useState<File[]>([])
 
     function validatePassword(pw: string) {
         // At least 8 chars, one special symbol, one number, one uppercase
@@ -684,8 +652,5 @@ function ProfessionalRegisterPage() {
                 </div>
             </div>
         </div>
-
     )
 }
-
-export default ProfessionalRegisterPage;

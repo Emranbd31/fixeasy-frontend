@@ -9,6 +9,8 @@ const supabase = createClient(
 
 export async function middleware(req: NextRequest) {
 	const { pathname } = req.nextUrl;
+	if (!pathname.startsWith('/admin')) return NextResponse.next();
+
 	// Get session from cookies
 	const access_token = req.cookies.get('sb-access-token')?.value;
 	if (!access_token) {
@@ -31,10 +33,15 @@ export async function middleware(req: NextRequest) {
 		.select('role')
 		.eq('id', user.id)
 		.single();
+	if (profileError || !profile || profile.role !== 'admin') {
+		const forbiddenUrl = req.nextUrl.clone();
+		forbiddenUrl.pathname = '/403';
+		return NextResponse.redirect(forbiddenUrl);
+	}
 
 	return NextResponse.next();
 }
 
 export const config = {
-	matcher: ['/'],
+	matcher: ['/admin/:path*'],
 };

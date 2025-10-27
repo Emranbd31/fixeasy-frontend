@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 import Link from "next/link";
 
-
-function ProDashboardPage() {
-    const sb = supabase;
+export default function ProDashboardPage() {
+    const sb = createSupabaseBrowserClient();
     const [status, setStatus] = useState<"loading" | "ok" | "unauth">("loading");
     const [verified, setVerified] = useState<boolean | null>(null);
     const [name, setName] = useState<string>("");
@@ -171,5 +170,3 @@ function ProDashboardPage() {
         </main>
     );
 }
-
-export default ProDashboardPage;
