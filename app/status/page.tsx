@@ -33,8 +33,15 @@ export default function StatusPage() {
     // Check Supabase
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (supabaseUrl) {
-      fetch(supabaseUrl + "/rest/v1/", { method: "HEAD" })
-        .then((res) => setSupabase(res.ok ? STATUS.OK : STATUS.FAIL))
+      fetch(supabaseUrl + "/rest/v1/", { method: "GET" })
+        .then((res) => {
+          // Supabase returns 401 Unauthorized if endpoint exists but no auth
+          if (res.status === 200 || res.status === 401) {
+            setSupabase(STATUS.OK);
+          } else {
+            setSupabase(STATUS.FAIL);
+          }
+        })
         .catch(() => setSupabase(STATUS.FAIL));
     } else {
       setSupabase(STATUS.FAIL);
