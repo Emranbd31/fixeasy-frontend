@@ -40,9 +40,7 @@ export default function Header() {
                         <Link href="/#how-it-works" className="text-white hover:text-cyan-300 transition-colors font-medium text-sm">
                             How It Works
                         </Link>
-                        <Link href="/login" className="text-white hover:text-cyan-300 transition-colors font-medium text-sm">
-                            Login
-                        </Link>
+                        {/* Login option temporarily removed */}
                         <Link href="/signup" className="text-white hover:text-cyan-300 transition-colors font-medium text-sm">
                             Sign Up
                         </Link>
@@ -86,9 +84,7 @@ export default function Header() {
                         <Link href="/#how-it-works" className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2">
                             How It Works
                         </Link>
-                        <Link href="/login" className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2">
-                            Login
-                        </Link>
+                        {/* Login option temporarily removed */}
                         <Link href="/signup" className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2">
                             Sign Up
                         </Link>
