@@ -1,14 +1,9 @@
-http://localhost:3000/admin-dashboardgit add .
-git commit -m "Fix: remove extra closing brace in admin dashboard"
-git push origin main"use client";
-
+"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { Bell, Calendar, Clock, User, Zap, Info, CheckCircle, AlertTriangle, Pencil } from "lucide-react";
-
-import { useRef } from "react";
 
 export default function ClientDashboardPage() {
     const sb = createSupabaseBrowserClient();
