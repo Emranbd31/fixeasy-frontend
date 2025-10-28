@@ -1,8 +1,14 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "module": "CommonJS"
-  },
-  "include": ["src", "app", "components", "tests", "__tests__"]
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "module": "CommonJS"
+    },
+    "include": [
+        "src",
+        "app",
+        "components",
+        "tests",
+        "__tests__"
+    ]
 }
