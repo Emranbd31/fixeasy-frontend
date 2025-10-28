@@ -11,37 +11,20 @@ export default function StatusPage() {
   const [supabase, setSupabase] = useState<string>("Checking...");
 
   useEffect(() => {
-    // Check backend health endpoint and accept known success messages
-    fetch("https://fixeasy-backend.onrender.com/status", { method: "GET" })
+    // Check backend via internal API proxy to avoid cross-origin/CORS issues
+    fetch("/api/status/backend", { method: "GET" })
       .then(async (res) => {
         if (!res.ok) return setBackend(STATUS.FAIL);
         try {
           const data = await res.json();
-          if (typeof data.message === "string") {
-            const normalized = data.message.toLowerCase();
-            if (
-              normalized.includes("backend is live") ||
-              normalized.includes("backend active")
-            ) {
-              setBackend(STATUS.OK);
-              return;
-            }
-          }
-          if (typeof data.status === "string") {
-            const normalized = data.status.toLowerCase();
-            if (normalized.includes("ok") || normalized.includes("healthy")) {
-              setBackend(STATUS.OK);
-              return;
-            }
-          }
-          if (data.ok === true || data.healthy === true) {
+          if (data?.ok === true) {
             setBackend(STATUS.OK);
             return;
           }
-          setBackend(STATUS.FAIL);
         } catch {
-          setBackend(STATUS.FAIL);
+          // fall through to failure state
         }
+        setBackend(STATUS.FAIL);
       })
       .catch(() => setBackend(STATUS.FAIL));
     // Check Supabase
