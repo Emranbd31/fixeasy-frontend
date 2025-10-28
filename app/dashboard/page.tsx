@@ -1,25 +1,20 @@
-http://localhost:3000/admin-dashboardgit add .
-git commit -m "Fix: remove extra closing brace in admin dashboard"
-git push origin main"use client";
+'use client';
 
-
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { Bell, Calendar, Clock, User, Zap, Info, CheckCircle, AlertTriangle, Pencil } from "lucide-react";
 
-import { useRef } from "react";
-
 export default function ClientDashboardPage() {
-    const sb = createSupabaseBrowserClient();
+    const supabaseClient = useMemo(() => createSupabaseBrowserClient(), []);
     const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
 
     useEffect(() => {
         (async () => {
-            const { data: { user } } = await sb.auth.getUser();
+            const { data: { user } } = await supabaseClient.auth.getUser();
             setIsAuthed(!!user);
         })();
-    }, []);
+    }, [supabaseClient]);
 
     if (isAuthed === null) return <div className="p-10">Loading…</div>;
 
@@ -41,8 +36,7 @@ export default function ClientDashboardPage() {
 
     // Supabase real-time booking updates
     useEffect(() => {
-        const sb = createSupabaseBrowserClient();
-        const channel = sb.channel('bookings-realtime');
+        const channel = supabaseClient.channel('bookings-realtime');
         channel.on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
             // For demo: just refetch or update bookings state
             // In production, fetch from Supabase or update state based on payload.new
@@ -54,11 +48,12 @@ export default function ClientDashboardPage() {
         });
         channel.subscribe();
         return () => { channel.unsubscribe(); };
-    }, []);
+    }, [supabaseClient]);
     const userProfile = { name: "Jane Client", email: "jane@example.com", phone: "+353 87 123 4567" };
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [editProfile, setEditProfile] = useState(userProfile);
     const modalRef = useRef<HTMLDivElement>(null);
+    const feedbackModalRef = useRef<HTMLDivElement>(null);
     // Support modal state
     const [showSupportModal, setShowSupportModal] = useState(false);
     const [supportMessage, setSupportMessage] = useState("");
@@ -241,8 +236,7 @@ export default function ClientDashboardPage() {
                             setSupportLoading(true);
                             setSupportSuccess(false);
                             try {
-                                const sb = createSupabaseBrowserClient();
-                                await sb.from('support_tickets').insert({
+                                await supabaseClient.from('support_tickets').insert({
                                     user_email: userProfile.email,
                                     message: supportMessage,
                                     created_at: new Date().toISOString()
@@ -270,7 +264,14 @@ export default function ClientDashboardPage() {
             )}
             {/* Feedback Modal */}
             {showFeedbackModal && feedbackBooking && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={e => { if (e.target === feedbackModalRef.current) setShowFeedbackModal(false); }}>
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+                    onClick={e => {
+                        if (feedbackModalRef.current && !feedbackModalRef.current.contains(e.target as Node)) {
+                            setShowFeedbackModal(false);
+                        }
+                    }}
+                >
                     <div ref={feedbackModalRef} className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm animate-fadeIn" style={{ animation: 'fadeIn 0.2s' }}>
                         <h3 className="text-lg font-bold mb-4">Leave Feedback</h3>
                         <div className="mb-2 font-semibold">{feedbackBooking.service} with {feedbackBooking.professional}</div>
@@ -294,7 +295,14 @@ export default function ClientDashboardPage() {
             )}
             {/* Edit Profile Modal */}
             {showProfileModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={e => { if (e.target === modalRef.current) setShowProfileModal(false); }}>
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+                    onClick={e => {
+                        if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+                            setShowProfileModal(false);
+                        }
+                    }}
+                >
                     <div ref={modalRef} className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm animate-fadeIn" style={{ animation: 'fadeIn 0.2s' }}>
                         <h3 className="text-lg font-bold mb-4">Edit Profile</h3>
                         <form onSubmit={e => { e.preventDefault(); setShowProfileModal(false); }}>
