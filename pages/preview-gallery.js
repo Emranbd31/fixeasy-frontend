@@ -240,7 +240,7 @@ export default function PreviewGallery() {
             margin: '0 auto'
           }}>
             Click on any design card to see a full preview. Once you find the perfect design,
-            let me know the number and I'll deploy it to your live site immediately!
+            let me know the number and I&apos;ll deploy it to your live site immediately!
           </p>
         </div>
       </div>

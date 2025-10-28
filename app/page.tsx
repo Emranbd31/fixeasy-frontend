@@ -772,7 +772,7 @@ export default function HomePage() {
 
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <button className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all transform hover:scale-105">
-                        View Request →
+                        View Request &rarr;
                       </button>
                     </div>
                   </div>
@@ -788,7 +788,7 @@ export default function HomePage() {
           <div className="text-center mt-8">
             <Link href="/register/professional">
               <button className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
-                💼 Join as Professional & Get Requests
+                💼 Join as Professional &amp; Get Requests
               </button>
             </Link>
           </div>
@@ -1203,7 +1203,7 @@ export default function HomePage() {
 
                 {/* Quote */}
                 <p className="text-gray-700 leading-relaxed mb-6 text-sm md:text-base">
-                  "{testimonial.text}"
+                  &quot;{testimonial.text}&quot;
                 </p>
 
                 {/* Customer Info - WITH REAL PHOTO */}
@@ -1272,7 +1272,7 @@ export default function HomePage() {
               Why Choose <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">FixEasy</span>
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-              We're committed to providing the best home service experience in Ireland
+              We&apos;re committed to providing the best home service experience in Ireland
             </p>
           </motion.div>
 
@@ -1378,7 +1378,7 @@ export default function HomePage() {
               <div className="text-5xl mb-4">🎯</div>
               <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Our Happiness Pledge</h3>
               <p className="text-gray-700 text-base md:text-lg leading-relaxed">
-                If you're not 100% satisfied with your service, we'll work to make it right or provide a <span className="font-bold text-green-700">full refund</span>. Your satisfaction is our guarantee.
+                If you&apos;re not 100% satisfied with your service, we&apos;ll work to make it right or provide a <span className="font-bold text-green-700">full refund</span>. Your satisfaction is our guarantee.
               </p>
             </div>
           </motion.div>

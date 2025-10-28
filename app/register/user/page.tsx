@@ -97,7 +97,7 @@ function UserRegisterPage() {
                     <div className="text-6xl mb-4">📧</div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-3">Check Your Email!</h1>
                     <p className="text-gray-600 mb-6">
-                        We've sent a verification link to <strong>{email}</strong>. Please check your email and click the link to verify your account.
+                        We&apos;ve sent a verification link to <strong>{email}</strong>. Please check your email and click the link to verify your account.
                     </p>
                 </div>
             </div>
@@ -153,7 +153,7 @@ function UserRegisterPage() {
                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
                                     required
                                 />
-                                <p className="text-xs text-gray-500 mt-1">We'll send a verification email to this address</p>
+                                <p className="text-xs text-gray-500 mt-1">We&apos;ll send a verification email to this address</p>
                             </div>
 
                             <div>
@@ -215,7 +215,7 @@ function UserRegisterPage() {
                         <div className="pt-6 mt-6 border-t border-gray-200">
                             <div className="bg-gray-50 rounded-xl p-6 mb-6">
                                 <p className="text-sm text-gray-600 leading-relaxed">
-                                    By creating an account, you agree to FixEasy's{' '}
+                                    By creating an account, you agree to FixEasy&apos;s{' '}
                                     <Link href="/terms" className="text-blue-600 hover:underline">
                                         Terms of Service
                                     </Link>{' '}

@@ -60,7 +60,7 @@ function ProDashboardPage() {
                 <h1 className="text-4xl font-bold mb-6 text-gray-900">Professional Dashboard</h1>
                 {verified === false && (
                     <div className="mb-6 p-4 rounded-xl border-2 border-yellow-300 bg-yellow-50 text-yellow-800">
-                        Waiting for verification – your documents are under review. ✅ We'll email you when you're approved.
+                        Waiting for verification – your documents are under review. ✅ We&apos;ll email you when you&apos;re approved.
                     </div>
                 )}
                 <div className="grid md:grid-cols-3 gap-8 mb-12">

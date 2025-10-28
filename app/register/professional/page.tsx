@@ -210,7 +210,7 @@ function ProfessionalRegisterPage() {
                         Become a FixEasy Professional
                     </h1>
                     <p className="text-lg text-gray-600">
-                        Join Ireland's leading home services platform and start getting jobs today
+                        Join Ireland&apos;s leading home services platform and start getting jobs today
                     </p>
                 </div>
 
@@ -351,7 +351,7 @@ function ProfessionalRegisterPage() {
                                                 placeholder="e.g., Locksmith & Safe Engineer, Satellite Dish Installation"
                                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
                                             />
-                                            <p className="text-xs text-gray-500 mt-1">We'll use this as your primary category</p>
+                                            <p className="text-xs text-gray-500 mt-1">We&apos;ll use this as your primary category</p>
                                         </div>
                                     )}
                                 </div>
@@ -543,7 +543,7 @@ function ProfessionalRegisterPage() {
                                         className="w-full text-sm text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:font-semibold hover:file:bg-blue-700 file:cursor-pointer cursor-pointer"
                                         required
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">Passport, Driver's License, or National ID</p>
+                                    <p className="text-xs text-gray-500 mt-1">Passport, Driver&apos;s License, or National ID</p>
                                 </div>
 
                                 <div>
@@ -615,7 +615,7 @@ function ProfessionalRegisterPage() {
                         <div className="pt-6">
                             <div className="bg-gray-50 rounded-xl p-6 mb-6">
                                 <p className="text-sm text-gray-600 leading-relaxed">
-                                    By clicking "Create Account", you agree to FixEasy's{' '}
+                                    By clicking &quot;Create Account&quot;, you agree to FixEasy&apos;s{' '}
                                     <Link href="/terms" className="text-blue-600 hover:underline">
                                         Terms of Service
                                     </Link>{' '}

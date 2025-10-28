@@ -28,7 +28,7 @@ export default function Header() {
                     {/* Center Badge (desktop only) */}
                     <div className="hidden md:flex flex-1 justify-center">
                         <span className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold border border-white/10 backdrop-blur-sm whitespace-nowrap">
-                            🏆 Ireland's #1 Home Service Platform
+                           🏆 Ireland&apos;s #1 Home Service Platform
                         </span>
                     </div>
 

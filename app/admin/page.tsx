@@ -7,18 +7,18 @@ import { LogOut, Users, Briefcase, Book, CreditCard, List } from "lucide-react";
 import Link from "next/link";
 
 const summaryIcons = [
-  <Users className="w-6 h-6 text-blue-500" />,
-  <Briefcase className="w-6 h-6 text-green-500" />,
-  <Book className="w-6 h-6 text-yellow-500" />,
-  <CreditCard className="w-6 h-6 text-purple-500" />,
+	<Users key="users" className="w-6 h-6 text-blue-500" />,
+	<Briefcase key="briefcase" className="w-6 h-6 text-green-500" />,
+	<Book key="book" className="w-6 h-6 text-yellow-500" />,
+	<CreditCard key="creditcard" className="w-6 h-6 text-purple-500" />,
 ];
 
 const tabs = [
-	{ value: "professionals", label: "Professionals", icon: <Briefcase className="w-4 h-4 mr-2" /> },
-	{ value: "clients", label: "Clients", icon: <Users className="w-4 h-4 mr-2" /> },
-	{ value: "bookings", label: "Bookings", icon: <Book className="w-4 h-4 mr-2" /> },
-	{ value: "payments", label: "Payments", icon: <CreditCard className="w-4 h-4 mr-2" /> },
-	{ value: "logs", label: "Activity Logs", icon: <List className="w-4 h-4 mr-2" /> },
+  { value: "professionals", label: "Professionals", icon: <Briefcase key="tab-briefcase" className="w-4 h-4 mr-2" /> },
+  { value: "clients", label: "Clients", icon: <Users key="tab-users" className="w-4 h-4 mr-2" /> },
+  { value: "bookings", label: "Bookings", icon: <Book key="tab-book" className="w-4 h-4 mr-2" /> },
+  { value: "payments", label: "Payments", icon: <CreditCard key="tab-creditcard" className="w-4 h-4 mr-2" /> },
+  { value: "logs", label: "Activity Logs", icon: <List key="tab-list" className="w-4 h-4 mr-2" /> },
 ];
 
 
@@ -104,10 +104,10 @@ export default function AdminDashboard() {
 
 		{/* Summary Cards */}
 		<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-6">
-			{["Total Users", "Total Professionals", "Total Bookings", "Total Payments"].map((label, i) => (
-				<Card key={label} className="card flex flex-col items-center justify-center">
+				{["Total Users", "Total Professionals", "Total Bookings", "Total Payments"].map((label, i) => (
+					<Card key={label} className="card flex flex-col items-center justify-center">
 					<CardHeader className="flex flex-row items-center gap-2">
-						{summaryIcons[i]}
+						{React.cloneElement(summaryIcons[i], { key: label })}
 						<CardTitle className="text-base font-semibold">{label}</CardTitle>
 					</CardHeader>
 					<CardContent className="text-3xl font-bold">{Object.values(stats)[i]}</CardContent>
@@ -119,9 +119,9 @@ export default function AdminDashboard() {
 		<div className="flex flex-col md:flex-row gap-6 px-6 pb-8">
 			<Tabs value={tab} onValueChange={setTab} className="w-full">
 				<TabsList className="flex md:flex-col md:w-48 bg-white rounded-2xl shadow p-2 mb-4 md:mb-0">
-					{tabs.map((t) => (
-						<TabsTrigger key={t.value} value={t.value} className="flex items-center gap-2 w-full justify-start">
-							{t.icon} {t.label}
+						{tabs.map((t) => (
+							<TabsTrigger key={t.value} value={t.value} className="flex items-center gap-2 w-full justify-start">
+							{React.cloneElement(t.icon, { key: t.value })} {t.label}
 						</TabsTrigger>
 					))}
 				</TabsList>
@@ -145,8 +145,8 @@ export default function AdminDashboard() {
 										<tr><td colSpan={5} className="text-center py-6 text-gray-400">Loading…</td></tr>
 									) : professionals.length === 0 ? (
 										<tr><td colSpan={5} className="text-center py-6 text-gray-400">No professionals yet.</td></tr>
-									) : professionals.map((p: any) => (
-										<tr key={p.id}>
+										) : professionals.map((p: any) => (
+											<tr key={p.id}>
 											<td>{p.full_name}</td>
 											<td>{p.email}</td>
 											<td>{p.trade}</td>
@@ -183,8 +183,8 @@ export default function AdminDashboard() {
 										<tr><td colSpan={4} className="text-center py-6 text-gray-400">Loading…</td></tr>
 									) : clients.length === 0 ? (
 										<tr><td colSpan={4} className="text-center py-6 text-gray-400">No clients yet.</td></tr>
-									) : clients.map((c: any) => (
-										<tr key={c.id}>
+										) : clients.map((c: any) => (
+											<tr key={c.id}>
 											<td>{c.full_name}</td>
 											<td>{c.email}</td>
 											<td><span className={`px-2 py-1 rounded text-xs ${c.active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700'}`}>{c.active ? 'Active' : 'Inactive'}</span></td>
@@ -219,8 +219,8 @@ export default function AdminDashboard() {
 										<tr><td colSpan={6} className="text-center py-6 text-gray-400">Loading…</td></tr>
 									) : bookings.length === 0 ? (
 										<tr><td colSpan={6} className="text-center py-6 text-gray-400">No bookings yet.</td></tr>
-									) : bookings.map((b: any) => (
-										<tr key={b.id}>
+										) : bookings.map((b: any) => (
+											<tr key={b.id}>
 											<td>{b.client_name}</td>
 											<td>{b.professional_name}</td>
 											<td>{b.service}</td>
@@ -257,8 +257,8 @@ export default function AdminDashboard() {
 										<tr><td colSpan={4} className="text-center py-6 text-gray-400">Loading…</td></tr>
 									) : payments.length === 0 ? (
 										<tr><td colSpan={4} className="text-center py-6 text-gray-400">No payments yet.</td></tr>
-									) : payments.map((p: any) => (
-										<tr key={p.id}>
+										) : payments.map((p: any) => (
+											<tr key={p.id}>
 											<td>{p.booking_id}</td>
 											<td>{p.amount}</td>
 											<td><span className={`px-2 py-1 rounded text-xs ${p.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700'}`}>{p.status}</span></td>
@@ -290,8 +290,8 @@ export default function AdminDashboard() {
 										<tr><td colSpan={3} className="text-center py-6 text-gray-400">Loading…</td></tr>
 									) : logs.length === 0 ? (
 										<tr><td colSpan={3} className="text-center py-6 text-gray-400">No logs yet.</td></tr>
-									) : logs.map((l: any) => (
-										<tr key={l.id}>
+										) : logs.map((l: any) => (
+											<tr key={l.id}>
 											<td>{l.action}</td>
 											<td>{l.user_email}</td>
 											<td>{l.timestamp ? new Date(l.timestamp).toLocaleString() : ''}</td>

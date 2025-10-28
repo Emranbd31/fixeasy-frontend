@@ -26,7 +26,7 @@ export default function Footer() {
                                 </h3>
                             </div>
                             <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
-                                Ireland's leading home service platform. Connect with trusted professionals for all your home needs. Fast, reliable, and affordable.
+                              Ireland&apos;s leading home service platform. Connect with trusted professionals for all your home needs. Fast, reliable, and affordable.
                             </p>
 
                             {/* Social Links */}

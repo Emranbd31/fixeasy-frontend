@@ -90,7 +90,7 @@ function LoginPage() {
 
                     <div className="pt-4 border-t border-gray-200 space-y-2">
                         <p className="text-sm text-gray-600 text-center">
-                            Don't have an account?{' '}
+                            Don&apos;t have an account?{' '}
                             <Link className="text-blue-600 font-semibold hover:text-blue-700 transition" href="/register/user">
                                 Sign Up as User
                             </Link>

@@ -1,8 +1,12 @@
-﻿'use client'
+﻿
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+'use client'
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { FcGoogle } from 'react-icons/fc';
+import { FaApple } from 'react-icons/fa';
+
 
 const services = [
   'Cleaning', 'Handyman', 'Plumbing', 'Electrical', 'Painting', 'Gardening',
@@ -116,7 +120,7 @@ export default function BookServicePage() {
           <div className="text-6xl mb-4">✅</div>
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Booking Submitted!</h1>
           <p className="text-gray-600 mb-6">
-            Your service request has been submitted successfully. We'll match you with qualified professionals in your area and you'll start receiving quotes within 24 hours.
+            Your service request has been submitted successfully. We&apos;ll match you with qualified professionals in your area and you&apos;ll start receiving quotes within 24 hours.
           </p>
           <div className="bg-blue-50 rounded-xl p-4 mb-6">
             <p className="text-sm text-blue-800">
@@ -143,7 +147,7 @@ export default function BookServicePage() {
               <li>📱 Manage bookings from your dashboard</li>
               <li>🔔 Get notifications and support</li>
             </ul>
-            <span className="text-xs text-blue-600">It's free and quick!</span>
+            <span className="text-xs text-blue-600">It&apos;s free and quick!</span>
           </div>
           <button className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-blue-700 transition" onClick={() => setShowAccountModal(true)}>
             Create Account
@@ -155,12 +159,10 @@ export default function BookServicePage() {
       <div className="max-w-4xl mx-auto mb-8">
         <div className="flex flex-col md:flex-row items-center justify-center gap-4">
           <button type="button" className="w-full md:w-auto flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
-            <img src="/icons/google.svg" alt="Google logo" width={20} height={20} />
-            Continue with Google
+            <FcGoogle size={20} /> Continue with Google
           </button>
           <button type="button" className="w-full md:w-auto flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
-            <img src="/icons/apple.svg" alt="Apple logo" width={20} height={20} />
-            Continue with Apple
+            <FaApple size={20} /> Continue with Apple
           </button>
         </div>
       </div>
@@ -205,7 +207,7 @@ export default function BookServicePage() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">Book a Service</h1>
-          <p className="text-lg text-gray-600 mb-6">Tell us what you need and we'll connect you with trusted professionals</p>
+          <p className="text-lg text-gray-600 mb-6">Tell us what you need and we&apos;ll connect you with trusted professionals</p>
           <div className="flex justify-center items-center gap-6 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <span className="text-green-500">✓</span>
@@ -256,7 +258,7 @@ export default function BookServicePage() {
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                     placeholder="+353 87 123 4567"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
                     required
@@ -322,7 +324,7 @@ export default function BookServicePage() {
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe what you need in detail... e.g., room size, specific issues, materials needed, access information, etc."
+                    placeholder={"Describe what you need in detail... e.g., room size, specific issues, materials needed, access information, etc. E.g. &quot;Leaking tap in kitchen&quot; or &quot;Need help assembling furniture&quot;"}
                     rows={5}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
                     required
@@ -341,7 +343,7 @@ export default function BookServicePage() {
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">We'll match you with nearby professionals</p>
+                  <p className="text-xs text-gray-500 mt-1">We&apos;ll match you with nearby professionals</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -406,11 +408,10 @@ export default function BookServicePage() {
             <div className="pt-6">
               <div className="bg-gray-50 rounded-xl p-6 mb-6">
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  By submitting this booking request, you agree to receive quotes from verified professionals. It's free and there's no obligation to hire.
+                  By submitting this booking request, you agree to receive quotes from verified professionals. It&apos;s free and there&apos;s no obligation to hire.
                 </p>
               </div>
               <button
-                type="submit"
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl"
               >
