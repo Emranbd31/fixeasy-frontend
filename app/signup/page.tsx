@@ -1,6 +1,8 @@
-'use client';
 
+'use client';
 import { useState } from 'react';
+import { FcGoogle } from "react-icons/fc";
+import { FaApple } from "react-icons/fa";
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState('');
@@ -50,12 +52,10 @@ export default function SignupPage() {
         {/* Social Sign In Buttons */}
         <div className="flex flex-col gap-3 mb-6">
           <button type="button" className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-200 bg-white hover:bg-gray-50 font-semibold text-gray-700 transition">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" className="w-6 h-6" />
-            Sign up with Google
+            <FcGoogle size={24} /> Sign up with Google
           </button>
           <button type="button" className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-200 bg-white hover:bg-gray-50 font-semibold text-gray-700 transition">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" className="w-6 h-6" />
-            Sign up with Apple
+            <FaApple size={24} /> Sign up with Apple
           </button>
         </div>
         {error && <div className="mb-4 p-3 rounded-xl bg-red-50 border-l-4 border-red-500 text-red-700">{error}</div>}

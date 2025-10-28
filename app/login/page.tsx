@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
-import Image from "next/image";
+
+import { FcGoogle } from "react-icons/fc";
+import { FaApple } from "react-icons/fa";
 
 function LoginPage() {
     const sb = supabase;
@@ -79,12 +81,10 @@ function LoginPage() {
                     {/* Social Login */}
                     <div className="flex flex-col gap-4 pt-2">
                         <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
-                            <Image src="/icons/google.svg" alt="Google logo" width={20} height={20} />
-                            Sign in with Google
+                            <FcGoogle size={20} /> Sign in with Google
                         </button>
                         <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
-                            <Image src="/icons/apple.svg" alt="Apple logo" width={20} height={20} />
-                            Sign in with Apple
+                            <FaApple size={20} /> Sign in with Apple
                         </button>
                     </div>
 
