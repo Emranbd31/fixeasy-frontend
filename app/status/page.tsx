@@ -11,22 +11,49 @@ export default function StatusPage() {
   const [supabase, setSupabase] = useState<string>("Checking...");
 
   useEffect(() => {
-    // Check backend via internal API proxy to avoid cross-origin/CORS issues
-    fetch("/api/status/backend", { method: "GET" })
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const backendStatusUrl =
+      process.env.NEXT_PUBLIC_BACKEND_STATUS_URL ??
+      "https://fixeasy-backend.onrender.com/status";
+
+    fetch(backendStatusUrl, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    })
       .then(async (res) => {
-        if (!res.ok) return setBackend(STATUS.FAIL);
-        try {
-          const data = await res.json();
-          if (data?.ok === true) {
-            setBackend(STATUS.OK);
-            return;
-          }
-        } catch {
-          // fall through to failure state
+        if (!res.ok) {
+          setBackend(STATUS.FAIL);
+          return;
         }
-        setBackend(STATUS.FAIL);
+
+        const text = await res.text().catch(() => "");
+        if (!text) {
+          setBackend(STATUS.OK);
+          return;
+        }
+
+        let healthy = false;
+
+        try {
+          const data = JSON.parse(text);
+          healthy = isBackendHealthy(data);
+        } catch {
+          healthy = isMessageHealthy(text);
+        }
+
+        if (!healthy) {
+          healthy = isMessageHealthy(text);
+        }
+
+        setBackend(healthy ? STATUS.OK : STATUS.FAIL);
       })
-      .catch(() => setBackend(STATUS.FAIL));
+      .catch(() => setBackend(STATUS.FAIL))
+      .finally(() => {
+        clearTimeout(timeout);
+      });
     // Check Supabase
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (supabaseUrl) {
@@ -43,6 +70,10 @@ export default function StatusPage() {
     } else {
       setSupabase(STATUS.FAIL);
     }
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, []);
 
   return (
@@ -65,5 +96,38 @@ export default function StatusPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+function isBackendHealthy(payload: unknown): boolean {
+  if (!payload || typeof payload !== "object") {
+    return false;
+  }
+
+  const record = payload as Record<string, unknown>;
+
+  if (typeof record.ok === "boolean" && record.ok) {
+    return true;
+  }
+
+  if (typeof record.healthy === "boolean" && record.healthy) {
+    return true;
+  }
+
+  if (typeof record.status === "string" && isMessageHealthy(record.status)) {
+    return true;
+  }
+
+  if (typeof record.message === "string" && isMessageHealthy(record.message)) {
+    return true;
+  }
+
+  return false;
+}
+
+function isMessageHealthy(value: string): boolean {
+  const normalized = value.toLowerCase();
+  return ["backend active", "backend is live", "ok", "healthy"].some((token) =>
+    normalized.includes(token),
   );
 }
