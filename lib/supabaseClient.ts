@@ -1,44 +1,42 @@
-﻿import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+'use client';
 
-export type Database = Record<string, never>;
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+import type { Database } from './supabase.types';
 
-function safeEnv(value: string | undefined, name: string, ssrFallback: string): string {
-  if (value && value.length > 0) return value;
-  if (typeof window === 'undefined') {
-    return ssrFallback;
+function safeEnv(value: string | undefined, fallback: string): string {
+  if (value && value.length > 0) {
+    return value;
   }
-  throw new Error(`${name} is not set. Please configure Supabase environment variables.`);
+
+  if (process.env.NODE_ENV === 'production') {
+    console.warn(
+      'Supabase environment variables are not configured. Falling back to placeholder values; authentication will be disabled until real keys are provided.'
+    );
+  }
+
+  return fallback;
 }
+
+const supabaseUrl = safeEnv(process.env.NEXT_PUBLIC_SUPABASE_URL, 'http://localhost:54321');
+const supabaseAnonKey = safeEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, 'public-anon-key');
+
+let browserClient: SupabaseClient<Database> | null = null;
 
 export function createSupabaseBrowserClient(): SupabaseClient<Database> {
-  return createClient<Database>(
-    safeEnv(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL', 'http://localhost'),
-    safeEnv(supabaseAnonKey, 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'public-anon-key'),
-    {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-      },
-    }
-  );
+  if (browserClient) {
+    return browserClient;
+  }
+
+  browserClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+  });
+
+  return browserClient;
 }
 
-export function createSupabaseServerClient(): SupabaseClient<Database> {
-  return createClient<Database>(
-    safeEnv(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL', 'http://localhost'),
-    supabaseServiceRoleKey ?? safeEnv(supabaseAnonKey, 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'public-anon-key'),
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  );
-}
-
-export const supabase = createSupabaseBrowserClient();
+export type { Database } from './supabase.types';
