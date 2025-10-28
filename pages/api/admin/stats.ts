@@ -1,24 +1,30 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-	process.env.NEXT_PUBLIC_SUPABASE_URL!,
-	process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { getSupabaseServiceRoleClient } from '@/lib/supabaseServiceRoleClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-	if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-	try {
-		const [{ count: users }, { count: professionals }, { count: bookings }, { data: paymentsData }] = await Promise.all([
-			supabase.from('profiles').select('id', { count: 'exact', head: true }),
-			supabase.from('professionals').select('id', { count: 'exact', head: true }),
-			supabase.from('bookings').select('id', { count: 'exact', head: true }),
-			supabase.from('payments').select('amount'),
-		]);
-		const payments = paymentsData ? paymentsData.length : 0;
-		const totalRevenue = paymentsData ? paymentsData.reduce((sum, p) => sum + (p.amount || 0), 0) : 0;
-		res.json({ users, professionals, bookings, payments, totalRevenue });
-	} catch (e) {
-		res.status(500).json({ error: 'Failed to fetch stats' });
-	}
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  const supabaseResult = getSupabaseServiceRoleClient();
+  if ('error' in supabaseResult) {
+    return res.status(500).json({ error: supabaseResult.error });
+  }
+
+  try {
+    const [{ count: users }, { count: professionals }, { count: bookings }, { data: paymentsData }] =
+      await Promise.all([
+        supabaseResult.client.from('profiles').select('id', { count: 'exact', head: true }),
+        supabaseResult.client.from('professionals').select('id', { count: 'exact', head: true }),
+        supabaseResult.client.from('bookings').select('id', { count: 'exact', head: true }),
+        supabaseResult.client.from('payments').select('amount'),
+      ]);
+
+    const payments = paymentsData ? paymentsData.length : 0;
+    const totalRevenue = paymentsData ? paymentsData.reduce((sum, p) => sum + (p.amount || 0), 0) : 0;
+
+    res.json({ users, professionals, bookings, payments, totalRevenue });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch stats';
+    res.status(500).json({ error: message });
+  }
 }
