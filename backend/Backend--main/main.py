@@ -1,7 +1,11 @@
-from fastapi import FastAPI
+"""Local entrypoint for running the FixEasy backend with Uvicorn."""
 
-app = FastAPI()
+from __future__ import annotations
 
-@app.get("/status")
-def status():
-	return {"message": "Backend active ✅"}
+import uvicorn
+
+from backend_app import app
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

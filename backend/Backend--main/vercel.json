@@ -1,8 +1,18 @@
 {
-	"crons": [
-		{
-			"path": "/status",
-			"schedule": "0 */6 * * *"
-		}
-	]
+  "functions": {
+    "api/index.py": {
+      "runtime": "python3.11",
+      "maxDuration": 10,
+      "memory": 512
+    }
+  },
+  "routes": [
+    { "src": "/(.*)", "dest": "api/index.py" }
+  ],
+  "crons": [
+    {
+      "path": "/status",
+      "schedule": "0 */6 * * *"
+    }
+  ]
 }
