@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-// Removed duplicate useState import
+// No authentication or login redirect logic. Homepage is always public.
 const serviceSuggestions: Record<string, Array<{ name: string; description: string }>> = {
   Builder: [
     { name: '🏗️ Home Construction', description: 'Build new homes and extensions.' },
