@@ -1,0 +1,33 @@
+{
+    "projectName": "FixEasy Frontend",
+    "repo": "emranbd31/fixeasy-frontend",
+    "framework": "Next.js",
+    "linkedBackend": {
+        "projectName": "FixEasy Backend",
+        "repo": "emranbd31/fixeasy-backend",
+        "framework": "FastAPI",
+        "apiUrl": "https://api.fixeasy.irish"
+    },
+    "vercel": {
+        "project": "fixeasy-frontend",
+        "domain": "fixeasy.irish",
+        "autoDeploy": true
+    },
+    "supabase": {
+        "url": "https://wphmhlrttmzsmngysfws.supabase.co",
+        "envKeys": [
+            "NEXT_PUBLIC_SUPABASE_KEY"
+        ]
+    },
+    "codex": {
+        "autoRepair": true,
+        "hoverEffects": true,
+        "screenshotCompare": true,
+        "notifications": false
+    },
+    "paths": {
+        "frontend": "./",
+        "backend": "../Backend--main",
+        "publicImages": "./public/images"
+    }
+}
