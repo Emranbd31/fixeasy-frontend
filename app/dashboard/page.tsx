@@ -64,6 +64,7 @@ export default function ClientDashboardPage() {
     const [feedbackBooking, setFeedbackBooking] = useState<any>(null);
     const [feedbackStars, setFeedbackStars] = useState(0);
     const [feedbackComment, setFeedbackComment] = useState("");
+    const feedbackModalRef = useRef<HTMLDivElement>(null);
     // Example notification types: info, success, warning
     const notifications = [
         { id: 1, message: "Your booking with Mary Cleaner is scheduled for Nov 2.", type: "info" },
