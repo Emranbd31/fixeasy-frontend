@@ -1,14 +1,9 @@
-http://localhost:3000/admin-dashboardgit add .
-git commit -m "Fix: remove extra closing brace in admin dashboard"
-git push origin main"use client";
-
+"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { Bell, Calendar, Clock, User, Zap, Info, CheckCircle, AlertTriangle, Pencil } from "lucide-react";
-
-import { useRef } from "react";
 
 export default function ClientDashboardPage() {
     const sb = createSupabaseBrowserClient();
@@ -69,6 +64,7 @@ export default function ClientDashboardPage() {
     const [feedbackBooking, setFeedbackBooking] = useState<any>(null);
     const [feedbackStars, setFeedbackStars] = useState(0);
     const [feedbackComment, setFeedbackComment] = useState("");
+    const feedbackModalRef = useRef<HTMLDivElement>(null);
     // Example notification types: info, success, warning
     const notifications = [
         { id: 1, message: "Your booking with Mary Cleaner is scheduled for Nov 2.", type: "info" },

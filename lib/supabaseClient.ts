@@ -1,6 +1,9 @@
 ﻿import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-export type Database = Record<string, never>;
+// Use a permissive database type until generated Supabase types are available.
+// This prevents App Router builds from failing when new tables (such as
+// `support_tickets`) are referenced before the type definitions are updated.
+export type Database = any;
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
