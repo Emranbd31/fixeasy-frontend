@@ -1,24 +1,29 @@
 
+from dotenv import load_dotenv
+from sqlalchemy import text
+
+load_dotenv()
+
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+
+from database import Base, engine
 from routes import admin
 
 
-app = FastAPI()
+app = FastAPI(title="FixEasy Ireland API")
 
-# CORS settings
-app.add_middleware(
-	CORSMiddleware,
-	allow_origins=[
-		"https://admin.fixeasy.irish"
-	],
-	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"]
-)
+try:
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+        print("✅ Connected to Supabase PostgreSQL successfully.")
+except Exception as e:
+    print("❌ Database connection failed:", e)
 
-app.include_router(admin.router, prefix="/admin")
+Base.metadata.create_all(bind=engine)
 
-@app.get("/status")
-def status():
-	return {"message": "Backend active ✅"}
+app.include_router(admin.router)
+
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to FixEasy Ireland API! Backend is live 🚀"}
