@@ -3,10 +3,11 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from services.analytics_service import get_admin_summary
 from services.supabase_service import table
+from utils.auth import verify_admin_token
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -26,15 +27,14 @@ def log_action(action: str, actor: str | None = "admin") -> None:
 
 
 @router.get("/summary")
-def admin_summary() -> dict[str, int]:
+def admin_summary(_: dict = Depends(verify_admin_token)) -> dict[str, int]:
     """Return high level Supabase metrics for dashboards.
 
-    NOTE: temporarily public for integration/testing. Re-add authentication
-    (Depends(verify_admin_token)) once frontend integration is complete.
+    This endpoint requires a valid admin JWT in the Authorization header.
     """
-    # Log an unauthenticated admin summary view (do not fail on logging)
+    # Log an authenticated admin summary view (do not fail on logging)
     try:
-        log_action("admin_summary_view", "anonymous")
+        log_action("admin_summary_view", "admin")
     except Exception:
         pass
     return get_admin_summary()
