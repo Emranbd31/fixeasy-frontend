@@ -2,14 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get("fixeasy_admin_token")?.value;
-  const url = request.nextUrl.clone();
-
-  if (!token && url.pathname.startsWith("/admin") && url.pathname !== "/admin/login") {
-    url.pathname = "/admin/login";
-    return NextResponse.redirect(url);
-  }
-
+  // Token is managed in localStorage on the client now; server middleware cannot read it.
+  // Allow navigation and let client-side fetches enforce Authorization headers.
   return NextResponse.next();
 }
 
