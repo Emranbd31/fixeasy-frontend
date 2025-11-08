@@ -1,7 +1,18 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-// This middleware is now a no-op so the homepage (/) is public.
-// If you want to protect other routes, add them to the matcher and restore logic as needed.
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get("fixeasy_admin_token")?.value;
+  const url = request.nextUrl.clone();
+
+  if (!token && url.pathname.startsWith("/admin") && url.pathname !== "/admin/login") {
+    url.pathname = "/admin/login";
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
-    matcher: [], // No routes protected by middleware
+  matcher: ["/admin/:path*"],
 };

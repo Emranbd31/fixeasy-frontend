@@ -26,7 +26,7 @@ function ProDashboardPage() {
                 setStatus("ok");
             }
         })();
-    }, []);
+    }, [sb]);
 
     if (status === "loading") return <div className="p-10">Loading…</div>;
     if (status === "unauth") return (
