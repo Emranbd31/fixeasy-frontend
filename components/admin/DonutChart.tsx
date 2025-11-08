@@ -24,8 +24,11 @@ export default function DonutChart({ data }: { data?: Slice[] }) {
   const final = data && data.length ? data : mock;
   const total = final.reduce((s, p) => s + p.value, 0) || 1;
 
-  const label = ({ name, percent }: { name: string; percent: number }) =>
-    `${name} ${(percent * 100).toFixed(0)}%`;
+  const label = (props: any) => {
+    const name = props?.name ?? "";
+    const percent = typeof props?.percent === "number" ? props.percent : 0;
+    return `${name} ${Math.round(percent * 100)}%`;
+  };
 
   return (
     <div className="w-full h-40">

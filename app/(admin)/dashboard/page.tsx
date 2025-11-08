@@ -5,6 +5,9 @@ import TrendChart from "@/components/admin/TrendChart";
 import DonutChart from "@/components/admin/DonutChart";
 import ErrorBoundary from "@/components/admin/ErrorBoundary";
 import SkeletonCard from "@/components/admin/SkeletonCard";
+import InsightsCard from "@/components/admin/InsightsCard";
+import HealthMonitor from "@/components/admin/HealthMonitor";
+import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { flags } from "@/lib/featureFlags";
 import { fetchWithAuth } from "@/utils/apiClient";
 
@@ -18,6 +21,8 @@ type Summary = {
 export default function DashboardPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [trendData, setTrendData] = useState<any[]>([]);
+  const [serviceSummary, setServiceSummary] = useState<any[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -36,6 +41,16 @@ export default function DashboardPage() {
             bookings: payload?.bookings ?? 410,
             payments: payload?.payments ?? 27830,
           });
+          // try fetch insights for trend data
+          try {
+            const ins = await fetch("/api/admin/insights?days=7").then((r) => r.json()).catch(() => null);
+            if (ins) {
+              setTrendData(ins?.bookingTrend ?? []);
+              setServiceSummary(ins?.serviceSummary ?? []);
+            }
+          } catch (e) {
+            // ignore
+          }
         }
       } catch (e) {
         setSummary({ users: 1240, professionals: 312, bookings: 410, payments: 27830 });
@@ -44,6 +59,27 @@ export default function DashboardPage() {
       }
     }
     load();
+    // realtime subscription to update KPIs
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const proSub = supabase.channel("public:professionals").on("postgres_changes", { event: "*", schema: "public", table: "professionals" }, () => {
+        // refetch summary
+        load();
+      }).subscribe();
+
+      const bookingsSub = supabase.channel("public:bookings").on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => {
+        load();
+      }).subscribe();
+
+      // cleanup
+      return () => {
+        mounted = false;
+        try { proSub.unsubscribe(); } catch (_) {}
+        try { bookingsSub.unsubscribe(); } catch (_) {}
+      };
+    } catch (e) {
+      // ignore realtime subscription failures
+    }
     return () => {
       mounted = false;
     };
@@ -83,28 +119,36 @@ export default function DashboardPage() {
         </div>
       </ErrorBoundary>
 
-      <ErrorBoundary
-        fallback={
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        }
-      >
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border bg-white p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-700">Bookings Trend (7d)</h3>
-            <TrendChart />
-          </div>
-          <div className="rounded-2xl border bg-white p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-700">Service Mix</h3>
-            <div className="mt-3">
-              {/* Donut chart showing service mix */}
-              <DonutChart />
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <ErrorBoundary
+          fallback={
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          }
+        >
+          <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-700">Bookings Trend (7d)</h3>
+              <TrendChart data={trendData} />
+            </div>
+            <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-700">Service Mix</h3>
+              <div className="mt-3">
+                {/* Donut chart showing service mix */}
+                <DonutChart data={(serviceSummary ?? []).map((s: any) => ({ service: s.service, value: s.count }))} />
+              </div>
             </div>
           </div>
+        </ErrorBoundary>
+
+        {/* Insights & Health column */}
+        <div className="col-span-1 md:col-span-1 space-y-4">
+          <InsightsCard />
+          <HealthMonitor />
         </div>
-      </ErrorBoundary>
+      </div>
     </div>
   );
 }
