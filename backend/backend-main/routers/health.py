@@ -37,12 +37,12 @@ async def _check_db(timeout_sec: float = 1.5) -> tuple[str, Optional[str]]:
     projection = os.getenv("SUPABASE_HEALTH_COLUMN", "id")
 
     def _ping() -> object:
-        # The Supabase Python client is synchronous; run it off the event loop thread.
+        # The Supabase REST client is synchronous; run it off the event loop thread.
         return (
             table(table_name)
             .select(projection)
             .limit(1)
-            .execute()
+            .execute(timeout=timeout_sec)
         )
 
     try:
