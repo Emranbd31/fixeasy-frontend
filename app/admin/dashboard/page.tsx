@@ -1,3 +1,69 @@
+/*
+  Copilot: Keep this a server component that fetches data, then passes to client widgets.
+  Layout target: 4 KPI cards on top, approvals wide-left, users/payments cards right, trend + donut below.
+*/
+import { cookies } from "next/headers";
+import KpiCard from "@/components/admin/KpiCard";
+import ApprovalsTable from "@/components/admin/ApprovalsTable";
+import UserList from "@/components/admin/UserList";
+import PaymentsList from "@/components/admin/PaymentsList";
+import TrendChart from "@/components/admin/TrendChart";
+import DonutChart from "@/components/admin/DonutChart";
+import { getAdminSummary, getApprovals, getUsers, getPayments, getInsights } from "@/lib/apiClient";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboardPage() {
+  const token = cookies().get("admin_token")?.value;
+
+  // Fetch everything in parallel; fall back softly if something fails
+  const [summary, approvals, users, payments, insights] = await Promise.all([
+    getAdminSummary(token).catch(() => ({ totalUsers: 0, totalProfessionals: 0, last30dBookings: 0, revenueEUR: 0 })),
+    getApprovals(token).catch(() => []),
+    getUsers(token).catch(() => []),
+    getPayments(token).catch(() => []),
+    getInsights(30, token).catch(() => []),
+  ]);
+
+  const serviceMix = [
+    { name: "Cleaning", value: 25 },
+    { name: "Electrical", value: 45 },
+    { name: "Plumbing", value: 30 },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#0b1222] text-white">
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="text-2xl font-semibold mb-6">Admin Dashboard</div>
+
+        {/* KPI Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <KpiCard title="Total Users" value={summary.totalUsers} subtitle="All registered users" gradient="blue" />
+          <KpiCard title="Professionals" value={summary.totalProfessionals} subtitle="Verified & pending" gradient="purple" />
+          <KpiCard title="Bookings (30d)" value={summary.last30dBookings} subtitle="Bookings in the last 30 days" gradient="pink" />
+          <KpiCard title="Revenue (€)" value={`€${summary.revenueEUR.toLocaleString()}`} subtitle="Total revenue" gradient="teal" />
+        </div>
+
+        {/* Approvals + Right rail */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          <div className="lg:col-span-2">
+            <ApprovalsTable rows={approvals} />
+          </div>
+          <div className="space-y-4">
+            <UserList rows={users} />
+            <PaymentsList rows={payments} title="Payments" />
+          </div>
+        </div>
+
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <TrendChart data={insights} />
+          <DonutChart data={serviceMix} />
+        </div>
+      </div>
+    </div>
+  );
+}
 "use client";
 
 import React, { useEffect, useState } from "react";
