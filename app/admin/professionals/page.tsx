@@ -53,8 +53,10 @@ export default function AdminProfessionalsPage() {
       if (!res.ok) {
         throw new Error("Failed to load professionals");
       }
-      const data = await res.json();
-      setPros(Array.isArray(data) ? data : []);
+  const data = await res.json();
+  // The backend returns an object with a `rows` array when proxied
+  // through the admin API; ensure we parse that shape safely.
+  setPros(Array.isArray(data?.rows) ? data.rows : []);
     } catch (e) {
       console.error(e);
       setPros([]);
