@@ -16,11 +16,12 @@ async function verifyToken(token: string) {
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-  // Only guard admin routes
-  if (!url.pathname.startsWith("/admin")) return NextResponse.next();
+  const pathname = url.pathname;
 
-  // Allow login and public admin pages
-  if (url.pathname === "/admin/login") return NextResponse.next();
+  // Only guard admin routes except public pages like /admin/login and /403
+  if (!(pathname.startsWith("/admin") && !pathname.startsWith("/admin/login") && !pathname.startsWith("/403"))) {
+    return NextResponse.next();
+  }
 
   const token = request.cookies.get("admin_token")?.value || request.cookies.get("fixeasy_admin_token")?.value;
   if (!token) {
