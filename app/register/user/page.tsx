@@ -1,4 +1,3 @@
-
 "use client";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
@@ -23,7 +22,8 @@ function UserRegisterPage() {
 
     function validatePassword(pw: string) {
         // At least 8 chars, one special symbol, one number, one uppercase
-        return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(pw)
+        // Regex: at least one uppercase, one digit, one special symbol, min length 8
+        return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>\/\?]).{8,}$/.test(pw)
     }
 
     async function handleSubmit(e: React.FormEvent) {
@@ -47,14 +47,14 @@ function UserRegisterPage() {
         }
 
         // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/
         if (!emailRegex.test(email)) {
             setError('Please enter a valid email address')
             return
         }
 
         // Validate phone format (basic)
-        const phoneRegex = /^[\d\s\+\-\(\)]+$/
+        const phoneRegex = /^[\\d\\s\\+\\-\\(\\)]+$/
         if (!phoneRegex.test(phone)) {
             setError('Please enter a valid phone number')
             return

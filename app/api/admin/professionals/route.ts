@@ -1,24 +1,18 @@
-import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabaseClient';
+import { NextResponse } from "next/server";
 
-function checkSecret(req: Request) {
-    const secret = process.env.ADMIN_SECRET;
-    const provided = req.headers.get('x-admin-secret') || '';
-    return secret && provided && secret === provided;
-}
+const BACKEND = (process.env.NEXT_PUBLIC_API_URL || "https://api.fixeasy.irish").trim();
 
 export async function GET(req: Request) {
     try {
-        if (!checkSecret(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        const supabase = createSupabaseServerClient() as any;
-        const { searchParams } = new URL(req.url);
-        const status = searchParams.get('status');
-        let q = supabase.from('professionals').select('*').order('created_at', { ascending: false }).limit(100);
-        if (status === 'pending') q = q.eq('verified', false);
-        const { data, error } = await q;
-        if (error) throw error;
-        return NextResponse.json({ rows: data || [] });
+        const url = `${BACKEND}/admin/professionals` + (req.url.includes("?") ? new URL(req.url).search : "");
+        const headers: Record<string, string> = {};
+        const auth = req.headers.get("authorization");
+        if (auth) headers["authorization"] = auth;
+
+        const res = await fetch(url, { method: "GET", headers });
+        const payload = await res.json().catch(() => ({}));
+        return NextResponse.json(payload, { status: res.status });
     } catch (e: any) {
-        return NextResponse.json({ error: e.message || 'Unknown error' }, { status: 500 });
+        return NextResponse.json({ error: e?.message || "Unknown error" }, { status: 500 });
     }
 }

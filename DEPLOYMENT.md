@@ -1,51 +1,32 @@
-# FixEasy Backend — Deployment Guide
+# Deployment notes
 
-This document describes the GitHub Actions workflow for building and pushing the FixEasy backend Docker image to GitHub Container Registry (GHCR) and running a post-deploy summary check.
+This file documents the canonical deployment target and a short secure checklist for production deploys.
 
-Required repository secrets (GitHub → Settings → Secrets → Actions)
-- GHCR_USERNAME — GHCR username (usually your GitHub username or org)
-- GHCR_TOKEN — Personal access token with packages:write (do NOT commit this value)
-- SUPABASE_URL — Supabase project URL (used by backend/runtime)
-- SUPABASE_SERVICE_ROLE_KEY — Supabase service role key (keep secret)
+## Canonical backend for production
 
-Optional secrets for automatic deploy hooks:
-- RENDER_API_KEY, RENDER_SERVICE_ID
-- VERCEL_TOKEN, VERCEL_PROJECT_BACKEND, VERCEL_TEAM_ID (if used)
+- Use `backend/backend-main` as the canonical production backend folder. This folder contains `main.py`, `requirements.txt` and a `vercel.json` tuned for the Python FastAPI app. Deploy from this folder to avoid accidental frontend/backend flips.
 
-How to add secrets
-1. Go to your repository on GitHub.
-2. Click Settings → Secrets and variables → Actions → New repository secret.
-3. Add the secrets listed above (Name and Value). Save each.
+## Secure deployment checklist
 
-Manually triggering the workflow
-1. Go to the Actions tab in the repository.
-2. Select "Deploy Backend".
-3. Click "Run workflow" (choose branch `main`) and click the green button.
+1. Move any secrets out of local files (for example, `.env.local`) and into Vercel Project Environment Variables. Do not commit service-role keys or other credentials to git.
+2. Rotate any keys that may have been present in the repo since they may have been exposed.
+3. Add the following secrets to the repository or Vercel project as appropriate:
+	- `SUPABASE_SERVICE_ROLE_KEY` (if CI needs to query Supabase)
+	- `VERCEL_TOKEN` (if you want automated CLI deploys from CI)
+	- `VERCEL_PROTECTION_BYPASS` (optional — for CI automation against protected deployments)
+4. If Deployment Protection is enabled, configure a Protection Bypass secret in Vercel (Project → Settings → Deployment Protection → Protection Bypass for Automation) and mirror that value into the `VERCEL_PROTECTION_BYPASS` secret for CI.
+5. Limit firewall rules to only trusted IPs or ranges where possible and enable Bot Protection if appropriate.
 
-What the workflow does
-- Triggers on push to `main` and manual dispatch.
-- Logs in to GHCR using `GHCR_USERNAME` and `GHCR_TOKEN`.
-- Builds the Docker image using `backend/Dockerfile` and pushes tags:
-  - `ghcr.io/<owner>/fixeasy-backend:latest`
-  - `ghcr.io/<owner>/fixeasy-backend:<commit-sha>`
-- Optionally POSTs to Render or Vercel if corresponding secrets are set.
-- Runs `python tools/run_summary.py` to verify Supabase/backend summary counts.
+## Automated smoke test (CI)
 
-Notes
-- Do not store secrets in the repository.
-- Ensure `backend/Dockerfile` and `backend/backend-main/requirements.txt` are up to date.
-- The workflow prints pushed image URLs after push.
+We recommend running a small smoke check after production deploys to validate that `/admin/login` and `/admin/summary` work end-to-end. Below is a sample GitHub Actions workflow (kept conservative):
 
-Local verification
-- You can run a local build using Docker:
-```powershell
-docker build -t fixeasy-backend:local -f backend/Dockerfile backend
-```
-- Then run the summary script locally (requires SUPABASE env vars):
-```powershell
-pip install -r backend/backend-main/requirements.txt
-python tools/run_summary.py
-```
+- Create a repository secret named `VERCEL_BACKEND_URL` with your backend production URL (for example `https://fixeasy-backend-...vercel.app`).
+- Optionally add `VERCEL_PROTECTION_BYPASS` and `SUPABASE_SERVICE_ROLE_KEY` if needed by the smoke script.
 
-Commit message to use:
-"Add GitHub Actions backend deploy workflow and deployment guide"
+See `.github/workflows/smoke-after-deploy.yml` for an example workflow that installs Python, runs the smoke script, and reports the result.
+
+## Notes
+
+- Consolidate to a single `vercel.json` per intended deploy target and keep `backend/backend-main` as the source of truth.
+- Do not share secrets in chat or code; use GitHub/Vercel secrets instead.
