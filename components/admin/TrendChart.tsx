@@ -1,29 +1,8 @@
 "use client";
-/* Copilot: Keep a single responsive line for bookings. */
-import React from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import type { Insight } from "@/lib/apiClient";
-
-export default function TrendChart({ data }: { data: Insight[] }) {
-  return (
-    <div className="bg-[#0f1629] rounded-xl p-4 border border-white/5 h-56">
-      <div className="text-white/90 font-medium mb-2">Bookings Trend</div>
-      <ResponsiveContainer width="100%" height="85%">
-        <LineChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
-          <XAxis dataKey="date" hide />
-          <YAxis hide />
-          <Tooltip contentStyle={{ background: "#0f1629", border: "1px solid rgba(255,255,255,0.08)", color: "#fff" }} />
-          <Line type="monotone" dataKey="bookings" dot={false} strokeWidth={2} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-"use client";
 import React from "react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from "recharts";
 
-type Point = { date: string; value: number };
+type Point = { date: string; value?: number; bookings?: number };
 
 export default function TrendChart({ data, title, rightSlot }: { data?: Point[]; title?: string; rightSlot?: React.ReactNode }) {
     const mock: Point[] = [
