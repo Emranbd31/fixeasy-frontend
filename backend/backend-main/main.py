@@ -11,6 +11,10 @@ try:
 except Exception:
     redis = None
 try:
+    from utils.auth import verify_admin_token
+except Exception:
+    verify_admin_token = None
+try:
     import jwt  # PyJWT
 except ImportError:
     jwt = None
@@ -173,6 +177,89 @@ def admin_pending():
         except Exception:
             pass
         return JSONResponse({"error": "Supabase query failed", "data": []}, status_code=503)
+
+
+# Expose professionals management endpoints directly in main.py so they're
+# available even if importing the routers package fails at runtime in some
+# deployment environments.
+@app.get("/admin/professionals")
+def list_professionals(claims: dict | None = Depends(verify_admin_token) if verify_admin_token else None):
+    SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL") or ""
+    SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
+    if not SUPABASE_URL or not SERVICE_KEY or create_client is None:
+        return JSONResponse({"error": "Supabase not configured", "data": []}, status_code=503)
+    try:
+        sb = create_client(SUPABASE_URL, SERVICE_KEY)
+        resp = sb.table("professionals").select("id,name,service,verified,created_at,email").execute()
+        data = None
+        if isinstance(resp, dict):
+            data = resp.get("data", [])
+        else:
+            data = getattr(resp, "data", []) or []
+        # normalize created_at
+        for row in data:
+            if row.get("created_at") is not None:
+                try:
+                    row["created_at"] = row["created_at"].isoformat() if hasattr(row["created_at"], "isoformat") else str(row["created_at"])
+                except Exception:
+                    row["created_at"] = str(row.get("created_at"))
+        return {"data": data}
+    except Exception as exc:
+        try:
+            print("[admin/professionals] list error:", str(exc))
+        except Exception:
+            pass
+        return JSONResponse({"error": "Supabase query failed", "data": []}, status_code=503)
+
+
+@app.patch("/admin/professionals/{pro_id}/verify")
+def verify_professional(pro_id: str, claims: dict | None = Depends(verify_admin_token) if verify_admin_token else None):
+    SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL") or ""
+    SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
+    if not SUPABASE_URL or not SERVICE_KEY or create_client is None:
+        return JSONResponse({"error": "Supabase not configured"}, status_code=503)
+    try:
+        sb = create_client(SUPABASE_URL, SERVICE_KEY)
+        res = sb.table("professionals").update({"verified": True}).eq("id", pro_id).execute()
+        data = None
+        if isinstance(res, dict):
+            data = res.get("data")
+        else:
+            data = getattr(res, "data", None)
+        if not data:
+            return JSONResponse({"error": "not found"}, status_code=404)
+        return {"ok": True}
+    except Exception as exc:
+        try:
+            print("[admin/professionals] verify error:", str(exc))
+        except Exception:
+            pass
+        return JSONResponse({"error": "Supabase update failed"}, status_code=500)
+
+
+@app.patch("/admin/professionals/{pro_id}/reject")
+def reject_professional(pro_id: str, claims: dict | None = Depends(verify_admin_token) if verify_admin_token else None):
+    SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL") or ""
+    SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
+    if not SUPABASE_URL or not SERVICE_KEY or create_client is None:
+        return JSONResponse({"error": "Supabase not configured"}, status_code=503)
+    try:
+        sb = create_client(SUPABASE_URL, SERVICE_KEY)
+        res = sb.table("professionals").update({"verified": False}).eq("id", pro_id).execute()
+        data = None
+        if isinstance(res, dict):
+            data = res.get("data")
+        else:
+            data = getattr(res, "data", None)
+        if not data:
+            return JSONResponse({"error": "not found"}, status_code=404)
+        return {"ok": True}
+    except Exception as exc:
+        try:
+            print("[admin/professionals] reject error:", str(exc))
+        except Exception:
+            pass
+        return JSONResponse({"error": "Supabase update failed"}, status_code=500)
 
 @app.get("/")
 def root():
