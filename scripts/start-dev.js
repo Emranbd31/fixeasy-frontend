@@ -17,7 +17,7 @@ function getPidsOnPort(port) {
         if (!line) return;
         const parts = line.split(/\s+/);
         const pid = parts[parts.length - 1];
-        if (/^\d+$/.test(pid)) pids.add(pid);
+        if (/^\d+$/.test(pid) && pid !== '0') pids.add(pid);
       });
       return Array.from(pids).map((p) => parseInt(p, 10));
     } else {
@@ -81,9 +81,13 @@ async function main() {
   }
 
   log('Starting Next dev...');
-  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['next', 'dev', '-p', String(PORT)], {
+  // Use npm run dev to respect package.json script and be cross-platform
+  const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+  // Use shell execution to be robust across environments where direct spawn may fail
+  const child = spawn(`${npmCmd} run dev`, {
     stdio: 'inherit',
     cwd: process.cwd(),
+    shell: true,
     env: Object.assign({}, process.env, { NODE_ENV: process.env.NODE_ENV || 'development' }),
   });
 
