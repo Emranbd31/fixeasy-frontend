@@ -2,7 +2,7 @@
 import React from "react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from "recharts";
 
-type Point = { date: string; value?: number; bookings?: number };
+type Point = { date: string; value: number };
 
 export default function TrendChart({ data, title, rightSlot }: { data?: Point[]; title?: string; rightSlot?: React.ReactNode }) {
     const mock: Point[] = [

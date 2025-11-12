@@ -20,7 +20,7 @@ jobs:
       - name: Build & Push FixEasy Backend image
         uses: docker/build-push-action@v6
         with:
-          context: ./backend/backend-main
+          context: ./backend/Backend--main
           file: ./backend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/fixeasy-backend:latest

@@ -94,11 +94,6 @@ def admin_summary():
             "professionals": professionals_total,
             "bookings": bookings_30,
             "payments": payments_30,
-            # Frontend-friendly aliases expected by AdminDashboardLive
-            "totalUsers": users_total,
-            "totalProfessionals": professionals_total,
-            "last30dBookings": bookings_30,
-            "revenueEUR": payments_total,
             "timestamp": datetime.utcnow().isoformat(),
             "demo": False,
         }

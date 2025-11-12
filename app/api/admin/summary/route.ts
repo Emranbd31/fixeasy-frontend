@@ -1,25 +1,24 @@
-import { NextResponse, NextRequest } from "next/server";
-import { getAdminSummary } from "@/lib/apiClient";
-import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-  // Accept token from either cookie name used in different deploys,
-  // or from an Authorization: Bearer <token> header.
-  const cookieToken = cookies().get("admin_token")?.value || cookies().get("fixeasy_admin_token")?.value;
-  let authToken: string | undefined = cookieToken;
+// Ensure this route is always executed at runtime (we proxy to a live backend)
+export const dynamic = "force-dynamic";
 
-  if (!authToken) {
-    const header = request.headers.get("authorization") || request.headers.get("Authorization");
-    if (header) {
-      const m = header.match(/Bearer\s+(.+)/i);
-      if (m) authToken = m[1];
+// Proxy /api/admin/summary -> backend /admin/summary
+// Exports a named GET handler required by Next's App Router.
+export async function GET() {
+    const backend = (process.env.NEXT_PUBLIC_API_URL || "https://api.fixeasy.irish").replace(/\/$/, "");
+    try {
+        const res = await fetch(`${backend}/admin/summary`, { method: "GET", cache: "no-store" });
+        const text = await res.text().catch(() => "");
+        // Try to parse JSON, but forward raw text if parsing fails
+        try {
+            const json = JSON.parse(text || "null");
+            return NextResponse.json(json, { status: res.status });
+        } catch {
+            return NextResponse.json({ raw: text }, { status: res.status });
+        }
+    } catch (err) {
+        console.error("[api/admin/summary] Failed to reach backend", err);
+        return NextResponse.json({ error: "Unable to reach backend" }, { status: 502 });
     }
-  }
-
-  try {
-    const data = await getAdminSummary(authToken);
-    return NextResponse.json(data);
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message ?? String(err) }, { status: 500 });
-  }
 }

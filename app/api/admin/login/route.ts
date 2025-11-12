@@ -1,11 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Simple in-memory rate limiter (per-IP). This is intentionally lightweight
+// and works for single-process deployments. It prevents brute-force login
+// attempts at the proxy layer before forwarding to the backend.
+const RATE_LIMIT_MAP: Map<string, number[]> = new Map();
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 60 seconds
+
 const DEFAULT_BACKEND_URL = "https://api.fixeasy.irish";
 
 function resolveBackendUrl(): string {
-  // Prefer explicit environment overrides. Do not implicitly assume a localhost backend
-  // unless the developer sets BACKEND_URL or NEXT_PUBLIC_API_URL in their .env.local.
-  const candidates = [process.env.BACKEND_URL, process.env.NEXT_PUBLIC_API_URL, process.env.NEXT_PUBLIC_API_BASE_URL];
+  const candidates = [
+    process.env.BACKEND_URL,
+    process.env.NEXT_PUBLIC_API_BASE_URL,
+    process.env.NEXT_PUBLIC_API_URL,
+  ];
+
+  // During local development prefer a localhost backend if available.
+  // This helps when you run the backend on port 8000 locally.
+  if (process.env.NODE_ENV !== "production") {
+    candidates.push("http://127.0.0.1:8000");
+    candidates.push("http://localhost:8000");
+  }
+
+  // Fallback to the production API if nothing else is configured
+  candidates.push(DEFAULT_BACKEND_URL);
 
   for (const candidate of candidates) {
     if (!candidate) continue;
@@ -18,18 +37,27 @@ function resolveBackendUrl(): string {
     }
   }
 
-  // Fallback to the production API if nothing else is configured
-  // For local development restore the old behaviour: prefer a local mock at 127.0.0.1:8000
-  // if no explicit BACKEND_URL is configured. This mirrors the previous, working
-  // configuration used during the V1 admin flows.
-  if (process.env.NODE_ENV !== "production") {
-    return "http://127.0.0.1:8000";
-  }
-
   return DEFAULT_BACKEND_URL;
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit by client IP (X-Forwarded-For or fallback)
+  try {
+    const xff = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    // Use only the first IP in X-Forwarded-For list
+    const clientIp = (xff || "unknown").split(",")[0].trim();
+    const now = Date.now();
+    const arr = RATE_LIMIT_MAP.get(clientIp) || [];
+    // prune old timestamps
+    const recent = arr.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
+    if (recent.length >= RATE_LIMIT_MAX) {
+      return NextResponse.json({ error: "Too many login attempts" }, { status: 429 });
+    }
+    recent.push(now);
+    RATE_LIMIT_MAP.set(clientIp, recent);
+  } catch (e) {
+    // if rate limiter fails, allow the request to proceed
+  }
   try {
     const backendUrl = resolveBackendUrl();
     const rawBody = await request.text();
@@ -37,60 +65,102 @@ export async function POST(request: NextRequest) {
     console.info("[admin/login] Using backend URL", backendUrl);
     console.info("[admin/login] Raw request body", rawBody);
 
+    // Playwright/local test shim: when PLAYWRIGHT_TEST=1 is set we accept
+    // the supplied credentials locally and return a test token without
+    // forwarding to the remote backend. This keeps E2E tests hermetic and
+    // avoids depending on an externally-hosted admin account.
+    if (process.env.PLAYWRIGHT_TEST === "1") {
+      try {
+        const contentType = request.headers.get("content-type") ?? "";
+        let parsed: any = null;
+        if (contentType.includes("application/json")) {
+          parsed = JSON.parse(rawBody || "{}");
+        } else {
+          // parse x-www-form-urlencoded into an object
+          parsed = Object.fromEntries(new URLSearchParams(rawBody || ""));
+        }
+        const username = (parsed.username ?? parsed.email ?? "").toString().trim();
+        const password = (parsed.password ?? "").toString().trim();
+        if (!username || !password) {
+          return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
+        }
+
+        // If ADMIN_USER/ADMIN_PASS are provided in env, enforce them in the shim,
+        // otherwise accept any non-empty credentials.
+        const envUser = process.env.ADMIN_USER;
+        const envPass = process.env.ADMIN_PASS;
+        if (envUser && envPass) {
+          if (username !== envUser && username.toLowerCase() !== envUser.toLowerCase()) {
+            return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+          }
+          if (password !== envPass) {
+            return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+          }
+        }
+
+        const testToken = "playwright-test-token";
+        const payload = { access_token: testToken, token: testToken };
+        const reply = NextResponse.json(payload, { status: 200 });
+        // Set a cookie to emulate production behavior (not secure in dev)
+        reply.cookies.set("fixeasy_admin_token", testToken, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+          maxAge: 60 * 60,
+          path: "/",
+        });
+        return reply;
+      } catch (shimErr) {
+        console.error("[admin/login] Playwright shim parse error", shimErr);
+        return NextResponse.json({ error: "Invalid request payload" }, { status: 400 });
+      }
+    }
+
     if (!rawBody) {
       return NextResponse.json({ error: "Invalid request payload" }, { status: 400 });
     }
 
     const contentType = request.headers.get("content-type") ?? "application/json";
 
-    // Extract credentials in a robust way so we can always send form-urlencoded to FastAPI backend
-    let email = "";
-    let password = "";
+    let forwardHeaders: Record<string, string>;
+    let forwardBody: BodyInit;
 
     if (contentType.includes("application/json")) {
+      // If client sent JSON, forward JSON to backend as JSON.
       try {
         const parsed = JSON.parse(rawBody || "{}");
-        email = (parsed.username ?? parsed.email ?? "").toString().trim();
-        password = (parsed.password ?? "").toString().trim();
+        const username = (parsed.username ?? parsed.email ?? "").toString().trim();
+        const password = (parsed.password ?? "").toString().trim();
+
+        if (!username || !password) {
+          return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
+        }
+
+        // Preserve JSON shape (use `username` and `password` keys)
+        const payload = { username, password };
+        forwardBody = JSON.stringify(payload);
+        forwardHeaders = { "Content-Type": "application/json" };
       } catch (jsonError) {
         console.error("[admin/login] Failed to parse JSON body", jsonError);
         return NextResponse.json({ error: "Invalid request payload" }, { status: 400 });
       }
-    } else if (contentType.includes("application/x-www-form-urlencoded")) {
-      try {
-        const params = new URLSearchParams(rawBody);
-        email = (params.get("username") ?? params.get("email") ?? "").toString().trim();
-        password = (params.get("password") ?? "").toString().trim();
-      } catch (e) {
-        console.error("[admin/login] Failed to parse form body", e);
-      }
     } else {
-      // Fallback: try to parse as JSON, otherwise leave empty and let the backend respond
-      try {
-        const parsed = JSON.parse(rawBody || "{}");
-        email = (parsed.username ?? parsed.email ?? "").toString().trim();
-        password = (parsed.password ?? "").toString().trim();
-      } catch {}
+      // Non-JSON content types are forwarded as-is.
+      forwardHeaders = { "Content-Type": contentType };
+      forwardBody = rawBody;
     }
-
-    if (!email || !password) {
-      return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
-    }
-
-    // Send JSON to match the backend's expected payload shape (AdminLoginRequest)
-  const backendPayload = { email, password };
 
     let response: Response;
     try {
       response = await fetch(`${backendUrl}/admin/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(backendPayload),
+        cache: "no-store",
+        headers: forwardHeaders,
+        body: forwardBody,
       });
     } catch (fetchError) {
       console.error("[admin/login] Failed to reach backend", fetchError);
-      // Return a friendly, consistent error when the backend cannot be reached.
-      return NextResponse.json({ error: "Backend unavailable" }, { status: 503 });
+      return NextResponse.json({ error: "Admin service unavailable" }, { status: 503 });
     }
 
     const responseBody = await response.text();
@@ -106,15 +176,6 @@ export async function POST(request: NextRequest) {
       payload = null;
     }
 
-    // In development, log which top-level keys the backend returned so we can
-    // quickly detect token field name mismatches (e.g. `token` vs `access_token`).
-    if (process.env.NODE_ENV !== "production" && payload && typeof payload === "object") {
-      try {
-        const keys = Object.keys(payload).slice(0, 20);
-        console.info("[admin/login] Backend payload keys:", keys);
-      } catch {}
-    }
-
     if (response.status === 401) {
       return NextResponse.json(payload ?? { error: "Invalid credentials" }, { status: 401 });
     }
@@ -124,50 +185,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: message }, { status: response.status || 500 });
     }
 
-    // Support different backend token field names (some backends return `access_token`, `jwt`, or nested session objects)
-    const token =
-      payload?.token ??
-      payload?.access_token ??
-      payload?.accessToken ??
-      payload?.jwt ??
-      payload?.id_token ??
-      payload?.data?.token ??
-      payload?.data?.access_token ??
-      payload?.session?.access_token ??
-      payload?.session?.token ??
-      null;
-
-    // If the backend set a cookie in its response (Set-Cookie header), try to extract a token
-    // from that header and use it as fallback. This covers backends that set auth cookies
-    // instead of returning JSON token fields.
-    let cookieToken: string | null = null;
-    try {
-      const setCookieRaw = response.headers.get("set-cookie") || response.headers.get("Set-Cookie");
-      if (setCookieRaw) {
-        // Try to find a cookie-looking value (name=value) and prefer known names.
-        // Look for fixeasy_admin_token, token, access_token, jwt
-        const matches = Array.from(setCookieRaw.matchAll(/(?:^|,|;)?\s*(?<name>[^=;\s]+)=(?<val>[^;\s]+)/gi));
-        for (const m of matches) {
-          const n = (m.groups && m.groups['name']) || '';
-          const v = (m.groups && m.groups['val']) || '';
-          const lowered = n.toLowerCase();
-          if (['fixeasy_admin_token', 'token', 'access_token', 'jwt', 'id_token'].includes(lowered)) {
-            cookieToken = v;
-            break;
-          }
-          if (!cookieToken && v && v.length > 10) {
-            // keep a candidate if nothing matched yet
-            cookieToken = v;
-          }
-        }
-      }
-    } catch (e) {
-      console.error('[admin/login] Failed to parse Set-Cookie header', e);
-    }
-
-    const finalToken = token ?? cookieToken;
-    if (!finalToken) {
-      return NextResponse.json({ error: 'Login failed' }, { status: 500 });
+    // Support different backend token field names (some backends return `access_token`)
+    const token = payload?.token ?? payload?.access_token ?? payload?.accessToken ?? payload?.accessToken;
+    if (!token) {
+      return NextResponse.json({ error: "Login failed" }, { status: 500 });
     }
 
     const reply = NextResponse.json(payload, { status: response.status });
@@ -192,16 +213,7 @@ export async function POST(request: NextRequest) {
       cookieOptions.domain = ".fixeasy.irish";
     }
 
-  reply.cookies.set("fixeasy_admin_token", finalToken, cookieOptions);
-    // In development, log a truncated token preview and the cookie options so local runs can confirm
-    // the server-side handler is actually setting the cookie. Avoid printing full tokens in logs.
-    if (process.env.NODE_ENV !== "production") {
-      try {
-        const preview = typeof token === "string" ? `${token.slice(0, 6)}...` : "(non-string)";
-        console.info("[admin/login] Set cookie fixeasy_admin_token (preview):", preview);
-        console.info("[admin/login] Cookie options:", cookieOptions);
-      } catch {}
-    }
+    reply.cookies.set("fixeasy_admin_token", token, cookieOptions);
     return reply;
   } catch (error) {
     console.error("[admin/login] Unexpected error", error);
@@ -209,9 +221,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-export async function GET() {
-  // Simple status endpoint so clients and health checks can confirm the route exists.
-  return NextResponse.json({ ok: true });
-}
-

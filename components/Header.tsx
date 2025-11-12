@@ -8,8 +8,8 @@ export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-md border-b border-white/10 shadow-sm">
-            <nav className="container mx-auto px-4 lg:px-6 py-1">
+        <header className="sticky top-0 z-50 bg-[#0f1629] backdrop-blur-md border-b border-white/5">
+            <nav className="container mx-auto px-4 lg:px-6 py-3">
                 <div className="flex items-center justify-between gap-3">
                     {/* Logo */}
                     <Link href="/">
@@ -28,7 +28,7 @@ export default function Header() {
                     {/* Center Badge (desktop only) */}
                     <div className="hidden md:flex flex-1 justify-center">
                         <span className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold border border-white/10 backdrop-blur-sm whitespace-nowrap">
-                           🏆 Ireland&apos;s #1 Home Service Platform
+                            🏆 Ireland&apos;s #1 Home Service Platform
                         </span>
                     </div>
 

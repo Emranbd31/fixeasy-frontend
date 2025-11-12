@@ -63,8 +63,6 @@
     "backup_*",
     "backup*/**",
     "**/backup*/**",
-    "archived_backups",
-    "archived_backups/**",
     "**/rollback*/**",
     "**/restore*/**"
   ]

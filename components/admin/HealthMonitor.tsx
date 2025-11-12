@@ -1,67 +1,75 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
-type Status = "ok" | "down" | "unknown";
-
 export default function HealthMonitor() {
-  const [backend, setBackend] = useState<Status>("unknown");
-  const [supabase, setSupabase] = useState<Status>("unknown");
-  const [ts, setTs] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
+    const [state, setState] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-  async function fetchHealth() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/health", { cache: "no-store" });
-      if (!res.ok) throw new Error("health fetch failed");
-      const j = await res.json();
-      setBackend(j?.checks?.api === "UP" ? "ok" : "down");
-      setSupabase(j?.checks?.db === "UP" ? "ok" : "down");
-      setTs(j?.ts ? Date.parse(j.ts) : Date.now());
-    } catch (e) {
-      setBackend("down");
-      setSupabase("down");
-      setTs(Date.now());
-    } finally {
-      setLoading(false);
-    }
-  }
+    useEffect(() => {
+        let mounted = true;
+        function normalizeStatus(v: any) {
+            if (!v) return "DOWN";
+            // Accept strings like "UP", "OK", "OKAY", or objects with truthy ok fields
+            if (typeof v === "string") {
+                const s = v.trim().toLowerCase();
+                if (s === "up" || s === "ok" || s === "okay" || s === "available") return "UP";
+                return "DOWN";
+            }
+            if (typeof v === "object") {
+                // example: { ok: true } or { status: 'OK' }
+                if (v.ok === true) return "UP";
+                const maybe = (v.status || v.state || "").toString().toLowerCase();
+                if (maybe === "up" || maybe === "ok" || maybe === "available") return "UP";
+                return "DOWN";
+            }
+            return "DOWN";
+        }
 
-  useEffect(() => {
-    fetchHealth();
-    const id = setInterval(fetchHealth, 60_000);
-    return () => clearInterval(id);
-  }, []);
+        async function load() {
+            try {
+                const res = await fetch("/api/admin/health", { cache: "no-store" });
+                const payload = await res.json().catch(() => ({}));
+                if (!mounted) return;
+                // Normalize to expected shape even if backend returns unexpected data
+                const checks = payload?.checks ?? {};
+                setState({
+                    checks: {
+                        api: normalizeStatus(checks.api),
+                        db: normalizeStatus(checks.db),
+                    },
+                    ts: payload?.ts ?? new Date().toISOString(),
+                });
+            } catch (e) {
+                if (!mounted) return;
+                setState({ error: "Failed to fetch health", checks: { api: "DOWN", db: "DOWN" }, ts: new Date().toISOString() });
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        }
+        load();
+        const t = setInterval(load, 60_000);
+        return () => {
+            mounted = false;
+            clearInterval(t);
+        };
+    }, []);
 
-  const badge = (s: Status) =>
-    s === "ok" ? (
-      <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-600 text-white text-xs">OK</span>
-    ) : s === "down" ? (
-      <span className="inline-flex items-center px-2 py-1 rounded bg-rose-600 text-white text-xs">DOWN</span>
-    ) : (
-      <span className="inline-flex items-center px-2 py-1 rounded bg-gray-500 text-white text-xs">…</span>
+    if (loading) return <div className="rounded-lg border bg-white p-3">Checking health...</div>;
+
+    return (
+        <div className="rounded-lg border bg-white p-3">
+            <h4 className="text-sm font-semibold">System Health</h4>
+            <div className="mt-2 text-sm">
+                <div>
+                    <strong>DB:</strong>{" "}
+                    {state?.checks?.db === "UP" ? <span className="text-green-600">🟢 UP</span> : <span className="text-red-600">🔴 DOWN</span>}
+                </div>
+                <div>
+                    <strong>API:</strong>{" "}
+                    {state?.checks?.api === "UP" ? <span className="text-green-600">🟢 UP</span> : <span className="text-red-600">🔴 DOWN</span>}
+                </div>
+                <div className="text-xs text-gray-500 mt-2">Last checked: {state?.ts ?? "-"}</div>
+            </div>
+        </div>
     );
-
-  return (
-    <div className="bg-[#071029] rounded-xl p-4 border border-white/5">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-sm font-medium text-white/90">System Health</div>
-        <button className="text-xs text-white/60" onClick={fetchHealth} disabled={loading}>
-          {loading ? "Refreshing…" : "Refresh"}
-        </button>
-      </div>
-      <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-2">
-          <div className="text-xs text-white/70">Backend</div>
-          {badge(backend)}
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="text-xs text-white/70">Supabase</div>
-          {badge(supabase)}
-        </div>
-        <div className="ml-auto text-xs text-white/50">{ts ? new Date(ts).toLocaleTimeString() : "—"}</div>
-      </div>
-    </div>
-  );
 }
-

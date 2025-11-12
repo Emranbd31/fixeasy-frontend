@@ -33,7 +33,7 @@ export default function AdminProfessionalsPage() {
   const [services, setServices] = useState<string[]>([]);
   const [filters, setFilters] = useState<Filters | null>(null);
 
-  const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("fixeasy_admin_token") : null);
+  const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("adminToken") : null);
 
   async function fetchList() {
     setLoading(true);
@@ -53,10 +53,10 @@ export default function AdminProfessionalsPage() {
       if (!res.ok) {
         throw new Error("Failed to load professionals");
       }
-  const data = await res.json();
-  // The backend returns an object with a `rows` array when proxied
-  // through the admin API; ensure we parse that shape safely.
-  setPros(Array.isArray(data?.rows) ? data.rows : []);
+      const data = await res.json();
+      // The backend returns an object with a `rows` array when proxied
+      // through the admin API; ensure we parse that shape safely.
+      setPros(Array.isArray(data?.rows) ? data.rows : []);
     } catch (e) {
       console.error(e);
       setPros([]);
