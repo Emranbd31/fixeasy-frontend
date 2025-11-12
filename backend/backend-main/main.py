@@ -15,6 +15,19 @@ except Exception:
 
 app = FastAPI()
 
+# Mount routers implemented in the `routers/` package. This is defensive: if
+# the router fails to import (misconfigured env or missing deps) the app
+# continues to run but the failure is logged. This exposes `/admin/summary`
+# implemented in `routers/admin_summary.py` so the frontend can fetch it.
+try:
+    from routers.admin_summary import router as admin_summary_router
+    app.include_router(admin_summary_router)
+except Exception as e:
+    try:
+        print("[main] failed to include admin_summary router:", str(e))
+    except Exception:
+        pass
+
 
 class AdminLoginRequest(BaseModel):
     email: str
