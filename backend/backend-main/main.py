@@ -1,9 +1,11 @@
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response, status, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import os
 from datetime import datetime, timedelta
+import time
+from collections import defaultdict
 try:
     import jwt  # PyJWT
 except ImportError:
@@ -15,6 +17,40 @@ except Exception:
 
 app = FastAPI()
 
+# --- CORS middleware: restrict origins to frontend domains ---
+try:
+    from fastapi.middleware.cors import CORSMiddleware
+    origins = [
+        "https://fixeasy.irish",
+        "https://www.fixeasy.irish",
+    ]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+    )
+except Exception:
+    pass
+
+# Simple in-memory rate limiter (per-IP) for POST /admin/login
+_rate_limit_store: dict = defaultdict(list)
+RATE_LIMIT_MAX = 5
+RATE_LIMIT_WINDOW = 60
+
+async def rate_limit_dependency(request: Request):
+    if request.method.upper() != "POST" or request.url.path != "/admin/login":
+        return
+    ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    calls = _rate_limit_store.get(ip, [])
+    calls = [t for t in calls if now - t < RATE_LIMIT_WINDOW]
+    if len(calls) >= RATE_LIMIT_MAX:
+        return Response(content="Too many requests", status_code=status.HTTP_429_TOO_MANY_REQUESTS)
+    calls.append(now)
+    _rate_limit_store[ip] = calls
+
 # Mount routers implemented in the `routers/` package. This is defensive: if
 # the router fails to import (misconfigured env or missing deps) the app
 # continues to run but the failure is logged. This exposes `/admin/summary`
@@ -25,6 +61,14 @@ try:
 except Exception as e:
     try:
         print("[main] failed to include admin_summary router:", str(e))
+    except Exception:
+        pass
+
+    # Comment: legacy admin_login router intentionally not included to avoid duplicate routes
+    try:
+        # from routers.admin_login import router as admin_login_router
+        # app.include_router(admin_login_router)
+        pass
     except Exception:
         pass
 
@@ -51,7 +95,7 @@ def _issue_jwt(email: str) -> str:
 
 
 @app.post("/admin/login")
-def admin_login(body: AdminLoginRequest):
+def admin_login(body: AdminLoginRequest, rl: None = Depends(rate_limit_dependency)):
     ADMIN_USER = os.getenv("ADMIN_USER")
     ADMIN_PASS = os.getenv("ADMIN_PASS")
     if not ADMIN_USER or not ADMIN_PASS:
@@ -61,6 +105,30 @@ def admin_login(body: AdminLoginRequest):
         token = _issue_jwt(body.email)
         return {"token": token, "user": {"email": body.email}}
     raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+@app.get("/admin/pending")
+def admin_pending():
+    """Return pending professionals (verified == false)."""
+    SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL") or ""
+    SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
+    if not SUPABASE_URL or not SERVICE_KEY or create_client is None:
+        return JSONResponse({"error": "Supabase not configured", "data": []}, status_code=503)
+    try:
+        sb = create_client(SUPABASE_URL, SERVICE_KEY)
+        res = sb.table("professionals").select("*").eq("verified", False).execute()
+        data = None
+        if isinstance(res, dict):
+            data = res.get("data", [])
+        else:
+            data = getattr(res, "data", []) or []
+        return {"data": data}
+    except Exception as exc:
+        try:
+            print("[admin/pending] error:", str(exc))
+        except Exception:
+            pass
+        return JSONResponse({"error": "Supabase query failed", "data": []}, status_code=503)
 
 @app.get("/")
 def root():
