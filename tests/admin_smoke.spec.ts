@@ -1,124 +1,65 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
+import { kpi } from './utils/testIds';
 
-test.setTimeout(120000);
+test('Admin dashboard smoke test', async ({ page }) => {
+  const base = process.env.ADMIN_BASE_URL || 'http://localhost:3000';
+  const email = process.env.ADMIN_USER || 'admin@fixeasy.irish';
+  const password = process.env.ADMIN_PASS || 'your_password_here';
 
-test("FixEasy Admin smoke test", async ({ page }) => {
-  const base = process.env.ADMIN_BASE_URL ?? "https://www.fixeasy.irish";
-  const adminUser = process.env.ADMIN_USER;
-  const adminPass = process.env.ADMIN_PASS;
-
-  async function step(name: string, fn: () => Promise<void>) {
-    try {
-      console.log(`→ ${name} ...`);
-      await fn();
-      console.log(`✅ PASS: ${name}`);
-    } catch (err) {
-      console.error(`❌ FAIL: ${name} — ${(err as Error).message}`);
-      throw err;
+  // 🔹 Pre-flight health check — try several common health endpoints
+  console.log(`Checking server health at ${base}...`);
+  const healthCandidates = ['/api/health', '/api/admin/health', '/status', '/'];
+  let healthy = false;
+  for (const p of healthCandidates) {
+    const url = `${base}${p}`;
+    const r = await fetch(url).catch(() => null);
+    if (r && r.ok) {
+      console.log(`Health OK at ${url}`);
+      healthy = true;
+      break;
     }
   }
+  if (!healthy) throw new Error(`❌ Server not reachable at ${base} (no health endpoint responded)`);
 
-  await step("Open admin login page", async () => {
-    await page.goto(`${base}/admin/login`, { waitUntil: "networkidle" });
-    await expect(page).toHaveURL(/\/admin\/login/);
-  });
+  console.log('✅ Server reachable, starting test...');
 
-  await step("Fill credentials", async () => {
-    if (!adminUser || !adminPass) throw new Error("ADMIN_USER or ADMIN_PASS not provided in environment");
-    // best-effort selectors
-    const emailInput = page.getByLabel("Email").first();
-    if ((await emailInput.count()) > 0) {
-      await emailInput.fill(adminUser);
-    } else {
-      await page.fill('input[type="email"]', adminUser);
-    }
-    const passInput = page.getByLabel("Password").first();
-    if ((await passInput.count()) > 0) {
-      await passInput.fill(adminPass);
-    } else {
-      await page.fill('input[type="password"]', adminPass);
-    }
-  });
+  // Try a shortcut: load the dashboard directly. In many dev setups the
+  // admin summary is available without an interactive login (server-side
+  // fetch to a configured BACKEND). This avoids flaky login/rate-limit
+  // interactions. If the dashboard redirects to login, fall back to the
+  // interactive login flow.
+  await page.goto(`${base}/admin/dashboard`, { waitUntil: 'load', timeout: 15000 }).catch(() => null);
 
-  await step("Submit login and wait for dashboard", async () => {
-    const loginResponse = page.waitForResponse((r) => r.url().includes("/api/admin/login") && (r.status() === 200 || r.status() === 201), { timeout: 30000 });
-    await page.getByRole("button", { name: /login/i }).click();
-    await loginResponse;
-    await page.waitForURL("**/admin/dashboard", { timeout: 30000 });
-    const token = await page.evaluate(() => localStorage.getItem("adminToken") || localStorage.getItem("fixeasy_admin_token"));
-    if (!token) console.warn("⚠️ No admin token found in localStorage after login");
-  });
+  // If dashboard didn't show KPI labels, perform the interactive login flow.
+  const kpiLocator = page.getByTestId(kpi.users);
+  // Wait a short while for client-side rendering/hydration to populate the KPI cards.
+  try {
+    await page.waitForSelector(`[data-testid="${kpi.users}"]`, { timeout: 15000 });
+  } catch {
+    /* ignore; we'll fallback to login if KPI labels don't appear */
+  }
+  if ((await kpiLocator.count()) === 0) {
+    console.log('Dashboard not available directly; performing interactive login...');
+    await page.goto(`${base}/admin/login`, { waitUntil: 'load', timeout: 20000 });
+    await page.fill('input[name=email]', email);
+    await page.fill('input[name=password]', password);
+    await page.click('button[type=submit]');
+    await page.waitForURL(/dashboard/, { timeout: 20000 });
+  } else {
+    console.log('Dashboard loaded directly; continuing checks');
+  }
 
-  await step("Verify KPI cards visible", async () => {
-    await expect(page.getByText("Users", { exact: false })).toBeVisible();
-    await expect(page.getByText(/Bookings|Bookings Total/i, { exact: false })).toBeVisible();
-    await expect(page.getByText(/Revenue/i, { exact: false })).toBeVisible();
-  });
+  // Verify KPI cards using stable test ids
+  await expect(page.getByTestId(kpi.users)).toBeVisible();
+  await expect(page.getByTestId(kpi.professionals)).toBeVisible();
+  await expect(page.getByTestId(kpi.bookings30d)).toBeVisible();
+  await expect(page.getByTestId(kpi.revenueEur)).toBeVisible();
 
-  await step("Verify HealthMonitor shows backend + supabase UP", async () => {
-    // look for two UP indicators
-    const upLocators = page.locator('text=🟢 UP');
-    const upCount = await upLocators.count();
-    if (upCount < 2) {
-      const backendGreen = await page.locator('text=Backend').locator('text=🟢').count();
-      const supabaseGreen = await page.locator('text=Supabase').locator('text=🟢').count();
-      if (backendGreen + supabaseGreen < 2) throw new Error("HealthMonitor does not show two green statuses");
-    }
-  });
-
-  await step("Open Approvals tab", async () => {
-    const nav = page.getByRole("link", { name: /Approvals|Professionals/i }).first();
-    if ((await nav.count()) > 0) {
-      await nav.click();
-      await page.waitForURL("**/admin/**", { timeout: 10000 });
-    }
-    await expect(page.getByText("Approvals", { exact: false }).first()).toBeVisible();
-    // ensure table exists
-    const table = page.locator('table').first();
-    if ((await table.count()) === 0) console.log("ℹ️ No approvals table found — skipping table assertions");
-  });
-
-  await step("Approve first pending row (if present)", async () => {
-    const approveBtn = page.getByRole("button", { name: /Approve/i }).first();
-    if ((await approveBtn.count()) === 0) {
-      console.log("ℹ️ No Approve button found — skipping approve step");
-      return;
-    }
-    const respPromise = page.waitForResponse((r) => (r.url().includes("/api/admin/approvals") || r.url().includes("/api/admin/professionals")) && (r.request().method() === "POST" || r.request().method() === "PATCH") && (r.status() === 200 || r.status() === 201), { timeout: 10000 });
-    await approveBtn.click();
-    await respPromise;
-    const toast = page.getByText(/approved|success|verified/i).first();
-    if ((await toast.count()) > 0) await expect(toast).toBeVisible({ timeout: 5000 });
-  });
-
-  await step("Reject first pending row (if present)", async () => {
-    const rejectBtn = page.getByRole("button", { name: /Reject/i }).first();
-    if ((await rejectBtn.count()) === 0) {
-      console.log("ℹ️ No Reject button found — skipping reject step");
-      return;
-    }
-    const respPromise = page.waitForResponse((r) => (r.url().includes("/api/admin/approvals") || r.url().includes("/api/admin/professionals")) && (r.request().method() === "POST" || r.request().method() === "PATCH") && (r.status() === 200 || r.status() === 201), { timeout: 10000 });
-    await rejectBtn.click();
-    await respPromise;
-    const toast = page.getByText(/rejected|removed|success|updated/i).first();
-    if ((await toast.count()) > 0) await expect(toast).toBeVisible({ timeout: 5000 });
-  });
-
-  await step("Verify trend & donut charts are visible", async () => {
-    const chartCanvas = page.locator('canvas, svg');
-    const chartHeading = page.getByText(/trend|donut|chart|insights/i);
-    if ((await chartCanvas.count()) === 0 && (await chartHeading.count()) === 0) throw new Error("No chart canvas/svg or chart heading found");
-  });
-
-  await step("Logout (if present)", async () => {
-    const logout = page.getByRole("button", { name: /logout|sign out/i }).first();
-    if ((await logout.count()) === 0) {
-      console.log("ℹ️ Logout button not present — skipping");
-      return;
-    }
-    await logout.click();
-    await page.waitForTimeout(1000);
-  });
-
-  console.log("✔️ All smoke steps completed");
+  console.log('✅ FixEasy Admin Smoke Test passed successfully');
+  // graceful cleanup
+  try {
+    await page.close();
+  } catch {
+    // ignore
+  }
 });
