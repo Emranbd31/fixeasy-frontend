@@ -56,4 +56,10 @@ test('Admin dashboard smoke test', async ({ page }) => {
   await expect(page.getByTestId(kpi.revenueEur)).toBeVisible();
 
   console.log('✅ FixEasy Admin Smoke Test passed successfully');
+  // graceful cleanup
+  try {
+    await page.close();
+  } catch {
+    // ignore
+  }
 });
