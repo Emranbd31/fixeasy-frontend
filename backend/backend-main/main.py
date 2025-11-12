@@ -98,6 +98,16 @@ except Exception as e:
     except Exception:
         pass
 
+    # Mount admin professionals router so /admin/professionals endpoints are exposed
+    try:
+        from routers.admin_professionals import router as admin_professionals_router
+        app.include_router(admin_professionals_router)
+    except Exception as e:
+        try:
+            print("[main] failed to include admin_professionals router:", str(e))
+        except Exception:
+            pass
+
     # Comment: legacy admin_login router intentionally not included to avoid duplicate routes
     try:
         # from routers.admin_login import router as admin_login_router
