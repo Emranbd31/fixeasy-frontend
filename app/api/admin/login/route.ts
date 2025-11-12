@@ -136,8 +136,10 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
         }
 
-        // Preserve JSON shape (use `username` and `password` keys)
-        const payload = { username, password };
+  // Preserve compatibility but forward `email` to backends that expect it.
+  // Use parsed.email when present; otherwise treat `username` as the email field.
+  const email = (parsed.email ?? username).toString().trim();
+  const payload = { email, password };
         forwardBody = JSON.stringify(payload);
         forwardHeaders = { "Content-Type": "application/json" };
       } catch (jsonError) {
