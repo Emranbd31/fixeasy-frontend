@@ -7,6 +7,10 @@ from datetime import datetime, timedelta
 import time
 from collections import defaultdict
 try:
+    import redis
+except Exception:
+    redis = None
+try:
     import jwt  # PyJWT
 except ImportError:
     jwt = None
@@ -39,10 +43,40 @@ _rate_limit_store: dict = defaultdict(list)
 RATE_LIMIT_MAX = 5
 RATE_LIMIT_WINDOW = 60
 
+# Optional Redis-backed limiter. If REDIS_URL present and redis module is installed
+# we'll use INCR+EXPIRE on a key per IP. Otherwise fall back to in-memory limiter.
+_redis_client = None
+REDIS_URL = os.getenv("REDIS_URL") or os.getenv("REDIS_HOST")
+if redis and REDIS_URL:
+    try:
+        _redis_client = redis.from_url(REDIS_URL)
+    except Exception:
+        _redis_client = None
+
 async def rate_limit_dependency(request: Request):
     if request.method.upper() != "POST" or request.url.path != "/admin/login":
         return
     ip = request.client.host if request.client else "unknown"
+
+    # Redis path
+    if _redis_client:
+        try:
+            key = f"rl:{ip}"
+            current = _redis_client.get(key)
+            current_val = int(current) if current else 0
+            if current_val >= RATE_LIMIT_MAX:
+                return Response(content="Too many requests", status_code=status.HTTP_429_TOO_MANY_REQUESTS)
+            # atomic increment with expiry
+            pipe = _redis_client.pipeline()
+            pipe.incr(key)
+            pipe.expire(key, RATE_LIMIT_WINDOW)
+            pipe.execute()
+            return
+        except Exception:
+            # fallback to in-memory if redis fails
+            pass
+
+    # In-memory fallback
     now = time.time()
     calls = _rate_limit_store.get(ip, [])
     calls = [t for t in calls if now - t < RATE_LIMIT_WINDOW]

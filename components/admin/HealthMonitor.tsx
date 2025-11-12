@@ -7,25 +7,29 @@ export default function HealthMonitor() {
   const [backend, setBackend] = useState<Status>("unknown");
   const [supabase, setSupabase] = useState<Status>("unknown");
   const [ts, setTs] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function fetchHealth() {
+    setLoading(true);
     try {
       const res = await fetch("/api/admin/health", { cache: "no-store" });
       if (!res.ok) throw new Error("health fetch failed");
       const j = await res.json();
-      setBackend(j.backend ?? "down");
-      setSupabase(j.supabase ?? "down");
-      setTs(j.timestamp ?? Date.now());
+      setBackend(j?.checks?.api === "UP" ? "ok" : "down");
+      setSupabase(j?.checks?.db === "UP" ? "ok" : "down");
+      setTs(j?.ts ? Date.parse(j.ts) : Date.now());
     } catch (e) {
       setBackend("down");
       setSupabase("down");
       setTs(Date.now());
+    } finally {
+      setLoading(false);
     }
   }
 
   useEffect(() => {
     fetchHealth();
-    const id = setInterval(fetchHealth, 20_000);
+    const id = setInterval(fetchHealth, 60_000);
     return () => clearInterval(id);
   }, []);
 
@@ -42,8 +46,8 @@ export default function HealthMonitor() {
     <div className="bg-[#071029] rounded-xl p-4 border border-white/5">
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm font-medium text-white/90">System Health</div>
-        <button className="text-xs text-white/60" onClick={fetchHealth}>
-          Refresh
+        <button className="text-xs text-white/60" onClick={fetchHealth} disabled={loading}>
+          {loading ? "Refreshing…" : "Refresh"}
         </button>
       </div>
       <div className="flex items-center space-x-3">
