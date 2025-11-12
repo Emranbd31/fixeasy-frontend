@@ -1,5 +1,6 @@
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import os
 from datetime import datetime, timedelta
@@ -7,6 +8,10 @@ try:
     import jwt  # PyJWT
 except ImportError:
     jwt = None
+try:
+    from supabase import create_client
+except Exception:
+    create_client = None
 
 app = FastAPI()
 
@@ -47,3 +52,51 @@ def admin_login(body: AdminLoginRequest):
 @app.get("/")
 def root():
     return {"message": "Welcome to FixEasy Ireland API! Backend is live 🚀"}
+
+
+@app.get("/health")
+def health():
+    """Simple health endpoint returning a timestamp."""
+    return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
+
+
+@app.get("/admin/revenue")
+def admin_revenue():
+    """
+    Return totalRevenue by summing payments.amount via Supabase using
+    SUPABASE_SERVICE_ROLE_KEY. Returns 503 if Supabase unavailable.
+    """
+    SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL") or ""
+    SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
+    if not SUPABASE_URL or not SERVICE_KEY or create_client is None:
+        return JSONResponse({"error": "Supabase not configured", "totalRevenue": 0}, status_code=503)
+
+    try:
+        sb = create_client(SUPABASE_URL, SERVICE_KEY)
+        res = sb.table("payments").select("amount").execute()
+        # Support both response shapes (dict-like or object with .data)
+        data = None
+        if isinstance(res, dict):
+            data = res.get("data")
+        else:
+            data = getattr(res, "data", None)
+        data = data or []
+        total = 0.0
+        for row in data:
+            try:
+                if isinstance(row, dict):
+                    amt = row.get("amount")
+                else:
+                    amt = getattr(row, "amount", None)
+                if amt is None:
+                    continue
+                total += float(amt)
+            except Exception:
+                continue
+        return {"totalRevenue": total}
+    except Exception as exc:
+        try:
+            print("[admin/revenue] Supabase query failed:", str(exc))
+        except Exception:
+            pass
+        return JSONResponse({"error": "Supabase unavailable", "totalRevenue": 0}, status_code=503)
