@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "upgrade:supabase": "powershell -ExecutionPolicy Bypass -File ./upgrade-supabase.ps1 -ConnectionString $env:SUPABASE_CONNECTION_STRING",
+    "verify:supabase": "node supabase-monitor.js"
   },
   "engines": {
     "node": "22.x"
