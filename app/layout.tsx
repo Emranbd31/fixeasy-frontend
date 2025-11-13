@@ -1,7 +1,7 @@
 ﻿import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import '../styles/globals.css';
-import '@/styles/admin-theme.css';
+import '@/style/admin-theme.css';
 import Header from '@/components/Header';
 import ConditionalFooter from '@/components/ConditionalFooter';
 
