@@ -2,6 +2,9 @@
   "name": "fixeasy-admin",
   "private": true,
   "version": "1.0.0",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "predev": "node scripts/supabase-ops.js predev",
   "dev": "next dev -p 3000",
