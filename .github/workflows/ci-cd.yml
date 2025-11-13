@@ -35,8 +35,36 @@ jobs:
         run: |
           npx playwright test tests/admin_verify.spec.ts --reporter=list --workers=1
 
+  ssr-auth-tests:
+    runs-on: ubuntu-latest
+    name: SSR Auth Tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (frontend)
+        run: npm run build
+
+      - name: Run SSR Auth Playwright tests
+        env:
+          PLAYWRIGHT_TEST: '1'
+          ADMIN_USER: 'admin@fixeasy.irish'
+          ADMIN_PASS: 'Shuki@112'
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          BASE_URL: 'https://fixeasy.irish'
+        run: |
+          npx playwright test tests/ssr_auth.spec.ts --reporter=list --workers=1
+
   backend-deploy:
-    needs: [playwright-api-tests]
+    needs: [playwright-api-tests, ssr-auth-tests]
     runs-on: ubuntu-latest
 
     steps:

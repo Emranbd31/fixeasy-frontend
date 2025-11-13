@@ -105,3 +105,16 @@ Notes:
 - The indicator performs a lightweight GET to `/api/admin/verify` with `credentials: 'include'` so the `fixeasy_admin_token` cookie is used.
 - If the token contains an `exp` claim, the indicator uses it to show the "expiring" state when under 5 minutes remaining.
 - The indicator will not show on the `/admin/login` page and clears its interval on unmount to avoid leaks.
+
+## Redirect-Back-to-Admin
+
+When an unauthenticated user attempts to access an admin page (for example `/admin/dashboard`), the server will redirect them to the login page and include a `returnTo` query parameter pointing to the original path. After a successful login the UI will navigate back to that original path using `router.replace()` to avoid polluting the browser history.
+
+Flow summary:
+- User visits `/admin/dashboard` with no valid session cookie.
+- Server-side middleware issues a redirect to `/admin/login?returnTo=/admin/dashboard`.
+- The login page reads `returnTo` and sends it with the login request.
+- The login API returns `{ success: true, redirect: '/admin/dashboard' }` and sets the `fixeasy_admin_token` cookie.
+- The client calls `router.replace(redirect)` to navigate back to the protected page.
+
+This behavior ensures a smooth login flow and avoids flashing protected content to unauthenticated visitors.

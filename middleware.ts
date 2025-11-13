@@ -1,3 +1,50 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
+
+export async function middleware(request: NextRequest) {
+  const { nextUrl, cookies } = request;
+  const pathname = nextUrl.pathname;
+
+  // Only guard /admin routes (but not the login page or api routes)
+  if (!pathname.startsWith('/admin') || pathname === '/admin/login') {
+    return NextResponse.next();
+  }
+
+  const token = request.cookies.get('fixeasy_admin_token')?.value;
+  const secret = process.env.JWT_SECRET;
+  if (!token || !secret) {
+    // redirect to login with returnTo
+    const loginUrl = new URL('/admin/login', request.url);
+    loginUrl.searchParams.set('returnTo', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  try {
+    const encoder = new TextEncoder();
+    const { payload } = await jwtVerify(token, encoder.encode(secret));
+    const role = (payload as any)?.role || (payload as any)?.roles || null;
+    const isAdmin = Array.isArray(role)
+      ? role.includes('admin')
+      : typeof role === 'string'
+      ? role === 'admin' || role.split(',').map((r: string) => r.trim()).includes('admin')
+      : false;
+    if (!isAdmin) {
+      const loginUrl = new URL('/admin/login', request.url);
+      loginUrl.searchParams.set('returnTo', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  } catch (e) {
+    const loginUrl = new URL('/admin/login', request.url);
+    loginUrl.searchParams.set('returnTo', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+}
+
+export const config = {
+  matcher: ['/admin/:path*'],
+};
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";

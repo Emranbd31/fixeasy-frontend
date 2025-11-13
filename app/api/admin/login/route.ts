@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
         }
 
   // Preserve compatibility but forward `email` to backends that expect it.
-  // Use parsed.email when present; otherwise treat `username` as the email field.
+              const payload = { access_token: testToken, token: testToken, redirect: null };
   const email = (parsed.email ?? username).toString().trim();
   const payload = { email, password };
         forwardBody = JSON.stringify(payload);
@@ -154,7 +154,11 @@ export async function POST(request: NextRequest) {
 
     let response: Response;
     try {
-      response = await fetch(`${backendUrl}/admin/login`, {
+          // try to parse returnTo from either query string or body
+          const urlObj = new URL(request.url);
+          const qsReturnTo = urlObj.searchParams.get('returnTo') || urlObj.searchParams.get('return_to');
+
+          if (!rawBody && !qsReturnTo) {
         method: "POST",
         cache: "no-store",
         headers: forwardHeaders,
