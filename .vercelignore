@@ -10,4 +10,3 @@ autodeploy.sh
 c
 main
 backend/
-app/(admin)/**
