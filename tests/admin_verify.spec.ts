@@ -15,7 +15,6 @@ test('admin verify endpoint - full flow', async ({ request, baseURL }) => {
     token = j?.token ?? j?.access_token ?? j?.accessToken ?? null;
     // If token is not a JWT (compact JWS with two dots), treat as missing so we sign a proper JWT for verification
     if (token && typeof token === 'string' && token.split('.').length !== 3) {
-      console.log('[test] login returned a non-JWT token; will generate a signed fallback JWT for verify');
       token = null;
     }
   }
@@ -29,7 +28,7 @@ test('admin verify endpoint - full flow', async ({ request, baseURL }) => {
       .setIssuedAt()
       .setExpirationTime('2h')
       .sign(encoder.encode(secret));
-    console.log('[test] fallback token generated:', token?.slice(0, 80), '... len=', token?.length);
+  // fallback token created for verification
   }
 
   // Verify happy path
