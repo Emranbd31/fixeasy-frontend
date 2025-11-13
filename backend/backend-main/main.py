@@ -52,3 +52,9 @@ app.include_router(admin_summary_router.router)
 @app.get("/")
 async def root():
     return {"message": "Welcome to FixEasy Ireland API! Backend is live 🚀"}
+
+
+@app.get("/health")
+async def health_check():
+    """Basic health endpoint used by local smoke checks and load balancers."""
+    return {"status": "UP", "message": "Backend running OK"}

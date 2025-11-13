@@ -43,18 +43,24 @@ function resolveBackendUrl(): string {
 export async function POST(request: NextRequest) {
   // Rate limit by client IP (X-Forwarded-For or fallback)
   try {
-    const xff = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
-    // Use only the first IP in X-Forwarded-For list
-    const clientIp = (xff || "unknown").split(",")[0].trim();
-    const now = Date.now();
-    const arr = RATE_LIMIT_MAP.get(clientIp) || [];
-    // prune old timestamps
-    const recent = arr.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
-    if (recent.length >= RATE_LIMIT_MAX) {
-      return NextResponse.json({ error: "Too many login attempts" }, { status: 429 });
+    if (process.env.NODE_ENV !== "production" && process.env.DISABLE_RATE_LIMIT === "1") {
+      try {
+        console.info("[admin/login] Rate-limit bypass active in dev mode");
+      } catch {}
+    } else {
+      const xff = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+      // Use only the first IP in X-Forwarded-For list
+      const clientIp = (xff || "unknown").split(",")[0].trim();
+      const now = Date.now();
+      const arr = RATE_LIMIT_MAP.get(clientIp) || [];
+      // prune old timestamps
+      const recent = arr.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
+      if (recent.length >= RATE_LIMIT_MAX) {
+        return NextResponse.json({ error: "Too many login attempts" }, { status: 429 });
+      }
+      recent.push(now);
+      RATE_LIMIT_MAP.set(clientIp, recent);
     }
-    recent.push(now);
-    RATE_LIMIT_MAP.set(clientIp, recent);
   } catch (e) {
     // if rate limiter fails, allow the request to proceed
   }
@@ -62,8 +68,38 @@ export async function POST(request: NextRequest) {
     const backendUrl = resolveBackendUrl();
     const rawBody = await request.text();
 
+    // Sanitize the raw request body before logging to avoid leaking passwords
+    function sanitizeRequestBody(body: string) {
+      if (!body) return "";
+      try {
+        // Try parse JSON and redact common password keys
+        const parsed = JSON.parse(body);
+        const pwdKeys = ["password", "pass", "pwd"];
+        function walkAndRedact(obj: any) {
+          if (!obj || typeof obj !== "object") return;
+          for (const k of Object.keys(obj)) {
+            try {
+              if (pwdKeys.includes(k)) obj[k] = "[REDACTED]";
+              else walkAndRedact(obj[k]);
+            } catch {}
+          }
+        }
+        walkAndRedact(parsed);
+        return JSON.stringify(parsed);
+      } catch {
+        // Fallback: redact common patterns in urlencoded or plaintext
+        try {
+          let s = body.replace(/password=([^&\s]+)/gi, 'password=[REDACTED]');
+          s = s.replace(/("?password"?\s*:\s*")([^"]+)(")/gi, '$1[REDACTED]$3');
+          return s;
+        } catch {
+          return body.slice(0, 500) + (body.length > 500 ? '...[truncated]' : '');
+        }
+      }
+    }
+
     console.info("[admin/login] Using backend URL", backendUrl);
-    console.info("[admin/login] Raw request body", rawBody);
+    console.info("[admin/login] Raw request body", sanitizeRequestBody(rawBody));
 
     // Playwright/local test shim: when PLAYWRIGHT_TEST=1 is set we accept
     // the supplied credentials locally and return a test token without
@@ -99,7 +135,14 @@ export async function POST(request: NextRequest) {
         }
 
         const testToken = "playwright-test-token";
-        const payload = { access_token: testToken, token: testToken };
+        // Return a small shim payload compatible with tests (includes redirect)
+        const payload = {
+          ok: true,
+          message: "Test login successful (shim)",
+          token: testToken,
+          access_token: testToken,
+          redirect: "/admin/dashboard",
+        };
         const reply = NextResponse.json(payload, { status: 200 });
         // Set a cookie to emulate production behavior (not secure in dev)
         reply.cookies.set("fixeasy_admin_token", testToken, {
@@ -126,20 +169,19 @@ export async function POST(request: NextRequest) {
     let forwardBody: BodyInit;
 
     if (contentType.includes("application/json")) {
-      // If client sent JSON, forward JSON to backend as JSON.
+      // If client sent JSON, forward as JSON to the backend and normalize
+      // `username` -> `email` for backends that expect an email field.
       try {
         const parsed = JSON.parse(rawBody || "{}");
-        const username = (parsed.username ?? parsed.email ?? "").toString().trim();
+        const username = (parsed.username ?? parsed.email ?? parsed.email_address ?? "").toString().trim();
         const password = (parsed.password ?? "").toString().trim();
 
         if (!username || !password) {
           return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
         }
 
-  // Preserve compatibility but forward `email` to backends that expect it.
-              const payload = { access_token: testToken, token: testToken, redirect: null };
-  const email = (parsed.email ?? username).toString().trim();
-  const payload = { email, password };
+        const email = (parsed.email ?? username).toString().trim();
+        const payload = { email, password };
         forwardBody = JSON.stringify(payload);
         forwardHeaders = { "Content-Type": "application/json" };
       } catch (jsonError) {
@@ -152,28 +194,130 @@ export async function POST(request: NextRequest) {
       forwardBody = rawBody;
     }
 
+    // Helper to produce a redacted, short snippet of response body.
+    function redactBodySnippet(body: string) {
+      if (!body) return "";
+      // Try to parse JSON and redact common sensitive keys
+      try {
+        const parsed = JSON.parse(body);
+        const keysToRedact = ["password", "pass", "pwd", "token", "access_token", "accessToken", "jwt"];
+        function walk(obj: any) {
+          if (!obj || typeof obj !== "object") return;
+          for (const k of Object.keys(obj)) {
+            try {
+              if (keysToRedact.includes(k)) {
+                obj[k] = "[REDACTED]";
+              } else {
+                walk(obj[k]);
+              }
+            } catch {}
+          }
+        }
+        walk(parsed);
+        const s = JSON.stringify(parsed);
+        return s.length > 200 ? s.slice(0, 200) + "...[truncated]" : s;
+      } catch {
+        // If not JSON, remove obvious password/token patterns from plaintext
+        try {
+          let sanitized = body.replace(/("?password"?\s*:\s*")([^"]+)(")/gi, '$1[REDACTED]$3');
+          sanitized = sanitized.replace(/("?(?:access_token|token|jwt)"?\s*:\s*")([^"]+)(")/gi, '$1[REDACTED]$3');
+          sanitized = sanitized.replace(/password=([^&\s]+)/gi, 'password=[REDACTED]');
+          return sanitized.length > 200 ? sanitized.slice(0, 200) + "...[truncated]" : sanitized;
+        } catch {
+          return body.slice(0, 200) + (body.length > 200 ? "...[truncated]" : "");
+        }
+      }
+    }
+
+    // Log proxying action and headers being forwarded (only keys, no values)
+    try {
+      console.info("[admin/login] Proxying admin/login to:", `${backendUrl}/admin/login`);
+      console.info("[admin/login] Forward headers:", Object.keys(forwardHeaders || {}));
+    } catch (logErr) {
+      // Do not block on logging
+    }
+
+    // Helper that wraps fetch with a small retry policy.
+    async function fetchWithRetry(url: string, options: RequestInit, maxAttempts = 2, backoffMs = 300): Promise<Response> {
+      let lastError: any = null;
+      const startAll = Date.now();
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const attemptStart = Date.now();
+        try {
+          const res = await fetch(url, options);
+          // If backend returned a retryable status and we have more attempts left, retry.
+          if ((res.status === 401 || res.status === 502) && attempt < maxAttempts) {
+            try {
+              console.info(`[admin/login] Retry attempt ${attempt} after status ${res.status}`);
+            } catch {}
+            // short backoff before retrying
+            await new Promise((r) => setTimeout(r, backoffMs));
+            // continue to next attempt; keep the last response in case both fail
+            lastError = null;
+            // store intermediate response? we do not consume body here
+            continue;
+          }
+
+          // attach total duration (across attempts) to the response for logging
+          (res as any)._fetchDurationMs = Date.now() - startAll;
+          return res;
+        } catch (err: any) {
+          lastError = err;
+          if (attempt < maxAttempts) {
+            try {
+              console.info(`[admin/login] Retry attempt ${attempt} after error ${err?.message ?? String(err)}`);
+            } catch {}
+            await new Promise((r) => setTimeout(r, backoffMs));
+            continue;
+          }
+          // no more attempts
+          break;
+        }
+      }
+
+      // If we have a lastError (network-level) then throw it so caller handles as before.
+      if (lastError) throw lastError;
+
+      // If we fell through without a lastError it means we saw retryable responses but exhausted attempts.
+      // Make one final non-retry fetch to return the last response (so caller can inspect status/body)
+      const finalRes = await fetch(url, options);
+      (finalRes as any)._fetchDurationMs = Date.now() - startAll;
+      return finalRes;
+    }
+
     let response: Response;
     try {
-          // try to parse returnTo from either query string or body
-          const urlObj = new URL(request.url);
-          const qsReturnTo = urlObj.searchParams.get('returnTo') || urlObj.searchParams.get('return_to');
-
-          if (!rawBody && !qsReturnTo) {
+      response = await fetchWithRetry(`${backendUrl}/admin/login`, {
         method: "POST",
         cache: "no-store",
         headers: forwardHeaders,
         body: forwardBody,
-      });
-    } catch (fetchError) {
-      console.error("[admin/login] Failed to reach backend", fetchError);
+        // allow the runtime to attempt to keep the connection alive for in-flight requests
+        keepalive: true,
+      }, 2, 300);
+    } catch (fetchError: any) {
+      // Log fetch error message and stack (redacted) but avoid printing request body or secrets
+      try {
+        console.error("[admin/login] Failed to reach backend", {
+          message: fetchError?.message ?? String(fetchError),
+          stack: fetchError?.stack?.split("\n").slice(0, 3).join(" | ") ?? undefined,
+        });
+      } catch {}
       return NextResponse.json({ error: "Admin service unavailable" }, { status: 503 });
     }
 
     const responseBody = await response.text();
-    console.info("[admin/login] Backend response", {
-      status: response.status,
-      body: responseBody.slice(0, 500),
-    });
+    try {
+      const duration = (response as any)?._fetchDurationMs ?? null;
+      console.info("[admin/login] Backend response:", {
+        status: response.status,
+        ok: response.ok,
+        durationMs: duration,
+        bodySnippet: redactBodySnippet(responseBody),
+      });
+    } catch (logErr) {
+      // ignore logging errors
+    }
 
     let payload: any = null;
     try {
