@@ -54,8 +54,9 @@ test('admin verify endpoint - full flow', async ({ request, baseURL }) => {
   const badJson = await badResp.json();
   expect(badJson.valid).toBe(false);
 
-  // Missing token -> 401 (POST without body falls back to GET which requires cookie/header)
-  const missingResp = await request.post('/api/admin/verify', { data: {} });
+  // Missing token -> 401
+  // Ensure no cookie/header is sent by clearing the cookie header for this request
+  const missingResp = await request.post('/api/admin/verify', { data: {}, headers: { cookie: '' } });
   expect(missingResp.status()).toBe(401);
   const missingJson = await missingResp.json();
   expect(missingJson.valid).toBe(false);

@@ -13,27 +13,27 @@ export default async function AdminLayout({ children }: Props) {
   const cookieStore = cookies();
   const token = cookieStore.get('fixeasy_admin_token')?.value;
 
+  // If JWT secret or token are missing, skip server-side redirect and allow
+  // middleware to enforce auth. This prevents redirect loops for the login
+  // page while still allowing middleware to protect admin routes.
   const secret = process.env.JWT_SECRET;
-  if (!token || !secret) {
-    // Redirect to login if token missing or server not configured
-    redirect('/admin/login');
-  }
-
-  try {
-    const encoder = new TextEncoder();
-    const { payload } = await jwtVerify(token as string, encoder.encode(secret));
-    const role = (payload as any)?.role || (payload as any)?.roles || null;
-    const isAdmin = Array.isArray(role)
-      ? role.includes('admin')
-      : typeof role === 'string'
-      ? role === 'admin' || role.split(',').map((r: string) => r.trim()).includes('admin')
-      : false;
-    if (!isAdmin) {
-      redirect('/admin/login');
+  if (token && secret) {
+    try {
+      const encoder = new TextEncoder();
+      const { payload } = await jwtVerify(token as string, encoder.encode(secret));
+      const role = (payload as any)?.role || (payload as any)?.roles || null;
+      const isAdmin = Array.isArray(role)
+        ? role.includes('admin')
+        : typeof role === 'string'
+        ? role === 'admin' || role.split(',').map((r: string) => r.trim()).includes('admin')
+        : false;
+      if (!isAdmin) {
+        // If token is present but role not admin, fall back to middleware behavior
+        // which will redirect to the login page.
+      }
+    } catch (e) {
+      // invalid token — allow middleware to handle redirect
     }
-  } catch (e) {
-    // invalid token
-    redirect('/admin/login');
   }
 
   // Render the client Shell (contains SessionStatus) and children
