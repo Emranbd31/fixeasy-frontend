@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     if (process.env.NODE_ENV !== "production" && process.env.DISABLE_RATE_LIMIT === "1") {
       try {
         console.info("[admin/login] Rate-limit bypass active in dev mode");
-      } catch {}
+      } catch { }
     } else {
       const xff = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
       // Use only the first IP in X-Forwarded-For list
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
             try {
               if (pwdKeys.includes(k)) obj[k] = "[REDACTED]";
               else walkAndRedact(obj[k]);
-            } catch {}
+            } catch { }
           }
         }
         walkAndRedact(parsed);
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
               } else {
                 walk(obj[k]);
               }
-            } catch {}
+            } catch { }
           }
         }
         walk(parsed);
@@ -249,7 +249,7 @@ export async function POST(request: NextRequest) {
           if ((res.status === 401 || res.status === 502) && attempt < maxAttempts) {
             try {
               console.info(`[admin/login] Retry attempt ${attempt} after status ${res.status}`);
-            } catch {}
+            } catch { }
             // short backoff before retrying
             await new Promise((r) => setTimeout(r, backoffMs));
             // continue to next attempt; keep the last response in case both fail
@@ -266,7 +266,7 @@ export async function POST(request: NextRequest) {
           if (attempt < maxAttempts) {
             try {
               console.info(`[admin/login] Retry attempt ${attempt} after error ${err?.message ?? String(err)}`);
-            } catch {}
+            } catch { }
             await new Promise((r) => setTimeout(r, backoffMs));
             continue;
           }
@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
           message: fetchError?.message ?? String(fetchError),
           stack: fetchError?.stack?.split("\n").slice(0, 3).join(" | ") ?? undefined,
         });
-      } catch {}
+      } catch { }
       return NextResponse.json({ error: "Admin service unavailable" }, { status: 503 });
     }
 
