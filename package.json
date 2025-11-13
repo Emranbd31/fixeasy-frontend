@@ -2,23 +2,11 @@
   "name": "fixeasy-admin",
   "private": true,
   "version": "1.0.0",
-  "engines": {
-    "node": "22.x"
-  },
   "scripts": {
-    "predev": "node scripts/supabase-ops.js predev",
-  "dev": "next dev -p 3000",
-  "dev-clean": "npx kill-port 3000 && next dev",
-  "dev:restart": "node ./scripts/start-dev.js",
-  "build": "next build",
-  "vercel-build": "next build",
-  "prebuild": "node scripts/supabase-ops.js predeploy",
-    "start": "next start -p 3000",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-  "test": "playwright test",
-    "test:e2e": "playwright test --reporter=list",
-    "diagnose:admin-login": "node scripts/admin-login-diagnostic.mjs",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
     "upgrade:supabase": "powershell -ExecutionPolicy Bypass -File ./upgrade-supabase.ps1 -ConnectionString $env:SUPABASE_CONNECTION_STRING",
     "verify:supabase": "node supabase-monitor.js"
   },
