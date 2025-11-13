@@ -1,12 +1,16 @@
 "use client";
 
 import React from "react";
-import { usePathname } from "next/navigation";
-import Footer from "@/components/Footer";
 
 export default function ConditionalFooter() {
-    const pathname = usePathname() || "";
-    // Hide the public footer on all /admin/* pages
-    if (pathname.startsWith("/admin")) return null;
-    return <Footer />;
+    // Hide footer on admin pages
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) {
+        return null;
+    }
+
+    return (
+        <footer className="w-full py-6 text-center text-gray-500 text-sm border-t mt-10">
+            <p>© {new Date().getFullYear()} FixEasy Ireland — All Rights Reserved</p>
+        </footer>
+    );
 }
