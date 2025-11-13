@@ -1,0 +1,24 @@
+/* Admin dashboard theme overrides */
+:root {
+  --admin-bg: #f9fafb;
+  --admin-card-bg: #ffffff;
+  --admin-border: #e5e7eb;
+  --admin-text: #111827;
+}
+
+body.admin {
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+.admin-card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.admin-grid {
+  display: grid;
+  gap: 1.5rem;
+}
