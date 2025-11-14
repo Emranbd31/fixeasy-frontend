@@ -22,7 +22,7 @@ Value: https://wphmhlrttmzsmngysfws.supabase.co
 **Variable 2:**
 ```
 Name: NEXT_PUBLIC_SUPABASE_ANON_KEY
-Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwaG1obHJ0dG16c21uZ3lzZndzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzMDA3NjUsImV4cCI6MjA3NTg3Njc2NX0.LL6ezLtkHCeRBu3USlnxtr5QMEFBwOa05qH_RIpLaxA
+Value: <YOUR_SUPABASE_ANON_KEY>
 ```
 ☑️ Production ☑️ Preview ☑️ Development
 
@@ -31,7 +31,7 @@ Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indw
 **Variable 3:**
 ```
 Name: NEXT_PUBLIC_SUPABASE_KEY
-Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwaG1obHJ0dG16c21uZ3lzZndzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzMDA3NjUsImV4cCI6MjA3NTg3Njc2NX0.LL6ezLtkHCeRBu3USlnxtr5QMEFBwOa05qH_RIpLaxA
+Value: <YOUR_SUPABASE_ANON_KEY>
 ```
 ☑️ Production ☑️ Preview ☑️ Development
 
@@ -93,7 +93,7 @@ Value: https://wphmhlrttmzsmngysfws.supabase.co
 **Variable 2:**
 ```
 Name: SUPABASE_SERVICE_ROLE_KEY
-Value: nXtEMR5cpNwK8IijCSivNY/2gWA+7hCkL1dAyIx6eFjJ3Fy3fRCm3XWh2ekYyraNe/lLYbafxN0jb4PFazXAUw==
+Value: <YOUR_SUPABASE_SERVICE_ROLE_KEY>
 ```
 ☑️ Production ☑️ Preview ☑️ Development
 ⚠️ **KEEP SECRET - Backend only!**
@@ -103,7 +103,7 @@ Value: nXtEMR5cpNwK8IijCSivNY/2gWA+7hCkL1dAyIx6eFjJ3Fy3fRCm3XWh2ekYyraNe/lLYbafx
 **Variable 3:**
 ```
 Name: SUPABASE_JWT_SECRET
-Value: nXtEMR5cpNwK8IijCSivNY/2gWA+7hCkL1dAyIx6eFjJ3Fy3fRCm3XWh2ekYyraNe/lLYbafxN0jb4PFazXAUw==
+Value: <YOUR_SUPABASE_JWT_SECRET>
 ```
 ☑️ Production ☑️ Preview ☑️ Development
 ⚠️ **KEEP SECRET - Backend only!**

@@ -1,7 +1,12 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-// This middleware is now a no-op so the homepage (/) is public.
-// If you want to protect other routes, add them to the matcher and restore logic as needed.
+export function middleware(request: NextRequest) {
+  // Token is managed in localStorage on the client now; server middleware cannot read it.
+  // Allow navigation and let client-side fetches enforce Authorization headers.
+  return NextResponse.next();
+}
 
 export const config = {
-    matcher: [], // No routes protected by middleware
+  matcher: ["/admin/:path*"],
 };

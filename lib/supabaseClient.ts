@@ -4,7 +4,7 @@ export type Database = Record<string, never>;
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// WARNING: Use service role keys only in trusted backend services – never ship them to the browser.
 
 function safeEnv(value: string | undefined, name: string, ssrFallback: string): string {
   if (value && value.length > 0) return value;
@@ -31,7 +31,7 @@ export function createSupabaseBrowserClient(): SupabaseClient<Database> {
 export function createSupabaseServerClient(): SupabaseClient<Database> {
   return createClient<Database>(
     safeEnv(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL', 'http://localhost'),
-    supabaseServiceRoleKey ?? safeEnv(supabaseAnonKey, 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'public-anon-key'),
+    safeEnv(supabaseAnonKey, 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'public-anon-key'),
     {
       auth: {
         autoRefreshToken: false,
