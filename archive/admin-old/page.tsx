@@ -6,6 +6,17 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Users, Briefcase, Book, CreditCard, List } from "lucide-react";
 import Link from "next/link";
 
+export default function AdminDashboard() {
+  return (<div>Archived admin page copy</div>);
+}
+"use client";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { LogOut, Users, Briefcase, Book, CreditCard, List } from "lucide-react";
+import Link from "next/link";
+
 const summaryIcons = [
 	<Users key="users" className="w-6 h-6 text-blue-500" />,
 	<Briefcase key="briefcase" className="w-6 h-6 text-green-500" />,

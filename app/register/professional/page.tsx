@@ -193,7 +193,7 @@ function ProfessionalRegisterPage() {
             }
 
             // 4. Redirect to dashboard
-            router.push('/pro-dashboard?status=pending')
+            router.push('/pro/dashboard?status=pending')
         } catch (e: any) {
             setError(e.message || 'Something went wrong')
         } finally {

@@ -1,35 +1,45 @@
-"use client";
+import { fetchAdminSummary } from "@/lib/apiClient";
+import KpiCard from "@/components/admin/KpiCard";
+import { formatCurrency, formatCompactNumber } from "@/lib/utils";
 
-import Link from "next/link";
+export const dynamic = "force-dynamic"; // always fresh
+// or: export const revalidate = 0;
 
-export default function AdminDashboard() {
+export default async function AdminDashboardPage() {
+  let summary;
+  try {
+    summary = await fetchAdminSummary();
+  } catch (error) {
+    console.error("Failed to load admin summary:", error);
+    // You can render a nicer error UI here
+    return (
+      <div className="rounded-lg border border-red-500/40 bg-red-950/30 p-4 text-sm text-red-200">
+        Failed to load admin summary. Please refresh the page.
+      </div>
+    );
+  }
+
+  const {
+    totalUsers,
+    totalProfessionals,
+    totalBookings,
+    totalRevenue,
+  } = summary;
+
   return (
-    <main className="min-h-screen bg-white dark:bg-slate-900 p-8">
-      <nav className="mb-8 flex gap-4 border-b pb-4">
-        <Link href="/admin/dashboard" className="font-bold text-blue-600">Dashboard</Link>
-        <Link href="/admin/users" className="text-gray-600 hover:text-blue-600">Users</Link>
-        <Link href="/admin/services" className="text-gray-600 hover:text-blue-600">Services</Link>
-        <Link href="/admin/reports" className="text-gray-600 hover:text-blue-600">Reports</Link>
-        <Link href="/admin/settings" className="text-gray-600 hover:text-blue-600">Settings</Link>
-      </nav>
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="bg-blue-50 dark:bg-slate-800 rounded-xl p-6 shadow text-center">
-          <div className="text-3xl font-bold text-blue-600 mb-2">--</div>
-          <div className="text-gray-700 dark:text-gray-200 font-semibold">Total Users</div>
-        </div>
-        <div className="bg-green-50 dark:bg-slate-800 rounded-xl p-6 shadow text-center">
-          <div className="text-3xl font-bold text-green-600 mb-2">--</div>
-          <div className="text-gray-700 dark:text-gray-200 font-semibold">Active Professionals</div>
-        </div>
-        <div className="bg-purple-50 dark:bg-slate-800 rounded-xl p-6 shadow text-center">
-          <div className="text-3xl font-bold text-purple-600 mb-2">--</div>
-          <div className="text-gray-700 dark:text-gray-200 font-semibold">Total Bookings</div>
-        </div>
-      </section>
-      <section className="bg-white dark:bg-slate-800 rounded-xl shadow p-8 min-h-[300px] flex flex-col items-center justify-center">
-        <div className="text-xl font-bold text-gray-700 dark:text-gray-200 mb-2">Charts & Analytics</div>
-        <div className="text-gray-400">[Charts/graphs placeholder]</div>
-      </section>
-    </main>
+    <div className="space-y-6">
+      {/* KPI Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <KpiCard label="Total Users" value={Number(totalUsers ?? 0)} variant="purple" helper="Registered users" />
+        <KpiCard label="Professionals" value={Number(totalProfessionals ?? 0)} variant="emerald" helper="Service providers" />
+        <KpiCard label="Bookings" value={Number(totalBookings ?? 0)} variant="blue" helper="Total booked jobs" />
+        <KpiCard label="Revenue (€)" value={formatCurrency(Number(totalRevenue ?? 0))} variant="pink" helper={formatCompactNumber(Number(totalRevenue ?? 0))} />
+      </div>
+
+      {/* Placeholder for charts / tables */}
+      <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
+        Charts, trends, and tables will go here in V2. For now, summary KPIs are live from <code>/api/admin/summary</code>.
+      </div>
+    </div>
   );
 }
