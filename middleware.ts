@@ -46,5 +46,5 @@ export function middleware(req: NextRequest) {
 
 // Apply middleware only to admin pages
 export const config = {
-    matcher: ["/admin/:path*"],
+    matcher: ["/admin", "/admin/:path*"],
 };

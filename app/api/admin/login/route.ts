@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 // 3. fallback to the known working Vercel deployment URL
 const resolvedBase =
   process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_API_URL ??
-  'https://backend-main-4g38ypsmw-emrans-projects-8d06d556.vercel.app';
+  'https://api.fixeasy.irish';
 
 const BACKEND_LOGIN_URL = `${resolvedBase.replace(/\/$/, '')}/admin/login`;
 
