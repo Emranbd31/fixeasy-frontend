@@ -1,14 +1,8 @@
 import { NextResponse } from 'next/server';
 
-// Resolve backend login URL in this order:
-// 1. `BACKEND_URL` (server env)
-// 2. `NEXT_PUBLIC_API_URL` (public env)
-// 3. fallback to the known working Vercel deployment URL
-const resolvedBase =
-  process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_API_URL ??
-  'https://api.fixeasy.irish';
-
-const BACKEND_LOGIN_URL = `${resolvedBase.replace(/\/$/, '')}/admin/login`;
+// Use the admin backend URL from environment (admin-specific variable)
+const BACKEND_URL = (process.env.NEXT_PUBLIC_ADMIN_BASE_URL || 'https://api.fixeasy.irish').replace(/\/$/, '');
+const BACKEND_LOGIN_URL = `${BACKEND_URL}/admin/login`;
 
 export async function POST(request: Request) {
   try {
@@ -18,11 +12,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
     }
 
-    const res = await fetch(BACKEND_LOGIN_URL, {
+    let res: Response | null = null;
+    try {
+      res = await fetch(BACKEND_LOGIN_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ email, password }),
-    });
+      });
+    } catch (err) {
+      console.error('[admin login] backend fetch failed', err);
+      return NextResponse.json({ error: 'Backend unavailable' }, { status: 502 });
+    }
 
     // If backend returned an error, forward useful details for debugging.
     if (!res.ok) {
@@ -46,9 +46,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Backend did not return a token' }, { status: 502 });
     }
 
-    // Set cookie (HttpOnly, Secure, SameSite=Lax). Max-Age 7 days.
-    const maxAge = 7 * 24 * 60 * 60;
-    const cookie = `fixeasy_admin_token=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+    // Set cookie (HttpOnly, Secure, SameSite=Lax). Max-Age 7 days (604800 seconds).
+    const maxAge = 7 * 24 * 60 * 60; // 604800
+    // In production we set the cookie Domain to the admin subdomain so it is shared correctly.
+    // For local development we must NOT set Domain (so tests on localhost work).
+    const domainPart = process.env.NODE_ENV === 'production' ? ' Domain=admin.fixeasy.irish;' : '';
+    const cookie = `fixeasy_admin_token=${token}; Path=/;${domainPart} HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
 
     return NextResponse.json({ ok: true }, { headers: { 'Set-Cookie': cookie } });
   } catch (err) {
