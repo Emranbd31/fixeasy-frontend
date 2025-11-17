@@ -23,7 +23,8 @@ export function middleware(req: NextRequest) {
     // If the request arrives on the admin domain, rewrite non-admin pages but allow API/static assets untouched
     if (isAdminHost) {
         if (!pathname.startsWith('/admin') && !isApiRoute && !isAsset) {
-            url.pathname = '/admin' + pathname;
+            // Send bare domain traffic straight to the login page
+            url.pathname = pathname === '/' ? '/admin/login' : `/admin${pathname}`;
             url.search = search;
             return NextResponse.rewrite(url);
         }
@@ -35,6 +36,11 @@ export function middleware(req: NextRequest) {
 
         // If on admin domain and requesting login page while already authenticated, redirect to dashboard
         const isLoginPage = pathname === '/admin/login' || pathname.startsWith('/admin/login');
+        if (pathname === '/admin') {
+            const redirectUrl = req.nextUrl.clone();
+            redirectUrl.pathname = '/admin/login';
+            return NextResponse.redirect(redirectUrl);
+        }
         const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
 
         if (isLoginPage) {
@@ -67,6 +73,15 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-    // Run this middleware for all routes so we can detect hostname and rewrite appropriately
-    matcher: ['/:path*'],
+    // Run this middleware for pages (including `/` and `/admin/*`) but avoid static and API assets.
+    // Narrowing the matcher reduces unnecessary middleware invocations and avoids touching
+    // `/_next/static`, images and `favicon.ico`. If Next deprecates middleware entirely,
+    // consider replacing this behavior with the new `proxy` config or a dedicated edge
+    // function for host-based rewrites.
+    matcher: [
+        '/',
+        '/admin/:path*',
+        // Match all top-level pages except Next.js static assets, images, api and favicon
+        '/((?!_next/static|_next/image|api|static|favicon.ico).*)',
+    ],
 };

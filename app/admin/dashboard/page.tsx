@@ -1,6 +1,8 @@
 import KpiCard from "@/components/admin/KpiCard";
 import { formatCurrency, formatCompactNumber } from "@/lib/utils";
 import { getAdminAuthHeader } from "@/lib/adminAuth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic"; // always fresh
 
@@ -10,9 +12,28 @@ export default async function AdminDashboardPage() {
   let res: Response;
   try {
     // Include server-side Authorization header built from the HttpOnly cookie
-    const authHeader = getAdminAuthHeader();
-    const headers = { Accept: "application/json", ...(authHeader as any) };
-    res = await fetch("/api/admin/summary", { cache: "no-store", headers });
+    const rawHeaders = headers();
+    const headerStore =
+      typeof (rawHeaders as any)?.then === "function"
+        ? await rawHeaders
+        : rawHeaders;
+    const headerGetter =
+      typeof (headerStore as any)?.get === "function"
+        ? (headerStore as any).get.bind(headerStore)
+        : undefined;
+    const scheme =
+      (headerGetter && headerGetter("x-forwarded-proto")) ||
+      (process.env.NODE_ENV === "production" ? "https" : "http");
+    const host =
+      (headerGetter && headerGetter("x-forwarded-host")) ||
+      (headerGetter && headerGetter("host")) ||
+      "localhost:3000";
+    const baseUrl = `${scheme}://${host}`;
+
+    res = await fetch(`${baseUrl}/api/admin/summary`, {
+      headers: getAdminAuthHeader(),
+      cache: "no-store",
+    });
   } catch (err) {
     console.error("Admin summary fetch failed:", err);
     return (
@@ -24,6 +45,9 @@ export default async function AdminDashboardPage() {
 
   // If backend returned non-OK, surface the error message returned by the API.
   if (!res.ok) {
+    if (res.status === 401) {
+      redirect("/admin/login?from=dashboard");
+    }
     let payload: any = { error: `Status ${res.status}` };
     try {
       payload = await res.json();
