@@ -11,13 +11,21 @@ export function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     const { pathname, search } = req.nextUrl;
 
-    // If the request arrives on the admin domain, rewrite all routes to /admin/*
-    if (req.nextUrl.hostname === 'admin.fixeasy.irish') {
-        // If already under /admin, continue to protection logic below
-        if (!pathname.startsWith('/admin')) {
+    const isAdminHost = req.nextUrl.hostname === 'admin.fixeasy.irish';
+    const isApiRoute = pathname.startsWith('/api');
+    const isAsset = pathname.startsWith('/_next') || pathname.startsWith('/static') || pathname.startsWith('/favicon');
+
+    // If the request arrives on the admin domain, rewrite non-admin pages but allow API/static assets untouched
+    if (isAdminHost) {
+        if (!pathname.startsWith('/admin') && !isApiRoute && !isAsset) {
             url.pathname = '/admin' + pathname;
             url.search = search;
             return NextResponse.rewrite(url);
+        }
+
+        // Never run auth logic for API/static paths
+        if (!pathname.startsWith('/admin')) {
+            return NextResponse.next();
         }
 
         // If on admin domain and requesting login page while already authenticated, redirect to dashboard

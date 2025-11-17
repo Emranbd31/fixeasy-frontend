@@ -5,8 +5,15 @@ const BACKEND_URL = (process.env.NEXT_PUBLIC_API_BASE || 'https://api.fixeasy.ir
 const BACKEND_LOGIN_URL = `${BACKEND_URL}/admin/login`;
 
 export async function POST(request: Request) {
+  let body: any = null;
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch (err) {
+    console.error('[admin login] invalid JSON payload', err);
+    return NextResponse.json({ error: 'Invalid request payload' }, { status: 400 });
+  }
+
+  try {
     const { email, password } = body;
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
@@ -65,6 +72,7 @@ export async function POST(request: Request) {
 
     return response;
   } catch (err) {
+    console.error('[admin login] unexpected failure', err);
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   }
 }
