@@ -4,27 +4,24 @@
 
 ### 1. Supabase Keys (Get from Supabase Dashboard)
 
-**Go to:** https://supabase.com/dashboard/project/wphmhlrttmzsmngysfws/settings/api
-
-You'll see:
-
-```
-Project URL: https://wphmhlrttmzsmngysfws.supabase.co
-```
+1. Sign in to the Supabase dashboard and open **Project Settings → API**.
+2. Copy the values shown under **Project URL** and **API Keys**.
 
 **Copy these keys:**
 
+> 🔐 Replace the placeholder strings below with freshly rotated values in your local `.env` files and deployment providers. Never commit the actual secrets to Git.
+
 1. **`anon` key (public)** - This is safe to use in frontend
-   - Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwaG1obHJ0dG16c21uZ3lzZndzIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODYxMjM0NTYsImV4cCI6MjAwMTY5OTQ1Nn0.example-signature`
+   - Example: `<YOUR_SUPABASE_ANON_KEY>`
    - Use this for: NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 2. **`service_role` key** - KEEP SECRET! Only for backend
-   - Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwaG1obHJ0dG16c21uZ3lzZndzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4NjEyMzQ1NiwiZXhwIjoyMDAxNjk5NDU2fQ.example-signature`
+   - Example: `<YOUR_SUPABASE_SERVICE_ROLE_KEY>`
    - Use this ONLY in backend (api.fixeasy.irish)
 
 3. **JWT Secret** - For token verification
    - Found on same page under "JWT Settings"
-   - Use this in backend for verifying tokens
+   - Use this in backend for verifying tokens (store locally as `<YOUR_SUPABASE_JWT_SECRET>`)
 
 ---
 
@@ -42,11 +39,12 @@ Project URL: https://wphmhlrttmzsmngysfws.supabase.co
 
 | Variable Name | Value | Environment |
 |---------------|-------|-------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://wphmhlrttmzsmngysfws.supabase.co` | Production, Preview, Development |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `<your anon key from Supabase>` | Production, Preview, Development |
-| `NEXT_PUBLIC_SUPABASE_KEY` | `<same anon key>` | Production, Preview, Development |
-| `NEXT_PUBLIC_API_URL` | `https://api.fixeasy.irish` | Production, Preview, Development |
-| `NEXT_PUBLIC_SITE_URL` | `https://fixeasy.irish` | Production, Preview, Development |
+| `NEXT_PUBLIC_SUPABASE_URL` | `<YOUR_SUPABASE_URL>` | Production, Preview, Development |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `<YOUR_SUPABASE_ANON_KEY>` | Production, Preview, Development |
+| `NEXT_PUBLIC_SUPABASE_KEY` | `<YOUR_SUPABASE_ANON_KEY>` | Production, Preview, Development |
+| `BACKEND_URL` | `https://api.fixeasy.irish` *(optional server-only override)* | Production, Preview, Development |
+| `NEXT_PUBLIC_API_URL` | `https://api.fixeasy.irish` *(or your backend URL)* | Production, Preview, Development |
+| `NEXT_PUBLIC_SITE_URL` | `https://fixeasy.irish` *(optional override)* | Production, Preview, Development |
 | `NEXT_PUBLIC_ENV` | `production` | Production only |
 | `NODE_VERSION` | `18` | Production, Preview, Development |
 
@@ -66,19 +64,21 @@ I already created `.env.local` file for you. Just update it:
 
 **Replace `YOUR_SUPABASE_ANON_KEY_HERE` with your actual key:**
 
-```env
+```
 # FixEasy Frontend Environment Variables
-NEXT_PUBLIC_SUPABASE_URL=https://wphmhlrttmzsmngysfws.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.YOUR_ACTUAL_KEY_HERE
-NEXT_PUBLIC_SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.YOUR_ACTUAL_KEY_HERE
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+NEXT_PUBLIC_SUPABASE_KEY=your_anon_key
 
 # API Configuration
-NEXT_PUBLIC_API_URL=https://api.fixeasy.irish
-NEXT_PUBLIC_SITE_URL=https://fixeasy.irish
+BACKEND_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 # Environment
 NEXT_PUBLIC_ENV=development
 NODE_VERSION=18
+JWT_SECRET=your_admin_jwt_secret
 ```
 
 ---
@@ -89,9 +89,13 @@ If you have a backend project on Vercel, add these:
 
 | Variable Name | Value | Keep Secret? |
 |---------------|-------|--------------|
-| `SUPABASE_URL` | `https://wphmhlrttmzsmngysfws.supabase.co` | No |
-| `SUPABASE_SERVICE_ROLE_KEY` | `<service_role key from Supabase>` | ⚠️ YES! |
-| `SUPABASE_JWT_SECRET` | `<JWT secret from Supabase>` | ⚠️ YES! |
+| `SUPABASE_URL` | `<YOUR_SUPABASE_URL>` | No |
+| `SUPABASE_SERVICE_ROLE_KEY` | `<YOUR_SUPABASE_SERVICE_ROLE_KEY>` | ⚠️ YES! |
+| `ADMIN_USER` | `<YOUR_ADMIN_USERNAME>` | ⚠️ YES! |
+| `ADMIN_PASS` | `<YOUR_ADMIN_PASSWORD>` | ⚠️ YES! |
+| `JWT_SECRET` | `<YOUR_ADMIN_JWT_SECRET>` | ⚠️ YES! |
+| `ADMIN_SECRET` | `<YOUR_ADMIN_SECRET>` *(legacy optional)* | ⚠️ YES! |
+| `DATABASE_URL` | `sqlite:///./fixeasy.db` *(optional override)* | ⚠️ YES! |
 | `CORS_ALLOWED_ORIGINS` | `https://fixeasy.irish,https://www.fixeasy.irish` | No |
 | `ENVIRONMENT` | `production` | No |
 | `PYTHON_VERSION` | `3.11` | No |
@@ -142,7 +146,8 @@ npm run dev
 
 ### ⛔ NEVER expose publicly:
 - `SUPABASE_SERVICE_ROLE_KEY` (backend only!)
-- `SUPABASE_JWT_SECRET` (backend only!)
+- `JWT_SECRET` (backend only!)
+- `ADMIN_USER` / `ADMIN_PASS`
 - Any key without `NEXT_PUBLIC_` prefix
 
 ### Why `anon` key is safe:
@@ -155,10 +160,7 @@ npm run dev
 
 ## 📸 Visual Guide - Where to Find Keys
 
-**1. Go to Supabase Dashboard:**
-```
-https://supabase.com/dashboard/project/wphmhlrttmzsmngysfws
-```
+**1. Go to Supabase Dashboard:** open your project at `https://supabase.com/dashboard/project/<your-project-ref>`
 
 **2. Click "Settings" (gear icon) → "API"**
 
@@ -166,17 +168,17 @@ https://supabase.com/dashboard/project/wphmhlrttmzsmngysfws
 ```
 ┌─────────────────────────────────────────┐
 │ Project URL                             │
-│ https://wphmhlrttmzsmngysfws.supabase.co│
+│ https://your-project.supabase.co        │
 └─────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────┐
 │ API Keys                                │
 ├─────────────────────────────────────────┤
 │ anon / public                           │
-│ eyJhbGci... [COPY THIS]                 │
+│ <YOUR_SUPABASE_ANON_KEY>                │
 ├─────────────────────────────────────────┤
 │ service_role                            │
-│ eyJhbGci... [COPY THIS - Backend only]  │
+│ <YOUR_SUPABASE_SERVICE_ROLE_KEY>        │
 └─────────────────────────────────────────┘
 ```
 

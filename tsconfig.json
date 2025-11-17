@@ -32,6 +32,9 @@
       "@/lib/*": [
         "lib/*"
       ],
+      "@/utils/*": [
+        "utils/*"
+      ],
       "@/public/*": [
         "public/*"
       ]
@@ -53,6 +56,14 @@
     "tests"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "FixEasy-Backend",
+    "FixEasy-Backend/**",
+    "**/FixEasy-Backend/**",
+    "backup_*",
+    "backup*/**",
+    "**/backup*/**",
+    "**/rollback*/**",
+    "**/restore*/**"
   ]
 }

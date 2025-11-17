@@ -27,7 +27,7 @@
     },
     "paths": {
         "frontend": "./",
-        "backend": "../Backend--main",
+        "backend": "../backend-main",
         "publicImages": "./public/images"
     }
 }
