@@ -8,10 +8,15 @@ import { ADMIN_COOKIE_NAME } from './lib/adminAuth';
  * Example: https://fixeasy.irish/admin/login -> https://admin.fixeasy.irish/admin/login
  */
 export function middleware(req: NextRequest) {
+    if (process.env.NODE_ENV !== 'production') {
+        return NextResponse.next();
+    }
     const url = req.nextUrl.clone();
     const { pathname, search } = req.nextUrl;
 
-    const isAdminHost = req.nextUrl.hostname === 'admin.fixeasy.irish';
+    const hostname = req.nextUrl.hostname;
+    const isLocalAdminHost = hostname === 'localhost' || hostname === '127.0.0.1';
+    const isAdminHost = hostname === 'admin.fixeasy.irish' || isLocalAdminHost;
     const isApiRoute = pathname.startsWith('/api');
     const isAsset = pathname.startsWith('/_next') || pathname.startsWith('/static') || pathname.startsWith('/favicon');
 
@@ -53,7 +58,7 @@ export function middleware(req: NextRequest) {
     }
 
     // If request is for /admin on the main site, redirect to admin subdomain
-    if (pathname.startsWith('/admin')) {
+    if (!isLocalAdminHost && pathname.startsWith('/admin')) {
         const dest = `https://admin.fixeasy.irish${pathname}${search}`;
         return NextResponse.redirect(dest, 307);
     }

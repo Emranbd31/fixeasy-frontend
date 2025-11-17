@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 
-// Use the public API base (or default to production backend) when proxying login
-const BACKEND_URL = (process.env.NEXT_PUBLIC_API_BASE || 'https://api.fixeasy.irish').replace(/\/$/, '');
+// Resolve backend base URL from env. Default to localhost in dev, production URL otherwise.
+const BACKEND_URL = (
+  process.env.NEXT_PUBLIC_API_BASE ||
+  process.env.API_BASE_URL ||
+  (process.env.NODE_ENV === 'production' ? 'https://api.fixeasy.irish' : 'http://localhost:8000')
+).replace(/\/$/, '');
 const BACKEND_LOGIN_URL = `${BACKEND_URL}/admin/login`;
 
 export async function POST(request: Request) {
@@ -9,7 +13,8 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch (err) {
-    console.error('[admin login] invalid JSON payload', err);
+    const headers = Object.fromEntries(request.headers.entries());
+    console.error('[admin login] invalid JSON payload', { err, headers });
     return NextResponse.json({ error: 'Invalid request payload' }, { status: 400 });
   }
 
@@ -41,7 +46,7 @@ export async function POST(request: Request) {
       }
       const message =
         backendBody?.error ?? backendBody?.message ?? String(backendBody) ?? `Backend responded ${res.status}`;
-      console.error('[admin login] backend error', res.status, message);
+    console.error('[admin login] backend error', { status: res.status, backend: BACKEND_LOGIN_URL, message });
       return NextResponse.json({ error: message }, { status: res.status });
     }
 
