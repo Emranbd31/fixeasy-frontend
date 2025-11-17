@@ -1,17 +1,20 @@
-import { fetchAdminSummary } from "@/lib/apiClient";
 import KpiCard from "@/components/admin/KpiCard";
 import { formatCurrency, formatCompactNumber } from "@/lib/utils";
+import { getAdminAuthHeader } from "@/lib/adminAuth";
 
 export const dynamic = "force-dynamic"; // always fresh
-// or: export const revalidate = 0;
 
 export default async function AdminDashboardPage() {
-  let summary;
+  // Call the internal Next.js API route which proxies to the backend.
+  // Do NOT call backend URLs directly from the browser; token is in the cookie.
+  let res: Response;
   try {
-    summary = await fetchAdminSummary();
-  } catch (error) {
-    console.error("Failed to load admin summary:", error);
-    // You can render a nicer error UI here
+    // Include server-side Authorization header built from the HttpOnly cookie
+    const authHeader = getAdminAuthHeader();
+    const headers = { Accept: "application/json", ...(authHeader as any) };
+    res = await fetch("/api/admin/summary", { cache: "no-store", headers });
+  } catch (err) {
+    console.error("Admin summary fetch failed:", err);
     return (
       <div className="rounded-lg border border-red-500/40 bg-red-950/30 p-4 text-sm text-red-200">
         Failed to load admin summary. Please refresh the page.
@@ -19,21 +22,46 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  const {
-    totalUsers,
-    totalProfessionals,
-    totalBookings,
-    totalRevenue,
-  } = summary;
+  // If backend returned non-OK, surface the error message returned by the API.
+  if (!res.ok) {
+    let payload: any = { error: `Status ${res.status}` };
+    try {
+      payload = await res.json();
+    } catch (e) {
+      try {
+        payload = { error: await res.text() };
+      } catch (_) {
+        /* ignore */
+      }
+    }
+
+    const message = payload?.error || payload?.message || payload?.details || JSON.stringify(payload);
+    return (
+      <div className="rounded-lg border border-red-500/40 bg-red-950/30 p-4 text-sm text-red-200">
+        Error loading summary: {message}
+      </div>
+    );
+  }
+
+  const summary = await res.json();
+
+  // Accept either new shape { users, professionals, bookings, payments, trend, serviceMix }
+  // or legacy backend shape { totalUsers, totalProfessionals, totalBookings, totalRevenue }
+  const users = (summary as any).users ?? (summary as any).totalUsers ?? 0;
+  const professionals = (summary as any).professionals ?? (summary as any).totalProfessionals ?? 0;
+  const bookings = (summary as any).bookings ?? (summary as any).totalBookings ?? 0;
+  const payments = (summary as any).payments ?? (summary as any).totalRevenue ?? 0;
+  const trend = (summary as any).trend ?? null;
+  const serviceMix = (summary as any).serviceMix ?? null;
 
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Total Users" value={Number(totalUsers ?? 0)} variant="purple" helper="Registered users" />
-        <KpiCard label="Professionals" value={Number(totalProfessionals ?? 0)} variant="emerald" helper="Service providers" />
-        <KpiCard label="Bookings" value={Number(totalBookings ?? 0)} variant="blue" helper="Total booked jobs" />
-        <KpiCard label="Revenue (€)" value={formatCurrency(Number(totalRevenue ?? 0))} variant="pink" helper={formatCompactNumber(Number(totalRevenue ?? 0))} />
+        <KpiCard label="Total Users" value={Number(users ?? 0)} variant="purple" helper="Registered users" />
+        <KpiCard label="Professionals" value={Number(professionals ?? 0)} variant="emerald" helper="Service providers" />
+        <KpiCard label="Bookings" value={Number(bookings ?? 0)} variant="blue" helper="Total booked jobs" />
+        <KpiCard label="Revenue (€)" value={formatCurrency(Number(payments ?? 0))} variant="pink" helper={formatCompactNumber(Number(payments ?? 0))} />
       </div>
 
       {/* Placeholder for charts / tables */}

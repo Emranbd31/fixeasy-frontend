@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-// Use the admin backend URL from environment (admin-specific variable)
-const BACKEND_URL = (process.env.NEXT_PUBLIC_ADMIN_BASE_URL || 'https://api.fixeasy.irish').replace(/\/$/, '');
+// Use the public API base (or default to production backend) when proxying login
+const BACKEND_URL = (process.env.NEXT_PUBLIC_API_BASE || 'https://api.fixeasy.irish').replace(/\/$/, '');
 const BACKEND_LOGIN_URL = `${BACKEND_URL}/admin/login`;
 
 export async function POST(request: Request) {
@@ -46,14 +46,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Backend did not return a token' }, { status: 502 });
     }
 
-    // Set cookie (HttpOnly, Secure, SameSite=Lax). Max-Age 7 days (604800 seconds).
+    // Set cookie (HttpOnly, SameSite=Lax). Max-Age 7 days (604800 seconds).
     const maxAge = 7 * 24 * 60 * 60; // 604800
-    // In production we set the cookie Domain to the admin subdomain so it is shared correctly.
-    // For local development we must NOT set Domain (so tests on localhost work).
-    const domainPart = process.env.NODE_ENV === 'production' ? ' Domain=admin.fixeasy.irish;' : '';
-    const cookie = `fixeasy_admin_token=${token}; Path=/;${domainPart} HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+    // In production include Domain and Secure attributes. For local development omit them
+    // so the cookie can be set over plain HTTP on localhost.
+    const isProd = process.env.NODE_ENV === 'production';
+    const response = NextResponse.json({ ok: true });
+    response.cookies.set({
+      name: 'fixeasy_admin_token',
+      value: token,
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge,
+      path: '/',
+      secure: isProd,
+      ...(isProd ? { domain: 'admin.fixeasy.irish' } : {}),
+    });
 
-    return NextResponse.json({ ok: true }, { headers: { 'Set-Cookie': cookie } });
+    return response;
   } catch (err) {
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   }

@@ -1,50 +1,59 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { ADMIN_COOKIE_NAME } from './lib/adminAuth';
 
-// middleware.ts
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { ADMIN_COOKIE_NAME } from "./lib/adminAuth";
-
+/**
+ * Middleware to:
+ * 1) Redirect any /admin/* requests on the main site to the admin subdomain
+ * Example: https://fixeasy.irish/admin/login -> https://admin.fixeasy.irish/admin/login
+ */
 export function middleware(req: NextRequest) {
-    const { pathname } = req.nextUrl;
+    const url = req.nextUrl.clone();
+    const { pathname, search } = req.nextUrl;
 
-    // Only protect admin pages (NOT /api/admin here)
-    const isAdminPage =
-        pathname === "/admin" ||
-        pathname.startsWith("/admin/");
-
-    // Allow login page without token
-    const isLoginPage =
-        pathname === "/admin/login" ||
-        pathname.startsWith("/admin/login");
-
-    if (!isAdminPage) {
-        return NextResponse.next();
-    }
-
-    if (isLoginPage) {
-        // If already logged in, redirect from /admin/login to /admin/dashboard
-        const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
-        if (token) {
-            const url = req.nextUrl.clone();
-            url.pathname = "/admin/dashboard";
-            return NextResponse.redirect(url);
+    // If the request arrives on the admin domain, rewrite all routes to /admin/*
+    if (req.nextUrl.hostname === 'admin.fixeasy.irish') {
+        // If already under /admin, continue to protection logic below
+        if (!pathname.startsWith('/admin')) {
+            url.pathname = '/admin' + pathname;
+            url.search = search;
+            return NextResponse.rewrite(url);
         }
+
+        // If on admin domain and requesting login page while already authenticated, redirect to dashboard
+        const isLoginPage = pathname === '/admin/login' || pathname.startsWith('/admin/login');
+        const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+
+        if (isLoginPage) {
+            if (token) {
+                const redirectUrl = req.nextUrl.clone();
+                redirectUrl.pathname = '/admin/dashboard';
+                return NextResponse.redirect(redirectUrl);
+            }
+            return NextResponse.next();
+        }
+
+        // For all other admin pages, require token; if missing, redirect to login
+        if (!token) {
+            const redirectUrl = req.nextUrl.clone();
+            redirectUrl.pathname = '/admin/login';
+            redirectUrl.searchParams.set('from', pathname);
+            return NextResponse.redirect(redirectUrl);
+        }
+
         return NextResponse.next();
     }
 
-    const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
-
-    if (!token) {
-        const url = req.nextUrl.clone();
-        url.pathname = "/admin/login";
-        url.searchParams.set("from", pathname);
-        return NextResponse.redirect(url);
+    // If request is for /admin on the main site, redirect to admin subdomain
+    if (pathname.startsWith('/admin')) {
+        const dest = `https://admin.fixeasy.irish${pathname}${search}`;
+        return NextResponse.redirect(dest, 307);
     }
 
     return NextResponse.next();
 }
 
-// Apply middleware only to admin pages
 export const config = {
-    matcher: ["/admin", "/admin/:path*"],
+    // Run this middleware for all routes so we can detect hostname and rewrite appropriately
+    matcher: ['/:path*'],
 };
