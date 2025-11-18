@@ -7,13 +7,12 @@ export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const pathname = url.pathname;
 
-  // match internal route-group path AND public path
   const isAdminRoute =
-    pathname.includes("/admin") && !pathname.startsWith("/_next");
+    pathname.includes("/admin") &&
+    !pathname.startsWith("/_next");
 
   const isAdminLogin =
-    pathname.endsWith("/admin/login") ||
-    pathname.endsWith("/(admin)/admin/login");
+    pathname.endsWith("/admin/login");
 
   if (isAdminRoute) {
     const token = req.cookies.get(ADMIN_COOKIE);
@@ -22,18 +21,14 @@ export function middleware(req: NextRequest) {
       url.pathname = "/admin/login";
       return NextResponse.redirect(url);
     }
-
-    return NextResponse.next();
   }
 
   return NextResponse.next();
 }
 
-// must match ALL admin paths, including route-group paths
 export const config = {
   matcher: [
     "/admin/:path*",
     "/(admin)/admin/:path*",
-    "/(admin)/admin",
   ],
 };

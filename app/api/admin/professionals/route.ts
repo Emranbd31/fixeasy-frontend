@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchAdminBackend } from '@/lib/apiClient'
+import { fetchAdminBackend } from '../../../../lib/apiClient'
 
 export async function GET(req: NextRequest) {
   try {
