@@ -58,21 +58,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Backend did not return a token' }, { status: 502 });
     }
 
-    // Set cookie (HttpOnly, SameSite=Lax). Max-Age 7 days (604800 seconds).
-    const maxAge = 7 * 24 * 60 * 60; // 604800
-    // In production include Domain and Secure attributes. For local development omit them
-    // so the cookie can be set over plain HTTP on localhost.
-    const isProd = process.env.NODE_ENV === 'production';
+    // Set cookie (HttpOnly) dedicated for admin auth only.
+    const maxAge = 7 * 24 * 60 * 60;
     const response = NextResponse.json({ ok: true });
     response.cookies.set({
       name: 'fixeasy_admin_token',
       value: token,
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/admin',
       maxAge,
-      path: '/',
-      secure: isProd,
-      ...(isProd ? { domain: 'admin.fixeasy.irish' } : {}),
     });
 
     return response;

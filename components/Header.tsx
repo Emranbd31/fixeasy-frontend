@@ -3,8 +3,13 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
+    const pathname = usePathname();
+    if (pathname?.startsWith('/admin')) {
+        return null;
+    }
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
