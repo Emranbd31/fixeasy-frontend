@@ -1,14 +1,15 @@
 
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { supabase } from "../../lib/supabaseClient";
+
 // Add Professional type for Supabase
 type Professional = {
     id: string;
     verified: boolean;
     // Add other fields as needed
 };
-"use client";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { supabase } from "../../lib/supabaseClient";
 
 export default function AdminDashboardPage() {
     const [ready, setReady] = useState(false);

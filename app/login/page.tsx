@@ -36,7 +36,7 @@ function LoginPage() {
             const role = user?.user_metadata?.role || "client";
 
             if (role === "professional") {
-                router.push("/pro-dashboard");
+                router.push("/pro/dashboard");
             } else {
                 router.push("/dashboard");
             }

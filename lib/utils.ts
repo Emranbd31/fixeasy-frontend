@@ -20,3 +20,10 @@ export function formatCurrency(amount: number): string {
         currency: 'EUR',
     }).format(amount);
 }
+
+export function formatCompactNumber(amount: number): string {
+    return new Intl.NumberFormat('en-IE', {
+        notation: 'compact',
+        maximumFractionDigits: 1,
+    }).format(amount as number);
+}

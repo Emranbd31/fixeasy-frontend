@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+    html, body, #__next {
+        background-color: #020617;
+        margin: 0;
+    }
+
     body {
         font-feature-settings: 'rlig' 1, 'calt' 1;
     }
@@ -21,4 +26,67 @@
     .scrollbar-hide::-webkit-scrollbar {
         display: none;
     }
+}
+
+@layer components {
+    .admin-table thead th {
+        @apply sticky top-0 bg-slate-900/90 text-slate-300 z-20 backdrop-blur;
+    }
+
+    .admin-table tbody tr:nth-child(odd) {
+        @apply bg-slate-900/60;
+    }
+
+    .admin-table tbody tr:hover {
+        @apply bg-slate-800/60;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        @apply px-4 py-3 text-sm align-middle;
+    }
+}
+
+@layer utilities {
+    /* KPI pulse for small glow on mount */
+    @keyframes kpi-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(99,102,241,0.0); transform: translateZ(0); }
+        50% { box-shadow: 0 6px 30px -6px rgba(99,102,241,0.12); }
+        100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.0); }
+    }
+
+    .kpi-pulse {
+        animation: kpi-pulse 1.6s ease-in-out;
+    }
+
+    /* Selected row highlight */
+    .admin-table tbody tr[data-selected="true"] {
+        @apply bg-slate-800/70 ring-2 ring-indigo-500/30;
+    }
+
+    /* Sticky header subtle bottom glow */
+    .admin-table thead th::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08));
+        pointer-events: none;
+    }
+
+    /* Status badges */
+    .badge {
+        @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    .badge-approved { @apply bg-emerald-600/20 text-emerald-300 ring-1 ring-emerald-400/10; }
+    .badge-pending { @apply bg-amber-600/20 text-amber-300 ring-1 ring-amber-400/10; }
+    .badge-blocked { @apply bg-red-600/20 text-red-300 ring-1 ring-red-400/10; }
+
+    /* Pagination hover/active */
+    .pg-btn { @apply rounded-md px-2 py-1 text-slate-300 bg-slate-800/60 transition transform; }
+    .pg-btn:hover { @apply scale-105 bg-slate-800/80; }
+    .pg-active { @apply bg-indigo-600/80 text-white shadow-md; }
 }
