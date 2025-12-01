@@ -1,457 +1,566 @@
-﻿
+"use client";
 
-'use client'
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { FcGoogle } from 'react-icons/fc';
-import { FaApple } from 'react-icons/fa';
+import { useEffect, useRef, useState, FormEvent } from "react";
 
+type BookingStep = 1 | 2 | 3 | 4;
 
-const services = [
-  'Cleaning', 'Handyman', 'Plumbing', 'Electrical', 'Painting', 'Gardening',
-  'Moving', 'Carpentry', 'Appliance Repair', 'HVAC', 'Pest Control', 'Locksmith',
-  'Welding', 'CCTV Installation', 'Solar Panels', 'Builder', 'Roofing', 'Flooring',
-  'Tiling', 'Plastering', 'Window Cleaning', 'Pressure Washing', 'Chimney Sweep',
-  'Gutter Cleaning', 'Air Conditioning', 'Roof Cleaning', 'Carpet Cleaning'
-]
+interface BookingState {
+  service: string;
+  customService: string;
+  subService: string;
+  description: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  consent: boolean;
+}
 
-export default function BookServicePage() {
-  // Booking form state and logic (restored)
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+const INITIAL_STATE: BookingState = {
+  service: "",
+  customService: "",
+  subService: "",
+  description: "",
+  name: "",
+  email: "",
+  phone: "",
+  address: "",
+  consent: false,
+};
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [service, setService] = useState('')
-  const [customService, setCustomService] = useState('')
-  const [description, setDescription] = useState('')
-  const [location, setLocation] = useState('')
-  const [preferredDate, setPreferredDate] = useState('')
-  const [preferredTime, setPreferredTime] = useState('')
-  const [budget, setBudget] = useState('')
-  const [urgency, setUrgency] = useState('normal')
-  const [photos, setPhotos] = useState<File[]>([])
+const MAIN_SERVICES = [
+  "Plumbing",
+  "Electrical",
+  "Cleaning",
+  "Handyman",
+  "Gardening",
+  "Painting",
+  "Moving",
+  "Appliance Repair",
+];
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
+const SUB_SERVICES: Record<string, string[]> = {
+  Plumbing: ["Leak", "Blocked drain", "Toilet issue", "Tap / mixer issue"],
+  Electrical: ["No power", "Light fitting", "Socket / switch", "Fuse board"],
+  Cleaning: ["Full house clean", "Kitchen clean", "Bathroom clean", "End of tenancy"],
+  Handyman: ["Furniture assembly", "Small repairs", "Hanging shelves / TV", "Door / lock issue"],
+  Gardening: ["Grass cut", "Hedge trim", "Garden tidy", "Weeding"],
+  Painting: ["Single room", "Full house", "Exterior", "Touch-up / patch"],
+  Moving: ["Small move / van", "Apartment move", "House move", "Furniture move"],
+  "Appliance Repair": ["Washing machine", "Dishwasher", "Fridge / freezer", "Oven / hob"],
+};
 
-    if (!name || !email || !phone) {
-      setError('Please fill in all contact information')
-      return
-    }
-    const chosenService = service === 'Other' ? customService.trim() : service
-    if (!chosenService || !description || !location) {
-      setError('Please complete all required fields')
-      return
-    }
+export default function BookingPage() {
+  const [step, setStep] = useState<BookingStep>(1);
+  const [booking, setBooking] = useState<BookingState>(INITIAL_STATE);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
-    setLoading(true)
+  const addressRef = useRef<HTMLInputElement | null>(null);
+
+  const smoothScroll = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const offset = 80;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+
+  const handleNext = () => {
+    setStep((prev) => {
+      const next = prev < 4 ? ((prev + 1) as BookingStep) : prev;
+      smoothScroll(`step${next}`);
+      return next;
+    });
+  };
+
+  const handleBack = () => {
+    setStep((prev) => {
+      const next = prev > 1 ? ((prev - 1) as BookingStep) : prev;
+      smoothScroll(`step${next}`);
+      return next;
+    });
+  };
+
+  const handleServiceSelect = (value: string) => {
+    setBooking((prev) => ({
+      ...prev,
+      service: value,
+      subService: "",
+    }));
+    // Auto-advance
+    setStep(2);
+    smoothScroll("step2");
+  };
+
+  const handleSubServiceSelect = (value: string) => {
+    setBooking((prev) => ({
+      ...prev,
+      subService: value,
+    }));
+  };
+
+  const handleChange =
+    (field: keyof BookingState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value =
+        field === "consent" && "checked" in e.target
+          ? (e.target as HTMLInputElement).checked
+          : e.target.value;
+
+      setBooking((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    setIsSubmitting(true);
+
     try {
-      const res = await fetch('/api/book', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
-          email,
-          phone,
-          service: chosenService,
-          description,
-          location,
-          preferred_date: preferredDate,
-          preferred_time: preferredTime,
-          budget,
-          urgency
-        })
-      })
+          service: booking.service || booking.customService,
+          subService: booking.subService,
+          description: booking.description,
+          address: booking.address,
+          eircode: booking.address,
+          name: booking.name,
+          phone: booking.phone,
+          email: booking.email,
+          fileUrls: [],
+        }),
+      });
 
       if (!res.ok) {
-        const j = await res.json().catch(() => ({}))
-        throw new Error(j?.error || 'Booking failed')
+        const errText = await res.text();
+        throw new Error(errText || "Booking failed");
       }
 
-      setSuccess(true)
-      setTimeout(() => router.push('/dashboard'), 2000)
-    } catch (e: any) {
-      setError(e.message || 'Something went wrong')
+      setSubmitSuccess(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setSubmitError(msg);
     } finally {
-      setLoading(false)
+      setIsSubmitting(false);
     }
-  }
-  const [showAccountModal, setShowAccountModal] = useState(false);
-  const [accountEmail, setAccountEmail] = useState("");
-  const [accountPhone, setAccountPhone] = useState("");
-  const [accountPassword, setAccountPassword] = useState("");
-  const [accountConfirmPassword, setAccountConfirmPassword] = useState("");
-  const [accountError, setAccountError] = useState<string | null>(null);
-  const [accountSuccess, setAccountSuccess] = useState(false);
+  };
 
-  function handleAccountSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setAccountError(null);
-    if (!accountEmail || !accountPhone || !accountPassword || !accountConfirmPassword) {
-      setAccountError("Please fill in all fields");
-      return;
-    }
-    if (accountPassword !== accountConfirmPassword) {
-      setAccountError("Passwords do not match");
-      return;
-    }
-    // Simulate account creation
-    setAccountSuccess(true);
-    setTimeout(() => {
-      setShowAccountModal(false);
-      setAccountSuccess(false);
-      setAccountEmail("");
-      setAccountPhone("");
-      setAccountPassword("");
-      setAccountConfirmPassword("");
-    }, 2000);
-  }
+  const currentSubServices =
+    booking.service && SUB_SERVICES[booking.service]
+      ? SUB_SERVICES[booking.service]
+      : [];
 
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
-          <div className="text-6xl mb-4">✅</div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">Booking Submitted!</h1>
-          <p className="text-gray-600 mb-6">
-            Your service request has been submitted successfully. We&apos;ll match you with qualified professionals in your area and you&apos;ll start receiving quotes within 24 hours.
-          </p>
-          <div className="bg-blue-50 rounded-xl p-4 mb-6">
-            <p className="text-sm text-blue-800">
-              📧 Check your email for confirmation and updates
-            </p>
-          </div>
-          <p className="text-sm text-gray-500">Redirecting to your dashboard...</p>
-        </div>
-      </div>
-    )
-  }
+  const canGoNextFromStep1 =
+    booking.service.trim().length > 0 || booking.customService.trim().length > 0;
+
+  const canGoNextFromStep2 = booking.description.trim().length > 0;
+
+  const canGoNextFromStep3 =
+    booking.name.trim().length > 1 &&
+    booking.email.trim().length > 3 &&
+    booking.phone.trim().length > 5 &&
+    booking.address.trim().length > 0;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!(window as any).google) return;
+    if (!addressRef.current) return;
+
+    const autocomplete = new (window as any).google.maps.places.Autocomplete(addressRef.current, {
+      fields: ["formatted_address", "geometry"],
+      types: ["address"],
+    });
+
+    const listener = autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      setBooking((prev) => ({ ...prev, address: place?.formatted_address || "" }));
+    });
+
+    return () => listener?.remove?.();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 pt-28 md:pt-36 pb-12 px-4">
-      {/* Account Creation Suggestion Banner (moved to top) */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <div className="bg-blue-100 border-l-4 border-blue-500 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
-          <div>
-            <h2 className="text-xl font-bold text-blue-700 mb-2 flex items-center gap-2">Create an Account for More Benefits</h2>
-            <ul className="list-disc ml-6 text-blue-700 text-sm mb-2">
-              <li>📍 Live track professional arrival</li>
-              <li>✅ Job done updates</li>
-              <li>💳 Secure payment</li>
-              <li>📱 Manage bookings from your dashboard</li>
-              <li>🔔 Get notifications and support</li>
-            </ul>
-            <span className="text-xs text-blue-600">It&apos;s free and quick!</span>
-          </div>
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-blue-700 transition" onClick={() => setShowAccountModal(true)}>
-            Create Account
-          </button>
-        </div>
-      </div>
+    <main className="min-h-screen bg-slate-50">
+      <div className="max-w-3xl mx-auto pt-10 pb-20 px-4 flex flex-col">
+        {/* Header */}
+        <header className="mb-6">
+          <p className="text-xs font-medium uppercase tracking-wide text-blue-600">
+            4-step booking
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-900">
+            Tell us what you need — we’ll match you with the right professional
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Quick form — free quotes, no obligation.
+          </p>
+        </header>
 
-      {/* Social Login Buttons */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-          <button type="button" className="w-full md:w-auto flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
-            <FcGoogle size={20} /> Continue with Google
-          </button>
-          <button type="button" className="w-full md:w-auto flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
-            <FaApple size={20} /> Continue with Apple
-          </button>
-        </div>
-      </div>
+        {/* Step indicators */}
+        <nav className="mb-6 flex items-center justify-between gap-2 text-xs font-medium">
+          {[
+            "Service",
+            "Problem details",
+            "Contact info",
+            "Review & submit",
+          ].map((label, index) => {
+            const stepNumber = (index + 1) as BookingStep;
+            const isActive = step === stepNumber;
+            const isDone = step > stepNumber;
 
-      {/* Account Creation Modal */}
-      {showAccountModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative">
-            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => setShowAccountModal(false)}>×</button>
-            <h2 className="text-2xl font-bold mb-4 text-blue-600">Create Your Account</h2>
-            {accountError && <div className="mb-4 p-3 rounded-xl bg-red-50 border-l-4 border-red-500 text-red-700">{accountError}</div>}
-            {accountSuccess ? (
-              <div className="text-center">
-                <div className="text-5xl mb-3">✅</div>
-                <div className="font-bold text-blue-700 mb-2">Account Created!</div>
-                <div className="text-sm text-gray-600">You can now book services and enjoy all benefits.</div>
+            return (
+              <div key={label} className="flex flex-1 items-center gap-2">
+                <div
+                  className={[
+                    "flex h-7 w-7 items-center justify-center rounded-full border text-[11px]",
+                    isActive
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : isDone
+                      ? "border-green-500 bg-green-500 text-white"
+                      : "border-slate-300 bg-white text-slate-600",
+                  ].join(" ")}
+                >
+                  {stepNumber}
+                </div>
+                <span
+                  className={`hidden text-[11px] sm:inline ${
+                    isActive ? "font-semibold text-slate-900" : "text-slate-600"
+                  }`}
+                >
+                  {label}
+                </span>
               </div>
-            ) : (
-              <form onSubmit={handleAccountSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-                  <input type="email" value={accountEmail} onChange={e => setAccountEmail(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Phone</label>
-                  <input type="tel" value={accountPhone} onChange={e => setAccountPhone(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
-                  <input type="password" value={accountPassword} onChange={e => setAccountPassword(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm Password</label>
-                  <input type="password" value={accountConfirmPassword} onChange={e => setAccountConfirmPassword(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" required />
-                </div>
-                <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-xl">Create Account</button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">Book a Service</h1>
-          <p className="text-lg text-gray-600 mb-6">Tell us what you need and we&apos;ll connect you with trusted professionals</p>
-          <div className="flex justify-center items-center gap-6 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <span className="text-green-500">✓</span>
-              <span>Free quotes</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-green-500">✓</span>
-              <span>Verified professionals</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-green-500">✓</span>
-              <span>Fast response</span>
-            </div>
-          </div>
-        </div>
+            );
+          })}
+        </nav>
 
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-          <form onSubmit={handleSubmit} className="p-8 md:p-12">
-            {error && (
-              <div className="mb-8 p-4 rounded-xl bg-red-50 border-l-4 border-red-500 text-red-700">
-                <p className="font-semibold"> {error}</p>
+        <form onSubmit={handleSubmit} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 sm:p-6">
+          {/* STEP 1 */}
+          {step === 1 && (
+            <section id="step1" className="space-y-6 scroll-mt-24">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Step 1 — Choose your service
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Select a service or type your own.
+                </p>
               </div>
-            )}
 
-            <div className="mb-10">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">1</span>
-                Contact Information
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {MAIN_SERVICES.map((service) => {
+                  const selected = booking.service === service;
+                  return (
+                    <button
+                      key={service}
+                      type="button"
+                      onClick={() => handleServiceSelect(service)}
+                      className={[
+                        "rounded-lg border px-2 py-2 text-left text-xs sm:text-sm",
+                        selected
+                          ? "border-blue-600 bg-blue-50 text-blue-700"
+                          : "border-slate-200 bg-slate-50 hover:border-blue-300 hover:bg-blue-50",
+                      ].join(" ")}
+                    >
+                      {service}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-medium text-slate-700">
+                  Or type your own service
+                </label>
+                <input
+                  type="text"
+                  value={booking.customService}
+                  onChange={handleChange("customService")}
+                  placeholder="e.g. Boiler service, CCTV install, lock change..."
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                />
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  disabled={!canGoNextFromStep1}
+                  onClick={handleNext}
+                  className={[
+                    "rounded-lg px-4 py-2 text-sm font-medium",
+                    canGoNextFromStep1
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "cursor-not-allowed bg-slate-200 text-slate-500",
+                  ].join(" ")}
+                >
+                  Continue
+                </button>
+              </div>
+            </section>
+          )}
+
+          {/* STEP 2 */}
+          {step === 2 && (
+            <section id="step2" className="space-y-6 scroll-mt-24">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Step 2 — Problem details
+                </h2>
+              </div>
+
+              {booking.service && (
+                <div className="flex flex-wrap gap-2">
+                  {currentSubServices.map((sub) => {
+                    const selected = booking.subService === sub;
+                    return (
+                      <button
+                        key={sub}
+                        type="button"
+                        onClick={() => handleSubServiceSelect(sub)}
+                        className={[
+                          "rounded-full border px-3 py-1 text-xs",
+                          selected
+                            ? "border-blue-600 bg-blue-50 text-blue-700"
+                            : "border-slate-200 bg-slate-50 hover:border-blue-300 hover:bg-blue-50",
+                        ].join(" ")}
+                      >
+                        {sub}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="block text-xs font-medium text-slate-700">
+                  Description
+                </label>
+                <textarea
+                  value={booking.description}
+                  onChange={handleChange("description")}
+                  rows={4}
+                  placeholder="Add short details that help the professional understand your issue..."
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                />
+              </div>
+
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  disabled={!canGoNextFromStep2}
+                  onClick={handleNext}
+                  className={[
+                    "rounded-lg px-4 py-2 text-sm font-medium",
+                    canGoNextFromStep2
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "cursor-not-allowed bg-slate-200 text-slate-500",
+                  ].join(" ")}
+                >
+                  Continue
+                </button>
+              </div>
+            </section>
+          )}
+
+          {/* STEP 3 */}
+          {step === 3 && (
+            <section id="step3" className="space-y-6 scroll-mt-24">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Step 3 — Contact information
               </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Full Name <span className="text-red-500">*</span>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Name
                   </label>
                   <input
                     type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="John Doe"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                    required
+                    value={booking.name}
+                    onChange={handleChange("name")}
+                    placeholder="Your full name"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Phone <span className="text-red-500">*</span>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Phone
                   </label>
                   <input
                     type="tel"
-                    value={phone}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
-                    placeholder="+353 87 123 4567"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                    required
+                    value={booking.phone}
+                    onChange={handleChange("phone")}
+                    placeholder="Mobile number"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500"
                   />
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email <span className="text-red-500">*</span>
+
+                <div className="space-y-2 sm:col-span-2">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Email
                   </label>
                   <input
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="john@example.com"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                    required
+                    value={booking.email}
+                    onChange={handleChange("email")}
+                    placeholder="you@example.com"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-2 sm:col-span-2">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Eircode or Address
+                  </label>
+                  <input
+                    id="address"
+                    type="text"
+                    ref={addressRef}
+                    value={booking.address}
+                    onChange={handleChange("address")}
+                    placeholder="Eircode or Address"
+                    className="w-full rounded-md border px-4 py-3 focus:border-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
-            </div>
 
-            <hr className="my-10 border-gray-200" />
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  disabled={!canGoNextFromStep3}
+                  onClick={handleNext}
+                  className={[
+                    "rounded-lg px-4 py-2 text-sm font-medium",
+                    canGoNextFromStep3
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "cursor-not-allowed bg-slate-200 text-slate-500",
+                  ].join(" ")}
+                >
+                  Continue
+                </button>
+              </div>
+            </section>
+          )}
 
-            <div className="mb-10">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">2</span>
-                Service Details
+          {/* STEP 4 */}
+          {step === 4 && (
+            <section id="step4" className="space-y-6 scroll-mt-24">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Step 4 — Review & submit
               </h2>
-              <div className="space-y-6">
+
+              <div className="space-y-4 rounded-xl bg-slate-50 p-4 text-sm">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Service Needed <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={service}
-                    onChange={(e) => setService(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition bg-white"
-                    required
-                  >
-                    <option value="">Select a service...</option>
-                    {services.map((svc) => (
-                      <option key={svc} value={svc}>{svc}</option>
-                    ))}
-                    <option value="Other">Other</option>
-                  </select>
-                  {service === 'Other' && (
-                    <div className="mt-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Specify Service</label>
-                      <input
-                        type="text"
-                        value={customService}
-                        onChange={(e) => setCustomService(e.target.value)}
-                        placeholder="Enter service name"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                      />
-                    </div>
+                  <h3 className="text-xs font-semibold text-slate-500">
+                    Service
+                  </h3>
+                  <p className="mt-1">
+                    {booking.service || booking.customService || "Not specified"}
+                  </p>
+                  {booking.subService && (
+                    <p className="mt-1 text-xs text-slate-600">
+                      Sub: {booking.subService}
+                    </p>
                   )}
                 </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Description <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder={"Describe what you need in detail... e.g., room size, specific issues, materials needed, access information, etc. E.g. &quot;Leaking tap in kitchen&quot; or &quot;Need help assembling furniture&quot;"}
-                    rows={5}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Be specific to help professionals provide accurate quotes</p>
+                  <h3 className="text-xs font-semibold text-slate-500">
+                    Problem details
+                  </h3>
+                  <p className="mt-1 whitespace-pre-line">
+                    {booking.description || "No description provided."}
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Location <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="City, County, or Eircode"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">We&apos;ll match you with nearby professionals</p>
-                </div>
-                <div className="grid md:grid-cols-2 gap-6">
+
+                <div className="grid gap-2 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Preferred Date</label>
-                    <input
-                      type="date"
-                      value={preferredDate}
-                      onChange={(e) => setPreferredDate(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                    />
+                    <h3 className="text-xs font-semibold text-slate-500">
+                      Name
+                    </h3>
+                    <p className="mt-1">{booking.name}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Preferred Time</label>
-                    <input
-                      type="time"
-                      value={preferredTime}
-                      onChange={(e) => setPreferredTime(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                    />
+                    <h3 className="text-xs font-semibold text-slate-500">
+                      Phone
+                    </h3>
+                    <p className="mt-1">{booking.phone}</p>
                   </div>
-                </div>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Budget (€)</label>
-                    <input
-                      type="text"
-                      value={budget}
-                      onChange={(e) => setBudget(e.target.value)}
-                      placeholder="100-200"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                    />
+                  <div className="sm:col-span-2">
+                    <h3 className="text-xs font-semibold text-slate-500">
+                      Email
+                    </h3>
+                    <p className="mt-1">{booking.email}</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Urgency</label>
-                    <select
-                      value={urgency}
-                      onChange={(e) => setUrgency(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition bg-white"
-                    >
-                      <option value="normal">Normal (Within a week)</option>
-                      <option value="urgent">Urgent (Within 24-48 hours)</option>
-                      <option value="flexible">Flexible (No rush)</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Photos <span className="text-gray-500 text-xs">(Optional - Helps get better quotes)</span>
-                  </label>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(e) => setPhotos(Array.from(e.target.files || []))}
-                    className="w-full text-sm text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-gray-100 file:text-gray-700 file:font-semibold hover:file:bg-gray-200 file:cursor-pointer cursor-pointer"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Upload photos of the area or issue (if applicable)</p>
                 </div>
               </div>
-            </div>
 
-            <div className="pt-6">
-              <div className="bg-gray-50 rounded-xl p-6 mb-6">
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  By submitting this booking request, you agree to receive quotes from verified professionals. It&apos;s free and there&apos;s no obligation to hire.
+              {submitError && <p className="text-red-600">{submitError}</p>}
+              {submitSuccess && (
+                <p className="text-green-600">
+                  Your request has been submitted!
                 </p>
-              </div>
-              <button
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Submitting...
-                  </span>
-                ) : (
-                  '🚀 Get Free Quotes Now'
-                )}
-              </button>
-              <p className="text-center text-sm text-gray-600 mt-6">
-                Need help? <Link href="/contact" className="text-blue-600 font-semibold">Contact Us</Link>
-              </p>
-            </div>
-          </form>
-        </div>
+              )}
 
-        <div className="mt-12 grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-            <div className="text-4xl mb-3">⚡</div>
-            <h3 className="font-bold text-gray-900 mb-2">Fast Response</h3>
-            <p className="text-sm text-gray-600">Get quotes from professionals within 24 hours</p>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-            <div className="text-4xl mb-3">✅</div>
-            <h3 className="font-bold text-gray-900 mb-2">Verified Pros</h3>
-            <p className="text-sm text-gray-600">All professionals are ID verified and insured</p>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-            <div className="text-4xl mb-3">💰</div>
-            <h3 className="font-bold text-gray-900 mb-2">Best Prices</h3>
-            <p className="text-sm text-gray-600">Compare multiple quotes and save up to 40%</p>
-          </div>
-        </div>
+              <div className="flex items-start gap-2">
+                <input
+                  id="consent"
+                  type="checkbox"
+                  checked={booking.consent}
+                  onChange={handleChange("consent")}
+                  className="mt-1 h-4 w-4"
+                />
+                <label htmlFor="consent" className="text-xs text-slate-600">
+                  FixEasy may share your details with vetted local professionals.
+                </label>
+              </div>
+
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !booking.consent}
+                  className={[
+                    "rounded-lg px-4 py-2 text-sm font-medium",
+                    isSubmitting || !booking.consent
+                      ? "cursor-not-allowed bg-slate-200"
+                      : "bg-blue-600 text-white hover:bg-blue-700",
+                  ].join(" ")}
+                >
+                  {isSubmitting ? "Sending..." : "Submit request"}
+                </button>
+              </div>
+            </section>
+          )}
+        </form>
       </div>
-    </div>
-  )
+    </main>
+  );
 }
