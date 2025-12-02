@@ -122,20 +122,29 @@ export default function BookingPage() {
     setIsSubmitting(true);
 
     try {
+      const summaryParts = [
+        booking.service || booking.customService || "Service",
+        booking.subService ? `(${booking.subService})` : "",
+        booking.description || "No details provided",
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      const summary = summaryParts.length >= 10 ? summaryParts : `${summaryParts} details`;
+
+      const form = new FormData();
+      form.append("service", booking.service || booking.customService);
+      form.append("summary", summary);
+      form.append("address", booking.address);
+      form.append("eircode", booking.address);
+      if (booking.subService) form.append("subService", booking.subService);
+      form.append("name", booking.name);
+      form.append("phone", booking.phone);
+      form.append("email", booking.email);
+
       const res = await fetch("/api/bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          service: booking.service || booking.customService,
-          subService: booking.subService,
-          description: booking.description,
-          address: booking.address,
-          eircode: booking.address,
-          name: booking.name,
-          phone: booking.phone,
-          email: booking.email,
-          fileUrls: [],
-        }),
+        body: form,
       });
 
       if (!res.ok) {
