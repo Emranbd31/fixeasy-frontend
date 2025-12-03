@@ -52,8 +52,6 @@ const SUB_SERVICES: Record<string, string[]> = {
   "Appliance Repair": ["Washing machine", "Dishwasher", "Fridge / freezer", "Oven / hob"],
 };
 
-export const dynamic = "force-dynamic";
-
 export default function BookingPage() {
   const [step, setStep] = useState<BookingStep>(1);
   const [booking, setBooking] = useState<BookingState>(INITIAL_STATE);
