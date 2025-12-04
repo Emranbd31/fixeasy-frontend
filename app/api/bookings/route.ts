@@ -16,6 +16,47 @@ const bookingPayloadSchema = z.object({
   user_id: z.string().uuid().optional(),
 });
 
+const bookingActionSchema = z.object({
+  bookingId: z.string().uuid(),
+  action: z.enum(['accept', 'decline', 'start', 'complete']),
+  professionalId: z.string().uuid().optional(),
+});
+
+const ACTION_STATUS: Record<'accept' | 'decline' | 'start' | 'complete', string> = {
+  accept: 'confirmed',
+  decline: 'cancelled',
+  start: 'in_progress',
+  complete: 'completed',
+};
+
+export async function GET(request: Request) {
+  const supabase = createSupabaseServerClient();
+  const sb = supabase as any;
+  const { searchParams } = new URL(request.url);
+  const professionalId = searchParams.get('professionalId');
+  const unassigned = searchParams.get('unassigned') === 'true';
+
+  if (!professionalId && !unassigned) {
+    return NextResponse.json({ error: 'professionalId is required' }, { status: 400 });
+  }
+
+  let query = sb.from('bookings').select('*').order('created_at', { ascending: false });
+
+  if (unassigned) {
+    query = query.is('professional_id', null).in('status', ['pending', 'awaiting_confirmation']);
+  } else {
+    query = query.eq('professional_id', professionalId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ bookings: data || [] });
+}
+
 export async function POST(request: Request) {
   const supabase = createSupabaseServerClient();
   const sb = supabase as any;
@@ -118,4 +159,37 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ reference: bookingId }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const supabase = createSupabaseServerClient();
+  const sb = supabase as any;
+  const payload = await request.json().catch(() => null);
+  const parsed = bookingActionSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  }
+
+  const nextStatus = ACTION_STATUS[parsed.data.action];
+  if (parsed.data.action === 'accept' && !parsed.data.professionalId) {
+    return NextResponse.json({ error: 'professionalId is required to accept a booking' }, { status: 400 });
+  }
+
+  const { data, error } = await sb
+    .from('bookings')
+    .update({
+      status: nextStatus,
+      updated_at: new Date().toISOString(),
+      professional_id: parsed.data.action === 'accept' ? parsed.data.professionalId : undefined,
+    })
+    .eq('id', parsed.data.bookingId)
+    .select('*')
+    .single();
+
+  if (error || !data) {
+    return NextResponse.json({ error: error?.message || 'Failed to update booking' }, { status: 500 });
+  }
+
+  return NextResponse.json({ booking: data });
 }
