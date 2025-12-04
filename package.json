@@ -8,14 +8,17 @@
     "dev:mock": "npm run mock-backend",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "test:e2e": "playwright test --reporter=list"
   },
   "dependencies": {
+    "next": "16.0.3",
     "@hookform/resolvers": "^3.10.0",
     "@supabase/supabase-js": "^2.45.1",
+    "@stripe/react-stripe-js": "^3.1.0",
+    "@stripe/stripe-js": "^5.5.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",
     "jsonwebtoken": "^9.0.0",
@@ -30,6 +33,9 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^6.1.7",
     "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -39,6 +45,7 @@
     "@types/node": "^20.14.9",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "stripe": "^16.3.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.4",
@@ -47,6 +54,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "react-datepicker": "^7.3.0"
   }
 }
