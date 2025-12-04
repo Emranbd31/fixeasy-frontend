@@ -1,686 +1,927 @@
-
-
 "use client";
-import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
 
+import React, { useMemo, useState } from "react";
+import { MAIN_SERVICES, SUB_SERVICES } from "@/lib/service-options";
 
-// Map of required certifications by trade
-const tradeCertRequirements: Record<string, { label: string; required: boolean }> = {
-    Electrician: { label: "Safe Electric (RECI) registration", required: true },
-    Plumbing: { label: "RGII Gas Installer ID (for gas work)", required: true },
-    Heating: { label: "RGII Gas Installer ID (for gas work)", required: true },
-    Builder: { label: "CIF or SOLAS qualification", required: false },
-    Roofer: { label: "CIF or SOLAS qualification", required: false },
-    "Pest Control": { label: "PMU / IPCA certification", required: true },
-    Locksmith: { label: "PSA (Private Security Authority) Licence", required: true },
-    "CCTV Installation": { label: "PSA Licence", required: true },
-    "Alarm Installer": { label: "PSA Licence", required: true },
-    // All other trades: no mandatory cert
+type Step = 1 | 2 | 3 | 4;
+
+type EmergencyResponse =
+  | "under_1_hour"
+  | "1_3_hours"
+  | "same_day"
+  | "next_day"
+  | "scheduled_only";
+const WORKING_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const isPositiveNumber = (value: string, { allowZero = false } = {}) => {
+  const num = Number(value);
+  if (Number.isNaN(num)) return false;
+  return allowZero ? num >= 0 : num > 0;
 };
 
-const categories = [
-    "Cleaning",
-    "Handyman",
-    "Plumbing",
-    "Electrical",
-    "Painting",
-    "Gardening",
-    "Moving",
-    "Carpentry",
-    "Appliance Repair",
-    "HVAC",
-    "Pest Control",
-    "Locksmith",
-    "Welding",
-    "CCTV Installation",
-    "Solar Panels",
-    "Builder",
-    "Roofing",
-    "Flooring",
-    "Tiling",
-    "Plastering",
-    "Window Cleaning",
-    "Pressure Washing",
-    "Chimney Sweep",
-    "Gutter Cleaning",
-    "Air Conditioning",
-    "Roof Cleaning",
-    "Carpet Cleaning",
+type FormState = {
+  // Step 1
+  fullName: string;
+  phone: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  // Step 2
+  mainServices: string[];
+  subServices: Record<string, string[]>;
+  yearsOfExperience: string;
+  hourlyRate: string;
+  minCalloutFee: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  county: string;
+  eircode: string;
+  serviceAreas: string[];
+  workingDays: string[];
+  workingHours: string;
+  offersEmergency: boolean;
+  emergencyResponse: EmergencyResponse | "";
+  emergencyCalloutFee: string;
+  // Step 3
+  qualificationSummary: string;
+  tradeCertifications: string;
+  hasInsurance: boolean;
+  insuranceDetails: string;
+  // Step 4
+  termsAccepted: boolean;
+  acceptedTerms: boolean;
+};
+
+type FileState = {
+  idDocument?: File | null;
+  proofOfAddress?: File | null;
+  insuranceDocument?: File | null;
+  otherDocument?: File | null;
+};
+
+const IRISH_COUNTIES = [
+  "Dublin",
+  "Kildare",
+  "Meath",
+  "Wicklow",
+  "Louth",
+  "Limerick",
+  "Cork",
+  "Galway",
+  "Waterford",
+  "Donegal",
+  "Mayo",
+  "Kerry",
+  "Clare",
+  "Kilkenny",
+  "Wexford",
+  "Laois",
+  "Offaly",
+  "Westmeath",
+  "Roscommon",
+  "Sligo",
+  "Leitrim",
+  "Monaghan",
+  "Cavan",
+  "Tipperary",
+  "Longford",
+  "Carlow",
 ];
-function ProfessionalRegisterPage() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const sb = supabase;
 
-    // Form fields
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [category, setCategory] = useState("");
-    const [customCategory, setCustomCategory] = useState("");
-    const [experience, setExperience] = useState<number>(0);
-    const [rate, setRate] = useState<number>(0);
-    const [serviceArea, setServiceArea] = useState("");
-    const [workingHours, setWorkingHours] = useState("");
-    const [workingDays, setWorkingDays] = useState<string[]>([]);
-    const [abilities, setAbilities] = useState("");
-    const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
-    const [idDocument, setIdDocument] = useState<File | null>(null);
-    const [addressProof, setAddressProof] = useState<File | null>(null);
-    const [qualificationFile, setQualificationFile] = useState<File | null>(null);
-    const [insuranceFile, setInsuranceFile] = useState<File | null>(null);
-    const [portfolioFiles, setPortfolioFiles] = useState<File[]>([]);
+const INITIAL_FORM: FormState = {
+  fullName: "",
+  phone: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  mainServices: [],
+  subServices: {},
+  yearsOfExperience: "",
+  hourlyRate: "",
+  minCalloutFee: "",
+  addressLine1: "",
+  addressLine2: "",
+  city: "",
+  county: "",
+  eircode: "",
+  serviceAreas: [],
+  workingDays: [],
+  workingHours: "",
+  offersEmergency: false,
+  emergencyResponse: "",
+  emergencyCalloutFee: "",
+  qualificationSummary: "",
+  tradeCertifications: "",
+  hasInsurance: false,
+  insuranceDetails: "",
+  termsAccepted: false,
+  acceptedTerms: false,
+};
 
+export default function ProfessionalRegisterPage() {
+  const [step, setStep] = useState<Step>(1);
+  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  const [files, setFiles] = useState<FileState>({});
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
+  const activeSubServices = useMemo(() => {
+    return form.mainServices.flatMap((svc) =>
+      (SUB_SERVICES[svc] || []).map((label) => ({ svc, label }))
+    );
+  }, [form.mainServices]);
 
+  const smoothToTop = () => {
+    if (typeof window === "undefined") return;
+    document.getElementById("top")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
-    function validatePassword(pw: string) {
-        // At least 8 chars, one special symbol, one number, one uppercase
-        return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(pw)
+  const toggleArrayValue = (key: keyof FormState, value: string) => {
+    setForm((prev) => {
+      const current = (prev[key] as string[]) || [];
+      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+      return { ...prev, [key]: next };
+    });
+    if (key === "mainServices") setError(null);
+  };
+
+  const toggleSubService = (service: string, sub: string) => {
+    setForm((prev) => {
+      const current = prev.subServices[service] || [];
+      const next = current.includes(sub) ? current.filter((s) => s !== sub) : [...current, sub];
+      return { ...prev, subServices: { ...prev.subServices, [service]: next } };
+    });
+  };
+
+  const handleChange =
+    (key: keyof FormState) =>
+    (
+      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) => {
+      const value = e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
+      setForm((prev) => ({ ...prev, [key]: value }));
+    };
+
+  const handleFileChange =
+    (key: keyof FileState) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0] ?? null;
+      setFiles((prev) => ({ ...prev, [key]: file }));
+    };
+
+  const validateStep = (current: Step) => {
+    if (current === 1) {
+      if (!form.fullName.trim() || !form.phone.trim() || !form.email.trim()) {
+        return "Please complete your name, phone, and email.";
+      }
+      if (!form.password.trim() || !form.confirmPassword.trim()) {
+        return "Please create and confirm your password.";
+      }
+      if (form.password !== form.confirmPassword) {
+        return "Passwords must match.";
+      }
+      if (form.password.length < 6) {
+        return "Password must be at least 6 characters.";
+      }
     }
-
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        setError(null)
-
-        // Basic validation
-        if (!name || !email || !phone || !password || !confirmPassword) {
-            setError('Please fill in all required personal information')
-            return
-        }
-        if (!validatePassword(password)) {
-            setError('Password must be at least 8 characters, include an uppercase letter, a number, and a special symbol')
-            return
-        }
-        if (password !== confirmPassword) {
-            setError('Passwords do not match')
-            return
-        }
-        const chosenCategory = category === 'Other' ? customCategory.trim() : category
-        if (!chosenCategory || !experience || !rate || !serviceArea) {
-            setError('Please complete your service details (select a category or enter one)')
-            return
-        }
-        if (!idDocument) {
-            setError('Photo ID is required for verification')
-            return
-        }
-        // Require trade cert for regulated trades
-        if (tradeCertRequirements[category] && tradeCertRequirements[category].required && !qualificationFile) {
-            setError(`${tradeCertRequirements[category].label} is required for ${category}`)
-            return;
-        }
-
-        setLoading(true)
-        try {
-            // 1. Create auth user
-            const { data: signUpData, error: signUpError } = await sb.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        role: 'professional',
-                        name,
-                        phone
-                    }
-                }
-            })
-
-            if (signUpError) throw signUpError
-            const user = signUpData.user
-            if (!user) throw new Error('Sign up failed')
-
-            const userId = user.id
-            const bucket = 'pro-uploads'
-            const timestamp = Date.now()
-
-            // 2. Upload files
-            async function uploadOne(file: File | null, key: string): Promise<string | null> {
-                if (!file) return null
-                const path = `pros/${userId}/${key}-${timestamp}-${file.name}`
-                const { error: upErr } = await sb.storage.from(bucket).upload(path, file, {
-                    cacheControl: '3600',
-                    upsert: true
-                })
-                if (upErr) throw upErr
-                return path
-            }
-
-            const profile_photo = await uploadOne(profilePhoto, 'profile-photo')
-            const id_document_path = await uploadOne(idDocument, 'id-document')
-            const address_proof_path = await uploadOne(addressProof, 'address-proof')
-            const qualification_file_path = await uploadOne(qualificationFile, 'qualification')
-            const insurance_file_path = await uploadOne(insuranceFile, 'insurance')
-
-            const portfolio_paths: string[] = []
-            for (const [i, f] of portfolioFiles.entries()) {
-                const p = await uploadOne(f, `portfolio-${i + 1}`)
-                if (p) portfolio_paths.push(p)
-            }
-
-            // 3. Call API to create professional record
-            const res = await fetch('/api/register/professional', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: userId,
-                    name,
-                    email,
-                    phone,
-                    category: category === 'Other' ? customCategory.trim() : category,
-                    experience: Number(experience),
-                    rate: Number(rate),
-                    service_area: serviceArea,
-                    id_document: id_document_path,
-                    address_proof: address_proof_path,
-                    qualification_file: qualification_file_path,
-                    insurance_file: insurance_file_path,
-                    portfolio_files: portfolio_paths,
-                    profile_photo
-                })
-            })
-
-            if (!res.ok) {
-                const j = await res.json().catch(() => ({}))
-                throw new Error(j?.error || `Registration failed (${res.status})`)
-            }
-
-            // 4. Redirect to dashboard
-            router.push('/pro/dashboard?status=pending')
-        } catch (e: any) {
-            setError(e.message || 'Something went wrong')
-        } finally {
-            setLoading(false)
-        }
+    if (current === 2) {
+      if (!form.mainServices.length) return "Select at least one main service.";
+      const years = Number(form.yearsOfExperience);
+      if (!Number.isInteger(years) || years <= 0 || years > 80) {
+        return "Years of experience must be between 1 and 80.";
+      }
+      if (!isPositiveNumber(form.hourlyRate) || !isPositiveNumber(form.minCalloutFee)) {
+        return "Hourly rate and minimum call-out fee must be positive numbers.";
+      }
+      if (form.offersEmergency && !isPositiveNumber(form.emergencyCalloutFee || "0")) {
+        return "Emergency call-out fee must be a positive number.";
+      }
+      if (!form.addressLine1.trim() || !form.city.trim() || !form.county.trim()) {
+        return "Please complete your address.";
+      }
+      if (!form.serviceAreas.length) return "Select at least one service area.";
     }
+    if (current === 3) {
+      if (!form.qualificationSummary.trim()) return "Add a short qualification summary.";
+    }
+    if (current === 4) {
+      if (!form.termsAccepted && !form.acceptedTerms) return "Please accept the terms to continue.";
+    }
+    return null;
+  };
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 pt-28 md:pt-36 pb-12 px-4">
-            <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
-                        Become a FixEasy Professional
-                    </h1>
-                    <p className="text-lg text-gray-600">
-                        Join Ireland&apos;s leading home services platform and start getting jobs today
-                    </p>
-                </div>
+  const goToStep = (target: Step) => {
+    const movingForward = target > step;
+    if (movingForward) {
+      const err = validateStep(step);
+      if (err) {
+        setError(err);
+        return;
+      }
+    }
+    setError(null);
+    setStep(target);
+    smoothToTop();
+  };
 
-                {/* Main Form */}
-                <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-                    <form onSubmit={handleSubmit} className="p-8 md:p-12">
-                        {error && (
-                            <div className="mb-8 p-4 rounded-xl bg-red-50 border-l-4 border-red-500 text-red-700">
-                                <p className="font-semibold">⚠️ {error}</p>
-                            </div>
-                        )}
+  const handleSubmit = async () => {
+    const err = validateStep(4);
+    if (err) {
+      setError(err);
+      return;
+    }
+    setError(null);
+    setSuccess(null);
+    setSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.append("fullName", form.fullName);
+      fd.append("phone", form.phone);
+      fd.append("email", form.email);
+      fd.append("password", form.password);
+      fd.append("mainServices", JSON.stringify(form.mainServices));
+      fd.append("subServices", JSON.stringify(form.subServices));
+      fd.append("yearsOfExperience", form.yearsOfExperience);
+      fd.append("hourlyRate", form.hourlyRate);
+      fd.append("minCalloutFee", form.minCalloutFee);
+      fd.append("addressLine1", form.addressLine1);
+      fd.append("addressLine2", form.addressLine2);
+      fd.append("city", form.city);
+      fd.append("county", form.county);
+      fd.append("eircode", form.eircode);
+      fd.append("serviceAreas", JSON.stringify(form.serviceAreas));
+      fd.append("workingDays", JSON.stringify(form.workingDays));
+      fd.append("workingHours", form.workingHours);
+      fd.append("offersEmergency", String(form.offersEmergency));
+      fd.append("emergencyResponse", form.emergencyResponse || "scheduled_only");
+      fd.append("emergencyCalloutFee", form.emergencyCalloutFee);
+      fd.append("qualificationSummary", form.qualificationSummary);
+      fd.append("tradeCertifications", form.tradeCertifications);
+      fd.append("hasInsurance", String(form.hasInsurance));
+      fd.append("insuranceDetails", form.insuranceDetails);
+      fd.append("acceptedTerms", String(form.termsAccepted || form.acceptedTerms));
+      if (files.idDocument) fd.append("idDocument", files.idDocument);
+      if (files.proofOfAddress) fd.append("proofOfAddress", files.proofOfAddress);
+      if (files.insuranceDocument) fd.append("insuranceDocument", files.insuranceDocument);
+      if (files.otherDocument) fd.append("otherDocument", files.otherDocument);
 
-                        {/* Personal Information */}
-                        <div className="mb-10">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">1</span>
-                                Personal Information
-                            </h2>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Full Name <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        placeholder="John Doe"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                        required
-                                    />
-                                </div>
+      const res = await fetch("/api/pro/signup", { method: "POST", body: fd });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || "Failed to submit application.");
+      }
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Phone Number <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        placeholder="+353 87 123 4567"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                        required
-                                    />
-                                </div>
+      setSuccess("Thanks for registering! Our team will review your profile and documents shortly.");
+      setForm(INITIAL_FORM);
+      setFiles({});
+      setStep(1);
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong while submitting.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Email Address <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="john@example.com"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Password <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Min. 8 chars, 1 uppercase, 1 number, 1 symbol"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Confirm Password <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        placeholder="Re-enter password"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Social Login */}
-                        <div className="mb-8">
-                            <div className="flex flex-col gap-4">
-                                <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
-                                    <Image src="/icons/google.svg" alt="Google logo" width={20} height={20} />
-                                    Sign up with Google
-                                </button>
-                                <button type="button" className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
-                                    <Image src="/icons/apple.svg" alt="Apple logo" width={20} height={20} />
-                                    Sign up with Apple
-                                </button>
-                            </div>
-                        </div>
-                        <hr className="my-10 border-gray-200" />
-
-                        {/* Service Details */}
-                        <div className="mb-10">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">2</span>
-                                Service Details
-                            </h2>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Service Category <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition bg-white"
-                                        required
-                                    >
-                                        <option value="">Select your primary service...</option>
-                                        {categories.map((cat) => (
-                                            <option key={cat} value={cat}>
-                                                {cat}
-                                            </option>
-                                        ))}
-                                        <option value="Other">Other (not listed)</option>
-                                    </select>
-                                    {category === 'Other' && (
-                                        <div className="mt-3">
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Enter your service</label>
-                                            <input
-                                                type="text"
-                                                value={customCategory}
-                                                onChange={(e) => setCustomCategory(e.target.value)}
-                                                placeholder="e.g., Locksmith & Safe Engineer, Satellite Dish Installation"
-                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                            />
-                                            <p className="text-xs text-gray-500 mt-1">We&apos;ll use this as your primary category</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Years of Experience <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={experience || ''}
-                                        onChange={(e) => setExperience(Number(e.target.value))}
-                                        min="0"
-                                        placeholder="5"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Hourly Rate (€) <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={rate || ''}
-                                        onChange={(e) => setRate(Number(e.target.value))}
-                                        min="0"
-                                        step="0.01"
-                                        placeholder="45.00"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Service Area <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={serviceArea}
-                                        onChange={(e) => setServiceArea(e.target.value)}
-                                        placeholder="e.g., Dublin & Surrounding Areas, Cork City, All Ireland"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                        required
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Specify counties, cities, or Eircodes you serve</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Working Hours</label>
-                                    <input
-                                        type="text"
-                                        value={workingHours}
-                                        onChange={(e) => setWorkingHours(e.target.value)}
-                                        placeholder="e.g., 08:00 - 18:00, Flexible, On Call"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Enter your typical working hours or availability</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Days Available</label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                                            <label key={day} className="flex items-center gap-1 text-sm">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={workingDays.includes(day)}
-                                                    onChange={e => {
-                                                        setWorkingDays(
-                                                            e.target.checked
-                                                                ? [...workingDays, day]
-                                                                : workingDays.filter(d => d !== day)
-                                                        )
-                                                    }}
-                                                />
-                                                {day}
-                                            </label>
-                                        ))}
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-1">Select all days you are available to work</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Abilities / Skills</label>
-                                    <input
-                                        type="text"
-                                        value={abilities}
-                                        onChange={(e) => setAbilities(e.target.value)}
-                                        placeholder="e.g., Safe Electric certified, RGII gas installer, roof repairs, deep cleaning, etc."
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Briefly describe your main skills or abilities</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr className="my-10 border-gray-200" />
-
-                        {/* Qualification or Trade Certification (Step 3) */}
-                        <div className="mb-10">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">3</span>
-                                Qualification or Trade Certification <span className="text-gray-500 text-base ml-2">(Recommended for skilled trades)</span>
-                            </h2>
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
-                                <p className="text-sm text-yellow-800">
-                                    Some trades must have professional certification under Irish or EU regulations. Upload your certificate below if applicable.
-                                </p>
-                            </div>
-                            <div className="overflow-x-auto mb-6">
-                                <table className="min-w-full border border-gray-200 rounded text-sm">
-                                    <thead className="bg-gray-100">
-                                        <tr>
-                                            <th className="px-4 py-2 text-left">Trade</th>
-                                            <th className="px-4 py-2 text-left">Required Certification</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td className="border-t px-4 py-2">Electrician</td>
-                                            <td className="border-t px-4 py-2">Safe Electric (RECI) registration</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="border-t px-4 py-2">Plumber / Heating</td>
-                                            <td className="border-t px-4 py-2">RGII Gas Installer ID (for gas work)</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="border-t px-4 py-2">Builder / Roofer</td>
-                                            <td className="border-t px-4 py-2">CIF or SOLAS qualification (recommended)</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="border-t px-4 py-2">Pest Control</td>
-                                            <td className="border-t px-4 py-2">PMU / IPCA certification</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="border-t px-4 py-2">Locksmith</td>
-                                            <td className="border-t px-4 py-2">PSA (Private Security Authority) Licence</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="border-t px-4 py-2">CCTV / Alarm Installer</td>
-                                            <td className="border-t px-4 py-2">PSA Licence (mandatory)</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="border-t px-4 py-2">Cleaning / Handyman / Painting</td>
-                                            <td className="border-t px-4 py-2">No licence required, but insurance advised</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <p className="text-xs text-gray-600">If you have a trade certificate, license, or diploma, please upload it below (optional).</p>
-                        </div>
-
-                        {/* Documents (Step 4) */}
-                        <div className="mb-10">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">4</span>
-                                Verification Documents
-                            </h2>
-
-                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                                <p className="text-sm text-blue-800">
-                                    <strong>📋 Required:</strong> Photo ID is mandatory for account verification.
-                                    Additional documents help build trust with customers and increase your bookings.
-                                </p>
-                            </div>
-
-                            <div className="space-y-5">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Profile Photo
-                                    </label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => setProfilePhoto(e.target.files?.[0] || null)}
-                                        accept="image/*"
-                                        className="w-full text-sm text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:font-semibold hover:file:bg-blue-700 file:cursor-pointer cursor-pointer"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">A clear headshot helps customers trust you</p>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Photo ID <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => setIdDocument(e.target.files?.[0] || null)}
-                                        accept="image/*,.pdf"
-                                        className="w-full text-sm text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:font-semibold hover:file:bg-blue-700 file:cursor-pointer cursor-pointer"
-                                        required
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Passport, Driver&apos;s License, or National ID</p>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Proof of Address <span className="text-gray-500 text-xs">(Optional)</span>
-                                    </label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => setAddressProof(e.target.files?.[0] || null)}
-                                        accept="image/*,.pdf"
-                                        className="w-full text-sm text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-gray-100 file:text-gray-700 file:font-semibold hover:file:bg-gray-200 file:cursor-pointer cursor-pointer"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Utility bill or bank statement</p>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Qualifications/Certifications
-                                        {(() => {
-                                            const cert = tradeCertRequirements[category];
-                                            if (cert && cert.required) {
-                                                return <span className="text-red-500 ml-2">(Required for {category})</span>;
-                                            }
-                                            return <span className="text-gray-500 text-xs">(Optional)</span>;
-                                        })()}
-                                    </label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => setQualificationFile(e.target.files?.[0] || null)}
-                                        accept="image/*,.pdf"
-                                        className="w-full text-sm text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-gray-100 file:text-gray-700 file:font-semibold hover:file:bg-gray-200 file:cursor-pointer cursor-pointer"
-                                        required={!!(tradeCertRequirements[category] && tradeCertRequirements[category].required)}
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        {tradeCertRequirements[category]?.label || 'Trade certificates, licenses, or diplomas'}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Insurance Certificate <span className="text-gray-500 text-xs">(Optional - Recommended)</span>
-                                    </label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => setInsuranceFile(e.target.files?.[0] || null)}
-                                        accept="image/*,.pdf"
-                                        className="w-full text-sm text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-gray-100 file:text-gray-700 file:font-semibold hover:file:bg-gray-200 file:cursor-pointer cursor-pointer"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Public liability or professional indemnity insurance</p>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Portfolio/Work Samples <span className="text-gray-500 text-xs">(Optional - Multiple files allowed)</span>
-                                    </label>
-                                    <input
-                                        type="file"
-                                        multiple
-                                        onChange={(e) => setPortfolioFiles(Array.from(e.target.files || []))}
-                                        accept="image/*,.pdf"
-                                        className="w-full text-sm text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-gray-100 file:text-gray-700 file:font-semibold hover:file:bg-gray-200 file:cursor-pointer cursor-pointer"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Photos of your previous work to showcase your skills</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Terms & Submit */}
-                        <div className="pt-6">
-                            <div className="bg-gray-50 rounded-xl p-6 mb-6">
-                                <p className="text-sm text-gray-600 leading-relaxed">
-                                    By clicking &quot;Create Account&quot;, you agree to FixEasy&apos;s{' '}
-                                    <Link href="/terms" className="text-blue-600 hover:underline">
-                                        Terms of Service
-                                    </Link>{' '}
-                                    and acknowledge our{' '}
-                                    <Link href="/privacy" className="text-blue-600 hover:underline">
-                                        Privacy Policy
-                                    </Link>
-                                    . Your account will be reviewed and activated within 24-48 hours.
-                                </p>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl"
-                            >
-                                {loading ? (
-                                    <span className="flex items-center justify-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Creating Your Account...
-                                    </span>
-                                ) : (
-                                    '🚀 Create Professional Account'
-                                )}
-                            </button>
-
-                            <p className="text-center text-sm text-gray-600 mt-6">
-                                Already have an account?{' '}
-                                <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-700 transition">
-                                    Sign In
-                                </Link>
-                                {' '}|{' '}
-                                <Link href="/forgot-password" className="text-blue-600 font-semibold hover:text-blue-700 transition">
-                                    Forgot/Reset Password?
-                                </Link>
-                            </p>
-                        </div>
-                    </form>
-                </div>
-
-                {/* Benefits */}
-                <div className="mt-12 grid md:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                        <div className="text-4xl mb-3">💼</div>
-                        <h3 className="font-bold text-gray-900 mb-2">Get More Jobs</h3>
-                        <p className="text-sm text-gray-600">Connect with customers across Ireland looking for your services</p>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                        <div className="text-4xl mb-3">⚡</div>
-                        <h3 className="font-bold text-gray-900 mb-2">Fast Payments</h3>
-                        <p className="text-sm text-gray-600">Secure payment processing with quick transfers to your account</p>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                        <div className="text-4xl mb-3">⭐</div>
-                        <h3 className="font-bold text-gray-900 mb-2">Build Your Brand</h3>
-                        <p className="text-sm text-gray-600">Showcase your skills, get reviews, and grow your reputation</p>
-                    </div>
-                </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-10" id="top">
+      <div className="mx-auto max-w-5xl px-4">
+        <div className="sticky top-0 z-20 mb-6 bg-gradient-to-b from-slate-50/95 to-slate-100/95 backdrop-blur">
+          <div className="flex flex-col gap-2 pb-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">Professional registration</p>
+              <h1 className="text-2xl font-semibold text-slate-900">Become a FixEasy Professional</h1>
+              <p className="text-sm text-slate-600">Complete the 4-step wizard to join our vetted network.</p>
             </div>
+            <div className="text-sm text-slate-500">Step {step} of 4</div>
+          </div>
+          <div className="flex items-center gap-3 pb-3">
+            {[1, 2, 3, 4].map((s) => {
+              const active = step === s;
+              const done = step > s;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => goToStep(s as Step)}
+                  className={[
+                    "flex flex-1 items-center gap-2 rounded-xl border px-3 py-2 text-left text-xs sm:text-sm transition",
+                    active
+                      ? "border-sky-500 bg-sky-50 text-sky-700"
+                      : done
+                      ? "border-emerald-500/70 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-white text-slate-600",
+                  ].join(" ")}
+                >
+                  <span
+                    className={[
+                      "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
+                      active
+                        ? "bg-sky-500 text-white"
+                        : done
+                        ? "bg-emerald-500 text-white"
+                        : "bg-slate-200 text-slate-700",
+                    ].join(" ")}
+                  >
+                    {s}
+                  </span>
+                  <span>
+                    {s === 1 && "Personal"}
+                    {s === 2 && "Services & Areas"}
+                    {s === 3 && "Qualifications"}
+                    {s === 4 && "Docs & Review"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-    )
+        <div className="mx-auto max-w-3xl rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+          {error && (
+            <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+          )}
+          {success && (
+            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              {success}
+            </div>
+          )}
+
+          {step === 1 && <StepPersonal form={form} handleChange={handleChange} />}
+          {step === 2 && (
+            <StepServices
+              form={form}
+              toggleArrayValue={toggleArrayValue}
+              toggleSubService={toggleSubService}
+              handleChange={handleChange}
+              activeSubServices={activeSubServices}
+            />
+          )}
+          {step === 3 && <StepQualifications form={form} handleChange={handleChange} />}
+          {step === 4 && (
+            <StepDocumentsReview
+              form={form}
+              files={files}
+              handleChange={handleChange}
+              handleFileChange={handleFileChange}
+            />
+          )}
+
+          <div className="mt-6 flex items-center justify-between border-t pt-4">
+            <button
+              type="button"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+              onClick={() => goToStep(Math.max((step - 1) as number, 1) as Step)}
+              disabled={step === 1 || submitting}
+            >
+              Back
+            </button>
+            <div className="flex items-center gap-3">
+              {step < 4 && (
+                <button
+                  type="button"
+                  className="rounded-lg bg-sky-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-50"
+                  onClick={() => goToStep((step + 1) as Step)}
+                  disabled={submitting}
+                >
+                  Continue
+                </button>
+              )}
+              {step === 4 && (
+                <button
+                  type="button"
+                  className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting…" : "Submit application"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default ProfessionalRegisterPage;
+/* ----------------------------- Step Components ----------------------------- */
+
+function Field({
+  label,
+  children,
+  required,
+}: {
+  label: string;
+  children: React.ReactNode;
+  required?: boolean;
+}) {
+  return (
+    <label className="flex flex-col gap-1 text-xs font-medium text-slate-700">
+      <span>
+        {label} {required ? <span className="text-rose-500">*</span> : null}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function StepPersonal({
+  form,
+  handleChange,
+}: {
+  form: FormState;
+  handleChange: (key: keyof FormState) => any;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+        <p className="font-semibold text-slate-800">Why we ask for this</p>
+        <p>We use your contact details to create your pro account and send job leads to your dashboard and email.</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Full name" required>
+          <input
+            value={form.fullName}
+            onChange={handleChange("fullName")}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="e.g. John Murphy"
+            type="text"
+          />
+        </Field>
+        <Field label="Phone number" required>
+          <input
+            value={form.phone}
+            onChange={handleChange("phone")}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="+353 8X XXX XXXX"
+            type="tel"
+          />
+        </Field>
+        <Field label="Email" required>
+          <input
+            value={form.email}
+            onChange={handleChange("email")}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="you@example.com"
+            type="email"
+          />
+        </Field>
+        <Field label="Password" required>
+          <input
+            value={form.password}
+            onChange={handleChange("password")}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="Create a strong password"
+            type="password"
+          />
+        </Field>
+        <Field label="Confirm password" required>
+          <input
+            value={form.confirmPassword}
+            onChange={handleChange("confirmPassword")}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            type="password"
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function StepServices({
+  form,
+  toggleArrayValue,
+  toggleSubService,
+  handleChange,
+  activeSubServices,
+}: {
+  form: FormState;
+  toggleArrayValue: (key: keyof FormState, value: string) => void;
+  toggleSubService: (svc: string, sub: string) => void;
+  handleChange: (key: keyof FormState) => any;
+  activeSubServices: { svc: string; label: string }[];
+}) {
+  return (
+    <div className="space-y-6">
+      <Section title="Main services" description="Select all services you want to offer.">
+        <div className="flex flex-wrap gap-2">
+          {MAIN_SERVICES.map((svc) => {
+            const selected = form.mainServices.includes(svc);
+            return (
+              <button
+                key={svc}
+                type="button"
+                onClick={() => toggleArrayValue("mainServices", svc)}
+                className={[
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+                  selected
+                    ? "border-sky-500 bg-sky-50 text-sky-700"
+                    : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-white",
+                ].join(" ")}
+              >
+                {svc}
+              </button>
+            );
+          })}
+        </div>
+      </Section>
+
+      {activeSubServices.length > 0 && (
+        <Section
+          title="Sub-services"
+          description="Highlight specific tasks you handle. This helps us match you to the right jobs."
+        >
+          <div className="flex flex-wrap gap-2">
+            {activeSubServices.map(({ svc, label }) => {
+              const selected = (form.subServices[svc] || []).includes(label);
+              return (
+                <button
+                  key={`${svc}-${label}`}
+                  type="button"
+                  onClick={() => toggleSubService(svc, label)}
+                  className={[
+                    "rounded-full border px-3 py-1.5 text-xs transition",
+                    selected
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-white",
+                  ].join(" ")}
+                >
+                  {svc}: {label}
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+      )}
+
+      <Section
+        title="Professional details"
+        description="Share your experience and typical rates. Customers will see these details."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Years of experience" required>
+            <input
+              type="number"
+              min={0}
+              value={form.yearsOfExperience}
+              onChange={handleChange("yearsOfExperience")}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="e.g. 5"
+            />
+          </Field>
+          <Field label="Typical hourly rate (€)" required>
+            <input
+              type="number"
+              min={0}
+              value={form.hourlyRate}
+              onChange={handleChange("hourlyRate")}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="e.g. 60"
+            />
+          </Field>
+          <Field label="Minimum call-out fee (€)" required>
+            <input
+              type="number"
+              min={0}
+              value={form.minCalloutFee}
+              onChange={handleChange("minCalloutFee")}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="e.g. 80"
+            />
+          </Field>
+        </div>
+      </Section>
+
+      <Section title="Base address" description="Used to calculate travel time and show nearby jobs.">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Address line 1" required>
+            <input
+              type="text"
+              value={form.addressLine1}
+              onChange={handleChange("addressLine1")}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="House / apartment, street"
+            />
+          </Field>
+          <Field label="Address line 2 (optional)">
+            <input
+              type="text"
+              value={form.addressLine2}
+              onChange={handleChange("addressLine2")}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="Estate, building, etc."
+            />
+          </Field>
+          <Field label="City / town" required>
+            <input
+              type="text"
+              value={form.city}
+              onChange={handleChange("city")}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="e.g. Dublin"
+            />
+          </Field>
+          <Field label="County" required>
+            <select
+              value={form.county}
+              onChange={handleChange("county")}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            >
+              <option value="">Select county</option>
+              {IRISH_COUNTIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Eircode (optional)">
+            <input
+              type="text"
+              value={form.eircode}
+              onChange={handleChange("eircode")}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm uppercase focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="D02 X285"
+            />
+          </Field>
+        </div>
+      </Section>
+
+      <Section title="Service areas" description="Where are you happy to work?">
+        <div className="flex flex-wrap gap-2">
+          {IRISH_COUNTIES.map((c) => {
+            const selected = form.serviceAreas.includes(c);
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => toggleArrayValue("serviceAreas", c)}
+                className={[
+                  "rounded-full border px-3 py-1.5 text-xs transition",
+                  selected
+                    ? "border-sky-500 bg-sky-50 text-sky-700"
+                    : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-white",
+                ].join(" ")}
+              >
+                {c}
+              </button>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section title="Working days & hours" description="Let customers know your availability.">
+        <div className="flex flex-wrap gap-2">
+          {WORKING_DAYS.map((day) => {
+            const selected = form.workingDays.includes(day);
+            return (
+              <button
+                key={day}
+                type="button"
+                onClick={() => toggleArrayValue("workingDays", day)}
+                className={[
+                  "rounded-full border px-3 py-1.5 text-xs transition",
+                  selected
+                    ? "border-sky-500 bg-sky-50 text-sky-700"
+                    : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-white",
+                ].join(" ")}
+              >
+                {day}
+              </button>
+            );
+          })}
+        </div>
+        <Field label="Typical working hours (optional)">
+          <input
+            type="text"
+            value={form.workingHours}
+            onChange={handleChange("workingHours")}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="e.g. 8am - 6pm, Mon-Sat"
+          />
+        </Field>
+      </Section>
+
+      <Section
+        title="Emergency jobs"
+        description="Let customers know if you can take urgent call-outs (nights, weekends, leaks, outages)."
+      >
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+            checked={form.offersEmergency}
+            onChange={handleChange("offersEmergency")}
+          />
+          <span className="text-sm text-slate-700">I offer emergency / out-of-hours jobs</span>
+        </div>
+        {form.offersEmergency && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Typical response time" required>
+              <select
+                value={form.emergencyResponse}
+                onChange={handleChange("emergencyResponse")}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              >
+                <option value="">Select</option>
+                <option value="under_1_hour">Under 1 hour</option>
+                <option value="1_3_hours">1–3 hours</option>
+                <option value="same_day">Same day</option>
+                <option value="next_day">Next day</option>
+                <option value="scheduled_only">Scheduled only</option>
+              </select>
+            </Field>
+            <Field label="Emergency call-out fee (€)" required>
+              <input
+                type="number"
+                min={0}
+                value={form.emergencyCalloutFee}
+                onChange={handleChange("emergencyCalloutFee")}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                placeholder="e.g. 150"
+              />
+            </Field>
+          </div>
+        )}
+      </Section>
+    </div>
+  );
+}
+
+function StepQualifications({
+  form,
+  handleChange,
+}: {
+  form: FormState;
+  handleChange: (key: keyof FormState) => any;
+}) {
+  return (
+    <div className="space-y-4">
+      <Section
+        title="Qualification or trade certification"
+        description="Share your trade background, tickets, or memberships. This helps us verify your profile faster."
+      >
+        <Field label="Qualification summary" required>
+          <textarea
+            value={form.qualificationSummary}
+            onChange={handleChange("qualificationSummary")}
+            className="min-h-[120px] rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="E.g. Registered electrician (RECI), 8+ years in domestic and light commercial work…"
+          />
+        </Field>
+        <Field label="Trade certifications (optional)">
+          <textarea
+            value={form.tradeCertifications}
+            onChange={handleChange("tradeCertifications")}
+            className="min-h-[90px] rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="Safe Electric, RGII, F-Gas, Safe Pass, Manual Handling…"
+          />
+        </Field>
+      </Section>
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+        Tip: For regulated trades (electrician, gas/boiler, CCTV/PSA), add your registration number and upload proof in the next step.
+      </div>
+    </div>
+  );
+}
+
+function StepDocumentsReview({
+  form,
+  files,
+  handleChange,
+  handleFileChange,
+}: {
+  form: FormState;
+  files: FileState;
+  handleChange: (key: keyof FormState) => any;
+  handleFileChange: (key: keyof FileState) => (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  const summaryItems = [
+    { label: "Name", value: form.fullName },
+    { label: "Email", value: form.email },
+    { label: "Phone", value: form.phone },
+    { label: "Main services", value: form.mainServices.join(", ") || "Not selected" },
+    {
+      label: "Sub-services",
+      value:
+        Object.entries(form.subServices)
+          .map(([svc, subs]) => `${svc}: ${subs.join(", ")}`)
+          .join(" | ") || "None",
+    },
+    { label: "Service areas", value: form.serviceAreas.join(", ") || "Not selected" },
+    { label: "Working days", value: form.workingDays.join(", ") || "Not provided" },
+    { label: "Working hours", value: form.workingHours || "Not provided" },
+    {
+      label: "Emergency",
+      value: form.offersEmergency
+        ? `Yes – ${(form.emergencyResponse || "").replace(/_/g, " ")}${form.emergencyCalloutFee ? ` (€${form.emergencyCalloutFee})` : ""}`
+        : "No",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <Section title="Verification documents" description="Helps keep the platform safe for customers and pros.">
+        <Field label="Photo ID (passport / driving licence)">
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={handleFileChange("idDocument")}
+            className="w-full text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+          />
+          {files.idDocument && <p className="text-xs text-emerald-700 mt-1">Selected: {files.idDocument.name}</p>}
+        </Field>
+        <Field label="Proof of address (utility bill, bank statement)">
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={handleFileChange("proofOfAddress")}
+            className="w-full text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+          />
+          {files.proofOfAddress && <p className="text-xs text-emerald-700 mt-1">Selected: {files.proofOfAddress.name}</p>}
+        </Field>
+        <Field label="Public liability / trade insurance (if available)">
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={handleFileChange("insuranceDocument")}
+            className="w-full text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+          />
+          <label className="mt-2 flex items-start gap-2 text-xs text-slate-700">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              checked={form.hasInsurance}
+              onChange={handleChange("hasInsurance")}
+            />
+            <span>I currently hold active trade insurance</span>
+          </label>
+          <textarea
+            value={form.insuranceDetails}
+            onChange={handleChange("insuranceDetails")}
+            className="mt-2 min-h-[70px] rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="Insurer, policy number, or any extra notes…"
+          />
+        </Field>
+        <Field label="Other supporting document (optional)">
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={handleFileChange("otherDocument")}
+            className="w-full text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+          />
+          {files.otherDocument && <p className="text-xs text-emerald-700 mt-1">Selected: {files.otherDocument.name}</p>}
+        </Field>
+      </Section>
+
+      <Section title="Review your application" description="Quick check before you submit.">
+        <div className="space-y-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-700">
+          {summaryItems.map((item) => (
+            <div key={item.label} className="flex justify-between gap-3">
+              <span className="font-medium">{item.label}</span>
+              <span className="text-right">{item.value || <span className="text-slate-400">—</span>}</span>
+            </div>
+          ))}
+        </div>
+        <label className="flex items-start gap-2 text-xs text-slate-700">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+            checked={form.termsAccepted || form.acceptedTerms}
+            onChange={(e) => {
+              handleChange("termsAccepted")(e as any);
+              handleChange("acceptedTerms")(e as any);
+            }}
+          />
+          <span>
+            I confirm the information is accurate and I agree to FixEasy&apos;s{" "}
+            <span className="cursor-pointer text-sky-600 underline">Terms of Service</span> and{" "}
+            <span className="cursor-pointer text-sky-600 underline">Privacy Policy</span>.
+          </span>
+        </label>
+      </Section>
+    </div>
+  );
+}
+
+/* ----------------------------- Helpers ----------------------------- */
+
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className="space-y-1">
+        <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+        {description && <p className="text-xs text-slate-600">{description}</p>}
+      </div>
+      {children}
+    </section>
+  );
+}

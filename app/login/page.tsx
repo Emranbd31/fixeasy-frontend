@@ -15,18 +15,21 @@ function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     function validatePassword(pw: string) {
         // At least 8 chars, one special symbol, one number, one uppercase
         return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(pw)
     }
 
+    const canSubmit = emailRegex.test(email) && validatePassword(password);
+
     async function onLogin() {
         try {
             setLoading(true);
             setError(null);
-            if (!validatePassword(password)) {
-                setError('Password must be at least 8 characters, include an uppercase letter, a number, and a special symbol');
+            if (!canSubmit) {
+                setError('Enter a valid email and password that meets the requirements.');
                 setLoading(false);
                 return;
             }
@@ -64,7 +67,11 @@ function LoginPage() {
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Password <span className="text-red-500">*</span></label>
                         <input className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 outline-none transition" placeholder="Min. 8 chars, 1 uppercase, 1 number, 1 symbol" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
-                    <button disabled={loading} onClick={onLogin} className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-lg hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/30 transform hover:scale-[1.02] disabled:transform-none">
+                    <button
+                        disabled={loading || !emailRegex.test(email) || !validatePassword(password)}
+                        onClick={onLogin}
+                        className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-lg hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/30 transform hover:scale-[1.02] disabled:transform-none"
+                    >
                         {loading ? (
                             <span className="flex items-center justify-center">
                                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

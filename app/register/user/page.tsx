@@ -13,6 +13,7 @@ function UserRegisterPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
+    const [step, setStep] = useState<1 | 2>(1)
 
     // Form fields
     const [name, setName] = useState('')
@@ -21,43 +22,43 @@ function UserRegisterPage() {
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const phoneRegex = /^[\d\s\+\-\(\)]+$/
+
     function validatePassword(pw: string) {
         // At least 8 chars, one special symbol, one number, one uppercase
         return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(pw)
     }
 
+    const stepOneValid =
+        Boolean(name.trim()) &&
+        emailRegex.test(email) &&
+        validatePassword(password) &&
+        password === confirmPassword;
+    const stepTwoValid = phoneRegex.test(phone) && Boolean(phone.trim());
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         setError(null)
 
-        // Validation
-        if (!name || !email || !phone || !password || !confirmPassword) {
-            setError('Please fill in all required fields')
-            return
+        if (step === 1) {
+            if (!stepOneValid) {
+                setError('Please complete your name, email, and password (8+ chars, uppercase, number, symbol) and confirm it matches.');
+                return;
+            }
+            setStep(2);
+            return;
         }
 
-        if (!validatePassword(password)) {
-            setError('Password must be at least 8 characters, include an uppercase letter, a number, and a special symbol')
-            return
+        if (!stepOneValid) {
+            setStep(1);
+            setError('Please complete your name, email, and password (8+ chars, uppercase, number, symbol) and confirm it matches.');
+            return;
         }
-
-        if (password !== confirmPassword) {
-            setError('Passwords do not match')
-            return
-        }
-
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(email)) {
-            setError('Please enter a valid email address')
-            return
-        }
-
-        // Validate phone format (basic)
-        const phoneRegex = /^[\d\s\+\-\(\)]+$/
-        if (!phoneRegex.test(phone)) {
-            setError('Please enter a valid phone number')
-            return
+        if (!stepTwoValid) {
+            setStep(2);
+            setError('Please enter a valid phone number.');
+            return;
         }
 
         setLoading(true)
@@ -90,6 +91,26 @@ function UserRegisterPage() {
         }
     }
 
+    const goNext = () => {
+        if (!stepOneValid) {
+            setError('Please complete your name, email, and password (8+ chars, uppercase, number, symbol) and confirm it matches.');
+            return;
+        }
+        setError(null);
+        setStep(2);
+        if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const goBack = () => {
+        setStep(1);
+        setError(null);
+        if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     if (success) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center px-4 pt-28 pb-12">
@@ -115,6 +136,7 @@ function UserRegisterPage() {
                     <p className="text-lg text-gray-600">
                         Join FixEasy and book trusted professionals in minutes
                     </p>
+                    <p className="text-sm text-gray-500 mt-2">Step {step} of 2</p>
                 </div>
 
                 {/* Main Form */}
@@ -126,79 +148,85 @@ function UserRegisterPage() {
                             </div>
                         )}
 
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Full Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="John Doe"
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                    required
-                                />
-                            </div>
+                        {step === 1 && (
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Full Name <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        placeholder="John Doe"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                                        required
+                                    />
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Email Address <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="john@example.com"
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                    required
-                                />
-                                <p className="text-xs text-gray-500 mt-1">We&apos;ll send a verification email to this address</p>
-                            </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Email Address <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="john@example.com"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                                        required
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">We&apos;ll send a verification email to this address</p>
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Phone Number <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="tel"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    placeholder="+353 87 123 4567"
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                    required
-                                />
-                            </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Password <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Min. 8 chars, 1 uppercase, 1 number, 1 symbol"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                                        required
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">Use a strong password with letters, numbers, and symbols</p>
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Password <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Min. 8 chars, 1 uppercase, 1 number, 1 symbol"
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                    required
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Use a strong password with letters, numbers, and symbols</p>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Confirm Password <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        placeholder="Re-enter your password"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                                        required
+                                    />
+                                </div>
                             </div>
+                        )}
 
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Confirm Password <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="Re-enter your password"
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                    required
-                                />
+                        {step === 2 && (
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Phone Number <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        placeholder="+353 87 123 4567"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                                        required
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Social Login */}
                         <div className="mb-8">
@@ -227,23 +255,49 @@ function UserRegisterPage() {
                                 </p>
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl"
-                            >
-                                {loading ? (
-                                    <span className="flex items-center justify-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Creating Your Account...
-                                    </span>
+                            <div className="flex flex-col gap-3">
+                                {step === 1 ? (
+                                    <button
+                                        type="button"
+                                        onClick={goNext}
+                                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl"
+                                    >
+                                        Continue
+                                    </button>
                                 ) : (
-                                    'Create Account'
+                                    <>
+                                        <div className="flex gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={goBack}
+                                                className="w-1/3 bg-gray-100 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-200 transition"
+                                            >
+                                                Back
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={loading || !stepTwoValid}
+                                                className="w-2/3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl"
+                                            >
+                                                {loading ? (
+                                                    <span className="flex items-center justify-center">
+                                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Creating Your Account...
+                                                    </span>
+                                                ) : (
+                                                    'Create Account'
+                                                )}
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-gray-500 text-center">
+                                            Your phone helps pros contact you about bookings.
+                                        </p>
+                                    </>
                                 )}
-                            </button>
+                            </div>
 
                             <p className="text-center text-sm text-gray-600 mt-6">
                                 Already have an account?{' '}
