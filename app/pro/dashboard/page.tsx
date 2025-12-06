@@ -419,7 +419,7 @@ export default function ProDashboardPage() {
                 {availabilitySaving ? 'Saving...' : profile?.isAvailable ? 'Available' : 'Offline'}
               </button>
             </div>
-            <Link href="/pro/onboarding" className="text-blue-600 text-sm font-semibold">Edit profile</Link>
+            <Link href="/register/professional" className="text-blue-600 text-sm font-semibold">Edit profile</Link>
           </div>
         </div>
 
@@ -433,7 +433,7 @@ export default function ProDashboardPage() {
           </div>
           {completion < 100 && (
             <p className="text-sm text-gray-700 mt-2">
-              Complete your profile to get more jobs. <Link href="/pro/onboarding" className="text-blue-600 font-semibold">Continue onboarding</Link>
+              Complete your profile to get more jobs. <Link href="/register/professional" className="text-blue-600 font-semibold">Continue onboarding</Link>
             </p>
           )}
         </div>

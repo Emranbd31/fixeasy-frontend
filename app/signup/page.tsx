@@ -14,21 +14,24 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const passwordRegex = /^(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^\+?\d{7,15}$/;
+  const canSubmit =
+    fullName.trim().length > 1 &&
+    emailRegex.test(email) &&
+    phoneRegex.test(phone) &&
+    address.trim().length > 3 &&
+    eircode.trim().length > 2 &&
+    passwordRegex.test(password) &&
+    password === confirmPassword;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!fullName || !email || !phone || !address || !eircode || !password || !confirmPassword) {
+    if (!canSubmit) {
       setError('Please fill in all fields');
-      return;
-    }
-    if (!passwordRegex.test(password)) {
-      setError('Password must be at least 8 characters and include a special symbol');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
       return;
     }
     // Simulate account creation
@@ -77,7 +80,7 @@ export default function SignupPage() {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Phone <span className="text-red-500">*</span></label>
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" required />
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+353 87 123 4567" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" required />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Address <span className="text-red-500">*</span></label>
@@ -90,13 +93,13 @@ export default function SignupPage() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Password <span className="text-red-500">*</span></label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" required />
-              <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters and include a special symbol.</p>
+              <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters and include an uppercase letter, a number, and a special character.</p>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm Password <span className="text-red-500">*</span></label>
               <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" required />
             </div>
-            <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-xl">Create Account</button>
+            <button type="submit" disabled={!canSubmit} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">Create Account</button>
           </form>
         )}
       </div>

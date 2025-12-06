@@ -84,33 +84,28 @@ function ForgotPasswordPage() {
                 {/* Phone reset */}
                 <div className="mb-8">
                     <h2 className="text-lg font-semibold mb-2">Reset by Phone (SMS)</h2>
-                    {phoneError && <div className="mb-4 p-3 rounded bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">{phoneError}</div>}
-                    {phoneSuccess ? (
-                        <div className="mb-4 p-3 rounded bg-green-50 border-l-4 border-green-500 text-green-700 text-sm">
-                            If this phone is registered, you will receive an SMS with reset instructions. (Demo only)
+                    <div className="mb-4 p-3 rounded bg-amber-50 border-l-4 border-amber-500 text-amber-700 text-sm">
+                        SMS reset is not yet available. Please use email reset instead.
+                    </div>
+                    <form className="space-y-5 opacity-50 cursor-not-allowed">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                            <input
+                                type="tel"
+                                value={phone}
+                                disabled
+                                placeholder="+353 87 123 4567"
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-100"
+                            />
                         </div>
-                    ) : (
-                        <form onSubmit={handlePhoneReset} className="space-y-5">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number <span className="text-red-500">*</span></label>
-                                <input
-                                    type="tel"
-                                    value={phone}
-                                    onChange={e => setPhone(e.target.value)}
-                                    placeholder="+353 87 123 4567"
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                                    required
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-bold text-lg hover:from-green-700 hover:to-blue-700 transition"
-                            >
-                                Send SMS Code
-                            </button>
-                        </form>
-                    )}
-                    <p className="text-xs text-gray-500 mt-2">SMS password reset requires backend integration (e.g., Twilio).</p>
+                        <button
+                            type="button"
+                            disabled
+                            className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-bold text-lg opacity-50 cursor-not-allowed"
+                        >
+                            Send SMS Code
+                        </button>
+                    </form>
                 </div>
                 <div className="mt-6 text-center">
                     <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-700 transition">Back to Login</Link>
