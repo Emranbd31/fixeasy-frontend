@@ -21,9 +21,47 @@ const SERVICE_OPTIONS: ServiceOption[] = MAIN_SERVICES.map((label) => ({
   subServices: SUB_SERVICES[label] || [],
 }));
 
-const STEP_LABELS = ["Service & issue", "Contact & address", "Date/Time & review", "Payment (optional)"];
+const STEP_LABELS = ["Service & issue", "Contact & address", "Date/Time & review", "Price estimate"];
 const MAX_PHOTOS = 5;
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
+const BUDGET_OPTIONS = ["€80–€120", "€120–€200", "€200–€350", "I don’t know / Let the pro advise"];
+const PRICE_RANGES: Record<string, { min: number; max: number }> = {
+  cleaning: { min: 80, max: 150 },
+  plumbing: { min: 120, max: 200 },
+  electrician: { min: 120, max: 220 },
+  handyman: { min: 80, max: 180 },
+  painting: { min: 150, max: 300 },
+  moving: { min: 180, max: 400 },
+  gardening: { min: 80, max: 160 },
+  "carpet cleaning": { min: 100, max: 180 },
+  roofing: { min: 200, max: 500 },
+  hvac: { min: 150, max: 400 },
+  "pest control": { min: 90, max: 200 },
+  locksmith: { min: 80, max: 160 },
+  tiling: { min: 150, max: 350 },
+  flooring: { min: 150, max: 350 },
+};
+
+const getEstimateForService = (service: string) => {
+  const key = service.trim().toLowerCase();
+  const direct = PRICE_RANGES[key];
+  if (direct) return direct;
+  if (key.includes("plumb")) return PRICE_RANGES.plumbing;
+  if (key.includes("electric")) return PRICE_RANGES.electrician;
+  if (key.includes("clean")) return PRICE_RANGES.cleaning;
+  if (key.includes("paint")) return PRICE_RANGES.painting;
+  if (key.includes("handy")) return PRICE_RANGES.handyman;
+  if (key.includes("move")) return PRICE_RANGES.moving;
+  if (key.includes("garden")) return PRICE_RANGES.gardening;
+  if (key.includes("carpet")) return PRICE_RANGES["carpet cleaning"];
+  if (key.includes("roof")) return PRICE_RANGES.roofing;
+  if (key.includes("hvac") || key.includes("ac")) return PRICE_RANGES.hvac;
+  if (key.includes("pest")) return PRICE_RANGES["pest control"];
+  if (key.includes("lock")) return PRICE_RANGES.locksmith;
+  if (key.includes("tile")) return PRICE_RANGES.tiling;
+  if (key.includes("floor")) return PRICE_RANGES.flooring;
+  return { min: 100, max: 250 };
+};
 
 export default function BookingPageClient() {
   // AB test text for quote CTA
@@ -39,6 +77,8 @@ export default function BookingPageClient() {
   const [quoteEmail, setQuoteEmail] = useState("");
   const [quotePhone, setQuotePhone] = useState("");
   const [quotePhotos, setQuotePhotos] = useState<File[]>([]);
+  const [quoteBudget, setQuoteBudget] = useState("");
+  const [quoteUrgency, setQuoteUrgency] = useState("asap");
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [quoteSuccess, setQuoteSuccess] = useState<string | null>(null);
@@ -56,6 +96,7 @@ export default function BookingPageClient() {
   const [bookEmail, setBookEmail] = useState("");
   const [bookPhone, setBookPhone] = useState("");
   const [bookDateTime, setBookDateTime] = useState<Date | null>(null);
+  const [bookBudget, setBookBudget] = useState("");
   const [bookPhotos, setBookPhotos] = useState<File[]>([]);
   const [bookSubmitting, setBookSubmitting] = useState(false);
   const [bookError, setBookError] = useState<string | null>(null);
@@ -177,7 +218,7 @@ export default function BookingPageClient() {
   const bookStepValid = (step: number) => {
     if (step === 1) return bookService.trim().length > 0;
     if (step === 2) return bookHasContact && bookAddress.trim().length > 0;
-    if (step === 3) return !!bookDateTime;
+    if (step === 3) return bookUrgency === "scheduled" ? !!bookDateTime : true;
     return true;
   };
 
@@ -207,6 +248,7 @@ export default function BookingPageClient() {
     setQuoteSuccess(null);
     try {
       const photos = await readFilesToBase64(quotePhotos);
+      const estimate = getEstimateForService(quoteService);
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -215,17 +257,22 @@ export default function BookingPageClient() {
           service: quoteService,
           subService: quoteSubService,
           description: quoteDescription,
+          urgency: quoteUrgency,
           address: quoteAddress,
           contactName: quoteContactName,
           email: quoteEmail,
           phone: quotePhone,
+          budgetRange: quoteBudget,
+          priceEstimateMin: estimate.min,
+          priceEstimateMax: estimate.max,
           photos,
           abVariant,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || "Unable to submit request");
-      setQuoteSuccess("Thanks! Your quote request was sent. We’re notifying nearby professionals.");
+      const firstName = (quoteContactName || quoteEmail || "there").split(" ")[0];
+      setQuoteSuccess(`Thanks, ${firstName}! Your quote request was sent. We’re notifying nearby professionals.`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
       setQuoteError(msg);
@@ -241,6 +288,7 @@ export default function BookingPageClient() {
     setBookSuccess(null);
     try {
       const photos = await readFilesToBase64(bookPhotos);
+      const estimate = getEstimateForService(bookService);
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -255,13 +303,19 @@ export default function BookingPageClient() {
           email: bookEmail,
           phone: bookPhone,
           appointmentStart: bookDateTime?.toISOString() ?? null,
+          budgetRange: bookBudget,
+          priceEstimateMin: estimate.min,
+          priceEstimateMax: estimate.max,
           photos,
           abVariant,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || "Unable to submit booking");
-      setBookSuccess("Great! Your booking request is in. We’ll confirm and share the pro details shortly.");
+      const firstName = (bookContactName || bookEmail || "there").split(" ")[0];
+      setBookSuccess(
+        `Thanks, ${firstName}! Your booking request is in. We’ll confirm and share the professional’s details shortly.`
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
       setBookError(msg);
@@ -426,6 +480,26 @@ export default function BookingPageClient() {
               placeholder="Eircode or address"
             />
           </div>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-700">Budget (optional)</label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {BUDGET_OPTIONS.map((budget) => (
+                <button
+                  type="button"
+                  key={budget}
+                  onClick={() => setBookBudget(budget)}
+                  className={[
+                    "rounded-lg border px-3 py-2 text-left text-sm transition",
+                    bookBudget === budget
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                  ].join(" ")}
+                >
+                  {budget}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       );
     }
@@ -433,20 +507,27 @@ export default function BookingPageClient() {
     if (bookStep === 3) {
       return (
         <div className="space-y-4">
-          <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <label className="text-xs font-semibold text-slate-700">Select date & time</label>
-            <DatePicker
-              selected={bookDateTime}
-              onChange={(date: Date) => setBookDateTime(date)}
-              showTimeSelect
-              timeIntervals={30}
-              minDate={new Date()}
-              dateFormat="MM/dd/yyyy h:mm aa"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
-              placeholderText="Select date & time"
-            />
-            {!bookDateTime && <p className="text-xs text-slate-600">Pick a time so we can confirm your booking.</p>}
-          </div>
+          {bookUrgency === "scheduled" ? (
+            <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <label className="text-xs font-semibold text-slate-700">Select date & time</label>
+              <DatePicker
+                selected={bookDateTime}
+                onChange={(date: Date) => setBookDateTime(date)}
+                showTimeSelect
+                timeIntervals={30}
+                minDate={new Date()}
+                dateFormat="MM/dd/yyyy h:mm aa"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                placeholderText="Select date & time"
+              />
+              {!bookDateTime && <p className="text-xs text-slate-600">Pick a time so we can confirm your booking.</p>}
+            </div>
+          ) : (
+            <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-sm font-semibold text-amber-800">We’ll dispatch the next available professional.</p>
+              <p className="text-xs text-amber-700">If you prefer a specific time, switch to “Schedule for later” and choose a slot.</p>
+            </div>
+          )}
           <div className="rounded-lg border border-slate-200 p-3">
             <p className="text-sm font-semibold text-slate-800">Review</p>
             <ul className="mt-2 space-y-1 text-sm text-slate-700">
@@ -462,12 +543,30 @@ export default function BookingPageClient() {
 
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-slate-200 p-3">
-          <p className="text-sm font-semibold text-slate-800">Payment</p>
-          <p className="mt-1 text-sm text-slate-600">
-            No charge now. We’ll confirm the pro and finalize payment after you approve the booking.
-          </p>
-        </div>
+        {(() => {
+          const estimate = getEstimateForService(bookService);
+          const budgetValue = BUDGET_OPTIONS.find((b) => b === bookBudget);
+          const budgetLow =
+            budgetValue && budgetValue !== BUDGET_OPTIONS[BUDGET_OPTIONS.length - 1]
+              ? parseInt(budgetValue.replace(/[^\d]/g, ""), 10)
+              : null;
+          const budgetWarning = budgetLow !== null && budgetLow < estimate.min;
+          return (
+            <div className="rounded-lg border border-slate-200 p-3 space-y-2">
+              <p className="text-sm font-semibold text-slate-800">Estimated price</p>
+              <p className="text-sm text-slate-700">
+                Estimated cost: €{estimate.min}–€{estimate.max}. The professional will confirm the final price before starting work.
+              </p>
+              <p className="text-xs text-slate-600">Most jobs in this category fall in this range.</p>
+              {budgetWarning && (
+                <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                  Note: Your budget is below the typical price for this type of job. Most jobs like this cost €{estimate.min}–€
+                  {estimate.max}.
+                </div>
+              )}
+            </div>
+          );
+        })()}
         <div className="rounded-lg border border-slate-200 p-3">
           <p className="text-sm font-semibold text-slate-800">Summary</p>
           <ul className="mt-2 space-y-1 text-sm text-slate-700">
@@ -476,6 +575,7 @@ export default function BookingPageClient() {
             <li>Urgency: {bookUrgency === "emergency" ? "Emergency" : "Flexible"}</li>
             <li>When: {bookDateTime ? bookDateTime.toLocaleString() : "Not set"}</li>
             <li>Address: {bookAddress || "—"}</li>
+            {bookBudget && <li>Budget: {bookBudget}</li>}
             <li>Contact: {bookEmail || bookPhone || "—"}</li>
           </ul>
         </div>
@@ -515,8 +615,8 @@ export default function BookingPageClient() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-16 text-center">
-        <h1 className="text-3xl font-bold text-slate-900">Choose how you’d like to book</h1>
-        <p className="mt-2 text-slate-600">Request quotes quickly or schedule now — both options are on this page.</p>
+        <h1 className="text-3xl font-bold text-slate-900">Choose how you’d like to get started</h1>
+        <p className="mt-2 text-slate-600">Get quotes from professionals or book a service right away.</p>
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
           <button
             type="button"
@@ -629,6 +729,52 @@ export default function BookingPageClient() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-700">How soon do you need it?</label>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    { value: "asap", label: "ASAP / Emergency" },
+                    { value: "24h", label: "Within 24 hours" },
+                    { value: "week", label: "This week" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setQuoteUrgency(opt.value)}
+                      className={[
+                        "rounded-lg border px-3 py-2 text-left text-sm font-semibold transition",
+                        quoteUrgency === opt.value
+                          ? "border-blue-500 bg-blue-50 text-blue-700"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                      ].join(" ")}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-700">Budget (optional)</label>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {BUDGET_OPTIONS.map((budget) => (
+                    <button
+                      type="button"
+                      key={budget}
+                      onClick={() => setQuoteBudget(budget)}
+                      className={[
+                        "rounded-lg border px-3 py-2 text-left text-sm transition",
+                        quoteBudget === budget
+                          ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                      ].join(" ")}
+                    >
+                      {budget}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-2">

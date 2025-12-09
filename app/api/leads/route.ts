@@ -5,7 +5,9 @@ const schema = z.object({
   service: z.string().min(1),
   subService: z.string().optional(),
   requestType: z.enum(["quote", "book"]).default("quote"),
-  urgency: z.enum(["emergency", "scheduled"]).optional(),
+  urgency: z
+    .enum(["emergency", "scheduled", "asap", "24h", "week", "within-24-hours", "this-week"])
+    .optional(),
   description: z.string().optional(),
   address: z.string().min(3),
   appointmentStart: z.string().optional().nullable(),
@@ -14,6 +16,9 @@ const schema = z.object({
   phone: z.string().optional(),
   abVariant: z.string().optional(),
   photos: z.array(z.string()).max(5).optional(),
+  budgetRange: z.string().optional(),
+  priceEstimateMin: z.number().optional(),
+  priceEstimateMax: z.number().optional(),
 });
 
 export async function POST(request: Request) {
@@ -26,7 +31,7 @@ export async function POST(request: Request) {
   if (!data.email && !data.phone) {
     return NextResponse.json({ error: "Email or phone required" }, { status: 400 });
   }
-  if (data.requestType === "book" && !data.appointmentStart) {
+  if (data.requestType === "book" && data.urgency === "scheduled" && !data.appointmentStart) {
     return NextResponse.json({ error: "Appointment time required for scheduled bookings" }, { status: 400 });
   }
 
