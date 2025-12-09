@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
@@ -21,31 +21,58 @@ const SERVICE_OPTIONS: ServiceOption[] = MAIN_SERVICES.map((label) => ({
   subServices: SUB_SERVICES[label] || [],
 }));
 
+const STEP_LABELS = ["Service & issue", "Contact & address", "Date/Time & review", "Payment (optional)"];
+
 export default function BookingPageClient() {
-  const [open, setOpen] = useState(true);
-  const [service, setService] = useState<string>("");
-  const [subService, setSubService] = useState<string>("");
-  const [urgency, setUrgency] = useState<Urgency>("emergency");
-  const [requestType, setRequestType] = useState<RequestType>("quote");
-  const [description, setDescription] = useState("");
-  const [address, setAddress] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [appointmentStart, setAppointmentStart] = useState<Date | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
-  const addressRef = useRef<HTMLInputElement | null>(null);
-  const modalScrollRef = useRef<HTMLDivElement | null>(null);
-  const searchParams = useSearchParams();
+  // AB test text for quote CTA
   const abVariant = useMemo(() => (Math.random() < 0.5 ? "A" : "B"), []);
 
-  const selectedServiceOption = useMemo(
-    () => (service ? SERVICE_OPTIONS.find((s) => s.label === service) || null : null),
-    [service]
+  // Quote path state
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const [quoteService, setQuoteService] = useState("");
+  const [quoteSubService, setQuoteSubService] = useState("");
+  const [quoteDescription, setQuoteDescription] = useState("");
+  const [quoteAddress, setQuoteAddress] = useState("");
+  const [quoteContactName, setQuoteContactName] = useState("");
+  const [quoteEmail, setQuoteEmail] = useState("");
+  const [quotePhone, setQuotePhone] = useState("");
+  const [quoteSubmitting, setQuoteSubmitting] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [quoteSuccess, setQuoteSuccess] = useState<string | null>(null);
+
+  // Book path state
+  const [bookOpen, setBookOpen] = useState(false);
+  const [bookStep, setBookStep] = useState(1);
+  const [bookService, setBookService] = useState("");
+  const [bookSubService, setBookSubService] = useState("");
+  const [bookDescription, setBookDescription] = useState("");
+  const [bookUrgency, setBookUrgency] = useState<Urgency>("emergency");
+  const [bookAddress, setBookAddress] = useState("");
+  const [bookContactName, setBookContactName] = useState("");
+  const [bookEmail, setBookEmail] = useState("");
+  const [bookPhone, setBookPhone] = useState("");
+  const [bookDateTime, setBookDateTime] = useState<Date | null>(null);
+  const [bookSubmitting, setBookSubmitting] = useState(false);
+  const [bookError, setBookError] = useState<string | null>(null);
+  const [bookSuccess, setBookSuccess] = useState<string | null>(null);
+
+  const quoteAddressRef = useRef<HTMLInputElement | null>(null);
+  const bookAddressRef = useRef<HTMLInputElement | null>(null);
+  const quoteModalScrollRef = useRef<HTMLDivElement | null>(null);
+  const bookModalScrollRef = useRef<HTMLDivElement | null>(null);
+  const searchParams = useSearchParams();
+
+  const selectedQuoteService = useMemo(
+    () => (quoteService ? SERVICE_OPTIONS.find((s) => s.label === quoteService) || null : null),
+    [quoteService]
   );
-  const currentSubServices = selectedServiceOption?.subServices || [];
+  const selectedBookService = useMemo(
+    () => (bookService ? SERVICE_OPTIONS.find((s) => s.label === bookService) || null : null),
+    [bookService]
+  );
+  const currentQuoteSubServices = selectedQuoteService?.subServices || [];
+  const currentBookSubServices = selectedBookService?.subServices || [];
+
   const normalizeService = (typeValue: string) => {
     const cleaned = typeValue.trim().toLowerCase();
     const direct = SERVICE_OPTIONS.find((s) => s.label.toLowerCase() === cleaned);
@@ -61,142 +88,415 @@ export default function BookingPageClient() {
     return "";
   };
 
+  // Google address autocomplete
   useEffect(() => {
-    // Google autocomplete hook (preserve previous behavior)
     if (typeof window === "undefined") return;
     if (!(window as any).google) return;
-    if (!addressRef.current) return;
-    const autocomplete = new (window as any).google.maps.places.Autocomplete(addressRef.current, {
-      fields: ["formatted_address", "geometry"],
-      types: ["address"],
+    const refs = [
+      { ref: quoteAddressRef, setter: setQuoteAddress },
+      { ref: bookAddressRef, setter: setBookAddress },
+    ];
+    const listeners: Array<{ listener: any }> = [];
+    refs.forEach(({ ref, setter }) => {
+      if (!ref.current) return;
+      const autocomplete = new (window as any).google.maps.places.Autocomplete(ref.current, {
+        fields: ["formatted_address", "geometry"],
+        types: ["address"],
+      });
+      const listener = autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        setter(place?.formatted_address || ref.current?.value || "");
+      });
+      listeners.push({ listener });
     });
-    const listener = autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace();
-      setAddress(place?.formatted_address || address);
-    });
-    return () => listener?.remove?.();
-  }, [address]);
+    return () => listeners.forEach(({ listener }) => listener?.remove?.());
+  }, []);
 
-  const scrollModalToTop = () => {
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    modalScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    if (open) {
-      setTimeout(scrollModalToTop, 0);
-    }
-  }, [open]);
-
+  // Prefill service from ?type=
   useEffect(() => {
     const typeParam = searchParams?.get?.("type");
     if (typeParam) {
       const normalized = normalizeService(typeParam);
       if (normalized) {
-        setService(normalized);
+        setQuoteService(normalized);
+        setBookService(normalized);
       }
     }
   }, [searchParams]);
 
-  const emailValid = useMemo(() => /\S+@\S+\.\S+/.test(email.trim()), [email]);
-  const phoneValid = useMemo(() => phone.replace(/\D/g, "").length >= 8, [phone]);
-  const hasContact = emailValid || phoneValid;
+  const emailValid = (value: string) => /\S+@\S+\.\S+/.test(value.trim());
+  const phoneValid = (value: string) => value.replace(/\D/g, "").length >= 8;
+  const quoteHasContact = emailValid(quoteEmail) || phoneValid(quotePhone);
+  const bookHasContact = emailValid(bookEmail) || phoneValid(bookPhone);
 
-  const canSubmit =
-    service.trim().length > 0 &&
-    address.trim().length > 0 &&
-    hasContact &&
-    (requestType === "quote" || !!appointmentStart);
+  const quoteCanSubmit = quoteService.trim().length > 0 && quoteAddress.trim().length > 0 && quoteHasContact;
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit) return;
-    const appointmentIso =
-      requestType === "book"
-        ? appointmentStart?.toISOString() ?? null
-        : urgency === "scheduled" && appointmentStart
-          ? appointmentStart.toISOString()
-          : null;
-    setIsSubmitting(true);
-    setSubmitError(null);
-    setSubmitSuccess(null);
+  const bookStepValid = (step: number) => {
+    if (step === 1) return bookService.trim().length > 0;
+    if (step === 2) return bookHasContact && bookAddress.trim().length > 0;
+    if (step === 3) return !!bookDateTime;
+    return true;
+  };
+
+  const scrollModalToTop = (ref?: React.RefObject<HTMLDivElement>) => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    ref?.current?.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const recordPathChoice = (pathType: RequestType) => {
     try {
-      const payload = {
-        service,
-        subService,
-        requestType,
-        urgency,
-        description,
-        address,
-        contactName,
-        email,
-        phone,
-        appointmentStart: appointmentIso,
-        abVariant,
-      };
+      navigator.sendBeacon?.(
+        "/api/metrics",
+        new Blob([JSON.stringify({ pathType })], { type: "application/json" })
+      );
+    } catch {
+      // ignore beacon errors
+    }
+  };
+
+  const handleQuoteSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!quoteCanSubmit) return;
+    setQuoteSubmitting(true);
+    setQuoteError(null);
+    setQuoteSuccess(null);
+    try {
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          requestType: "quote",
+          service: quoteService,
+          subService: quoteSubService,
+          description: quoteDescription,
+          address: quoteAddress,
+          contactName: quoteContactName,
+          email: quoteEmail,
+          phone: quotePhone,
+          abVariant,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || "Unable to submit request");
-      setSubmitSuccess("Thanks! Your request has been submitted. We’ll confirm shortly.");
+      setQuoteSuccess("Thanks! Your quote request was sent. We’re notifying nearby professionals.");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
-      setSubmitError(msg);
+      setQuoteError(msg);
     } finally {
-      setIsSubmitting(false);
+      setQuoteSubmitting(false);
     }
   };
+
+  const handleBookSubmit = async () => {
+    if (!bookStepValid(3)) return;
+    setBookSubmitting(true);
+    setBookError(null);
+    setBookSuccess(null);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestType: "book",
+          service: bookService,
+          subService: bookSubService,
+          description: bookDescription,
+          urgency: bookUrgency,
+          address: bookAddress,
+          contactName: bookContactName,
+          email: bookEmail,
+          phone: bookPhone,
+          appointmentStart: bookDateTime?.toISOString() ?? null,
+          abVariant,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "Unable to submit booking");
+      setBookSuccess("Great! Your booking request is in. We’ll confirm and share the pro details shortly.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setBookError(msg);
+    } finally {
+      setBookSubmitting(false);
+    }
+  };
+
+  const handleBookFormSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!bookStepValid(bookStep)) return;
+    if (bookStep < 4) {
+      setBookStep((prev) => prev + 1);
+      setTimeout(() => scrollModalToTop(bookModalScrollRef), 0);
+    } else {
+      handleBookSubmit();
+    }
+  };
+
+  const renderBookStep = () => {
+    if (bookStep === 1) {
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-700">Service</label>
+            <Autocomplete
+              options={SERVICE_OPTIONS}
+              value={selectedBookService}
+              onChange={(_, val) => {
+                setBookService(val?.label || "");
+                setBookSubService("");
+              }}
+              getOptionLabel={(option) => option?.label ?? ""}
+              isOptionEqualToValue={(option, value) => option.label === value.label}
+              renderInput={(params) => <TextField {...params} label="Search services" size="small" />}
+            />
+          </div>
+          {selectedBookService && currentBookSubServices.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700">Sub-service (optional)</label>
+              <Autocomplete
+                options={currentBookSubServices}
+                value={bookSubService || null}
+                onChange={(_, val) => setBookSubService(val || "")}
+                renderInput={(params) => <TextField {...params} label="Pick a sub-service" size="small" />}
+              />
+            </div>
+          )}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-700">Describe the problem (optional)</label>
+            <textarea
+              value={bookDescription}
+              onChange={(e) => setBookDescription(e.target.value)}
+              rows={3}
+              placeholder="Add helpful details or leave blank"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+            />
+          </div>
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-slate-800">When do you need the service?</p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => setBookUrgency("emergency")}
+                className={[
+                  "flex-1 rounded-lg border px-4 py-3 text-left text-sm font-semibold transition",
+                  bookUrgency === "emergency"
+                    ? "border-red-500 bg-red-50 text-red-700"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                ].join(" ")}
+              >
+                Emergency (ASAP)
+              </button>
+              <button
+                type="button"
+                onClick={() => setBookUrgency("scheduled")}
+                className={[
+                  "flex-1 rounded-lg border px-4 py-3 text-left text-sm font-semibold transition",
+                  bookUrgency === "scheduled"
+                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                ].join(" ")}
+              >
+                Flexible timing
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (bookStep === 2) {
+      return (
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700">Name (optional)</label>
+              <input
+                value={bookContactName}
+                onChange={(e) => setBookContactName(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                placeholder="Your name"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700">Email or phone</label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <input
+                  value={bookEmail}
+                  onChange={(e) => setBookEmail(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                  placeholder="email@example.com"
+                  type="email"
+                />
+                <input
+                  value={bookPhone}
+                  onChange={(e) => setBookPhone(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                  placeholder="+353 87 123 4567"
+                />
+              </div>
+              {!bookHasContact && (
+                <p className="text-xs text-rose-600">Please add at least one contact method so we can confirm details.</p>
+              )}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-700">Address / postcode</label>
+            <input
+              ref={bookAddressRef}
+              value={bookAddress}
+              onChange={(e) => setBookAddress(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+              placeholder="Eircode or address"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (bookStep === 3) {
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <label className="text-xs font-semibold text-slate-700">Select date & time</label>
+            <DatePicker
+              selected={bookDateTime}
+              onChange={(date: Date) => setBookDateTime(date)}
+              showTimeSelect
+              timeIntervals={30}
+              minDate={new Date()}
+              dateFormat="MM/dd/yyyy h:mm aa"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+              placeholderText="Select date & time"
+            />
+            {!bookDateTime && <p className="text-xs text-slate-600">Pick a time so we can confirm your booking.</p>}
+          </div>
+          <div className="rounded-lg border border-slate-200 p-3">
+            <p className="text-sm font-semibold text-slate-800">Review</p>
+            <ul className="mt-2 space-y-1 text-sm text-slate-700">
+              <li>Service: {bookService || "—"}</li>
+              {bookSubService && <li>Sub-service: {bookSubService}</li>}
+              <li>Urgency: {bookUrgency === "emergency" ? "Emergency" : "Flexible"}</li>
+              <li>Address: {bookAddress || "—"}</li>
+            </ul>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="rounded-lg border border-slate-200 p-3">
+          <p className="text-sm font-semibold text-slate-800">Payment</p>
+          <p className="mt-1 text-sm text-slate-600">
+            No charge now. We’ll confirm the pro and finalize payment after you approve the booking.
+          </p>
+        </div>
+        <div className="rounded-lg border border-slate-200 p-3">
+          <p className="text-sm font-semibold text-slate-800">Summary</p>
+          <ul className="mt-2 space-y-1 text-sm text-slate-700">
+            <li>Service: {bookService || "—"}</li>
+            {bookSubService && <li>Sub-service: {bookSubService}</li>}
+            <li>Urgency: {bookUrgency === "emergency" ? "Emergency" : "Flexible"}</li>
+            <li>When: {bookDateTime ? bookDateTime.toLocaleString() : "Not set"}</li>
+            <li>Address: {bookAddress || "—"}</li>
+            <li>Contact: {bookEmail || bookPhone || "—"}</li>
+          </ul>
+        </div>
+      </div>
+    );
+  };
+
+  const renderStepper = () => (
+    <div className="flex items-center justify-between gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700">
+      {STEP_LABELS.map((label, idx) => {
+        const stepNumber = idx + 1;
+        const active = stepNumber === bookStep;
+        const done = stepNumber < bookStep;
+        return (
+          <div key={label} className="flex flex-1 items-center gap-2">
+            <span
+              className={[
+                "flex h-6 w-6 items-center justify-center rounded-full border",
+                done
+                  ? "border-emerald-500 bg-emerald-500 text-white"
+                  : active
+                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                    : "border-slate-300 bg-white text-slate-600",
+              ].join(" ")}
+            >
+              {stepNumber}
+            </span>
+            <span className={active ? "text-blue-700" : "text-slate-600"}>{label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const quoteButtonLabel = abVariant === "A" ? "Get a Quote" : "Request a Quote";
 
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-16 text-center">
-        <h1 className="text-3xl font-bold text-slate-900">{abVariant === "A" ? "Request a quote" : "Get quotes in minutes"}</h1>
-        <p className="mt-2 text-slate-600">Share the basics. We’ll match you with pros and handle scheduling after you accept.</p>
-        <button
-          type="button"
-          onClick={() => {
-            setOpen(true);
-            setTimeout(scrollModalToTop, 0);
-          }}
-          className="mt-6 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700"
-        >
-          {abVariant === "A" ? "Request a Quote" : "Get Quotes"}
-        </button>
+        <h1 className="text-3xl font-bold text-slate-900">Choose how you’d like to book</h1>
+        <p className="mt-2 text-slate-600">Request quotes quickly or schedule now — both options are on this page.</p>
+        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => {
+              setQuoteOpen(true);
+              setBookOpen(false);
+              recordPathChoice("quote");
+              setTimeout(() => scrollModalToTop(quoteModalScrollRef), 0);
+            }}
+            className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700"
+          >
+            {quoteButtonLabel}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setBookOpen(true);
+              setBookStep(1);
+              setQuoteOpen(false);
+              recordPathChoice("book");
+              setTimeout(() => scrollModalToTop(bookModalScrollRef), 0);
+            }}
+            className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:border-slate-400 hover:bg-white"
+          >
+            Book Now (full wizard)
+          </button>
+        </div>
       </div>
 
-      {open && (
+      {/* Quote modal */}
+      {quoteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl max-h-[85vh] flex flex-col">
+          <div
+            ref={quoteModalScrollRef}
+            className="relative flex max-h-[85vh] w-full max-w-2xl flex-col overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+          >
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={() => setQuoteOpen(false)}
               className="absolute right-3 top-3 text-slate-500 hover:text-slate-800"
             >
               ✕
             </button>
-            <h2 className="text-xl font-semibold text-slate-900">
-              {requestType === "quote" ? "Quick quote request" : "Schedule now (full booking)"}
-            </h2>
-            <p className="text-sm text-slate-600">
-              {requestType === "quote"
-                ? "We’ll notify nearby professionals and send you quotes."
-                : "Pick a time now if you prefer to schedule immediately."}
-            </p>
+            <h2 className="text-xl font-semibold text-slate-900">Quick quote request</h2>
+            <p className="text-sm text-slate-600">We’ll notify available pros and send you quotes.</p>
 
-            <form onSubmit={handleSubmit} className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
-              <div ref={modalScrollRef} className="space-y-2">
+            <form onSubmit={handleQuoteSubmit} className="mt-4 flex-1 space-y-4 pr-1">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-700">Service</label>
                 <Autocomplete
                   options={SERVICE_OPTIONS}
-                  value={selectedServiceOption}
+                  value={selectedQuoteService}
                   onChange={(_, val) => {
-                    setService(val?.label || "");
-                    setSubService("");
+                    setQuoteService(val?.label || "");
+                    setQuoteSubService("");
                   }}
                   getOptionLabel={(option) => option?.label ?? ""}
                   isOptionEqualToValue={(option, value) => option.label === value.label}
@@ -204,13 +504,13 @@ export default function BookingPageClient() {
                 />
               </div>
 
-              {selectedServiceOption && currentSubServices.length > 0 && (
+              {selectedQuoteService && currentQuoteSubServices.length > 0 && (
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-700">Sub-service (optional)</label>
                   <Autocomplete
-                    options={currentSubServices}
-                    value={subService || null}
-                    onChange={(_, val) => setSubService(val || "")}
+                    options={currentQuoteSubServices}
+                    value={quoteSubService || null}
+                    onChange={(_, val) => setQuoteSubService(val || "")}
                     renderInput={(params) => <TextField {...params} label="Pick a sub-service" size="small" />}
                   />
                 </div>
@@ -219,8 +519,8 @@ export default function BookingPageClient() {
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-700">Describe the issue (optional)</label>
                 <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={quoteDescription}
+                  onChange={(e) => setQuoteDescription(e.target.value)}
                   rows={3}
                   placeholder="Add helpful details or leave blank"
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
@@ -230,9 +530,9 @@ export default function BookingPageClient() {
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-700">Address / postcode</label>
                 <input
-                  ref={addressRef}
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  ref={quoteAddressRef}
+                  value={quoteAddress}
+                  onChange={(e) => setQuoteAddress(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
                   placeholder="Eircode or address"
                 />
@@ -242,8 +542,8 @@ export default function BookingPageClient() {
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-700">Name (optional)</label>
                   <input
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
+                    value={quoteContactName}
+                    onChange={(e) => setQuoteContactName(e.target.value)}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
                     placeholder="Your name"
                   />
@@ -252,132 +552,111 @@ export default function BookingPageClient() {
                   <label className="text-xs font-semibold text-slate-700">Email or phone</label>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <input
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={quoteEmail}
+                      onChange={(e) => setQuoteEmail(e.target.value)}
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
                       placeholder="email@example.com"
                       type="email"
                     />
                     <input
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      value={quotePhone}
+                      onChange={(e) => setQuotePhone(e.target.value)}
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
                       placeholder="+353 87 123 4567"
                     />
                   </div>
-                  {!hasContact && (
-                    <p className="text-xs text-rose-600">Please add at least one contact method so we can send your quotes.</p>
+                  {!quoteHasContact && (
+                    <p className="text-xs text-rose-600">Please add at least one contact method so we can send quotes.</p>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700">Choose your path</label>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => setRequestType("quote")}
-                    className={[
-                      "rounded-lg border px-4 py-3 text-left text-sm font-semibold transition",
-                      requestType === "quote"
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
-                    ].join(" ")}
-                  >
-                    Request quotes (recommended)
-                    <span className="mt-1 block text-xs font-normal text-slate-600">No date/time needed now.</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRequestType("book")}
-                    className={[
-                      "rounded-lg border px-4 py-3 text-left text-sm font-semibold transition",
-                      requestType === "book"
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
-                    ].join(" ")}
-                  >
-                    Schedule now
-                    <span className="mt-1 block text-xs font-normal text-slate-600">Pick a time and we’ll confirm.</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-slate-800">When do you need the service?</p>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={() => setUrgency("emergency")}
-                    className={[
-                      "flex-1 rounded-lg border px-4 py-3 text-left text-sm font-semibold transition",
-                      urgency === "emergency"
-                        ? "border-red-500 bg-red-50 text-red-700"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
-                    ].join(" ")}
-                  >
-                    Emergency (ASAP)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUrgency("scheduled")}
-                    className={[
-                      "flex-1 rounded-lg border px-4 py-3 text-left text-sm font-semibold transition",
-                      urgency === "scheduled"
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
-                    ].join(" ")}
-                  >
-                    Flexible timing
-                  </button>
-                </div>
-
-                {requestType === "book" && (
-                  <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <DatePicker
-                      selected={appointmentStart}
-                      onChange={(date: Date) => setAppointmentStart(date)}
-                      showTimeSelect
-                      timeIntervals={30}
-                      minDate={new Date()}
-                      dateFormat="MM/dd/yyyy h:mm aa"
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
-                      placeholderText="Select date & time"
-                    />
-                    {!appointmentStart && (
-                      <p className="text-xs text-slate-600">Pick a time to submit a scheduled booking. Leave blank to request quotes instead.</p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {submitError && <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{submitError}</div>}
-              {submitSuccess && (
+              {quoteError && <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{quoteError}</div>}
+              {quoteSuccess && (
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  {submitSuccess}
-                  <p className="mt-1 text-xs text-emerald-800">We’ll alert nearby pros. You can confirm time and payment after you accept a quote.</p>
+                  {quoteSuccess}
+                  <p className="mt-1 text-xs text-emerald-800">We’ll alert nearby pros and share responses with you.</p>
                 </div>
               )}
 
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setOpen(false)}
+                  onClick={() => setQuoteOpen(false)}
                   className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={!canSubmit || isSubmitting}
+                  disabled={!quoteCanSubmit || quoteSubmitting}
                   className={[
                     "rounded-lg px-4 py-2 text-sm font-semibold",
-                    !canSubmit || isSubmitting
+                    !quoteCanSubmit || quoteSubmitting
                       ? "cursor-not-allowed bg-slate-200 text-slate-500"
                       : "bg-blue-600 text-white hover:bg-blue-700",
                   ].join(" ")}
                 >
-                  {isSubmitting ? "Sending..." : requestType === "quote" ? "Send quote request" : "Schedule booking"}
+                  {quoteSubmitting ? "Sending..." : "Send quote request"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Book modal */}
+      {bookOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div
+            ref={bookModalScrollRef}
+            className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <button
+              type="button"
+              onClick={() => setBookOpen(false)}
+              className="absolute right-3 top-3 text-slate-500 hover:text-slate-800"
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-semibold text-slate-900">Book now</h2>
+            <p className="text-sm text-slate-600">Move through the full wizard to schedule and review before payment.</p>
+
+            <div className="mt-4">{renderStepper()}</div>
+
+            <form onSubmit={handleBookFormSubmit} className="mt-4 flex-1 space-y-4">
+              {renderBookStep()}
+
+              {bookError && <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{bookError}</div>}
+              {bookSuccess && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  {bookSuccess}
+                  <p className="mt-1 text-xs text-emerald-800">We’re assigning a professional and will confirm the booking.</p>
+                </div>
+              )}
+
+              <div className="flex justify-between gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (bookStep > 1) setBookStep((prev) => prev - 1);
+                    else setBookOpen(false);
+                  }}
+                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  {bookStep > 1 ? "Back" : "Cancel"}
+                </button>
+                <button
+                  type="submit"
+                  disabled={!bookStepValid(bookStep) || bookSubmitting}
+                  className={[
+                    "rounded-lg px-4 py-2 text-sm font-semibold",
+                    !bookStepValid(bookStep) || bookSubmitting
+                      ? "cursor-not-allowed bg-slate-200 text-slate-500"
+                      : "bg-emerald-600 text-white hover:bg-emerald-700",
+                  ].join(" ")}
+                >
+                  {bookStep < 4 ? "Next" : bookSubmitting ? "Submitting..." : "Submit booking"}
                 </button>
               </div>
             </form>
