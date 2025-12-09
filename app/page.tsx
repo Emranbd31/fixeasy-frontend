@@ -392,7 +392,7 @@ function Modal({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 px-4">
       <div className={`relative ${wide ? "max-w-4xl" : "max-w-2xl"} w-full max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl`}>
         <button onClick={onClose} className="absolute right-3 top-3 text-slate-500 hover:text-slate-800">✕</button>
         <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
