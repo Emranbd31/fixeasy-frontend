@@ -318,7 +318,7 @@ export default function HomePage() {
               </h1>
 
               <p className="text-base md:text-lg lg:text-xl text-gray-200 mb-4 md:mb-6 leading-relaxed max-w-xl font-light">
-                Book <span className="font-bold text-cyan-300">trusted professionals</span> for cleaning, repairs, and more. Quick booking, clear pricing, and verified professionals.
+                Book or get a quote from <span className="font-bold text-cyan-300">trusted professionals</span> for cleaning, repairs, and more. Quick requests, clear pricing, and verified pros.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
@@ -329,7 +329,7 @@ export default function HomePage() {
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                     className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full font-bold text-base md:text-lg shadow-2xl hover:shadow-cyan-500/50 transition-all duration-300"
                   >
-                    📅 Book a Service
+                    📅 Book a Service or Get a Quote
                   </motion.button>
                 </Link>
                 <Link href="/register/professional">

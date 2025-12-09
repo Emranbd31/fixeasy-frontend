@@ -13,6 +13,7 @@ const schema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),
   abVariant: z.string().optional(),
+  photos: z.array(z.string()).max(5).optional(),
 });
 
 export async function POST(request: Request) {

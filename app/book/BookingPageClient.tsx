@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
@@ -22,6 +22,8 @@ const SERVICE_OPTIONS: ServiceOption[] = MAIN_SERVICES.map((label) => ({
 }));
 
 const STEP_LABELS = ["Service & issue", "Contact & address", "Date/Time & review", "Payment (optional)"];
+const MAX_PHOTOS = 5;
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function BookingPageClient() {
   // AB test text for quote CTA
@@ -36,9 +38,11 @@ export default function BookingPageClient() {
   const [quoteContactName, setQuoteContactName] = useState("");
   const [quoteEmail, setQuoteEmail] = useState("");
   const [quotePhone, setQuotePhone] = useState("");
+  const [quotePhotos, setQuotePhotos] = useState<File[]>([]);
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [quoteSuccess, setQuoteSuccess] = useState<string | null>(null);
+  const [quotePhotoError, setQuotePhotoError] = useState<string | null>(null);
 
   // Book path state
   const [bookOpen, setBookOpen] = useState(false);
@@ -52,9 +56,11 @@ export default function BookingPageClient() {
   const [bookEmail, setBookEmail] = useState("");
   const [bookPhone, setBookPhone] = useState("");
   const [bookDateTime, setBookDateTime] = useState<Date | null>(null);
+  const [bookPhotos, setBookPhotos] = useState<File[]>([]);
   const [bookSubmitting, setBookSubmitting] = useState(false);
   const [bookError, setBookError] = useState<string | null>(null);
   const [bookSuccess, setBookSuccess] = useState<string | null>(null);
+  const [bookPhotoError, setBookPhotoError] = useState<string | null>(null);
 
   const quoteAddressRef = useRef<HTMLInputElement | null>(null);
   const bookAddressRef = useRef<HTMLInputElement | null>(null);
@@ -72,6 +78,43 @@ export default function BookingPageClient() {
   );
   const currentQuoteSubServices = selectedQuoteService?.subServices || [];
   const currentBookSubServices = selectedBookService?.subServices || [];
+  const readFilesToBase64 = async (files: File[]) => {
+    const limited = files.slice(0, MAX_PHOTOS);
+    const conversions = limited.map(
+      (file) =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error("Failed to read file"));
+          reader.readAsDataURL(file);
+        })
+    );
+    return Promise.all(conversions);
+  };
+
+  const handlePhotoSelect = (
+    event: ChangeEvent<HTMLInputElement>,
+    setFiles: (files: File[]) => void,
+    setError: (err: string | null) => void
+  ) => {
+    const { files } = event.target;
+    if (!files) return;
+    const images = Array.from(files).filter((file) => file.type.startsWith("image/"));
+    if (images.some((file) => file.size > MAX_PHOTO_SIZE)) {
+      setError("Each photo must be under 5MB.");
+      return;
+    }
+    if (images.length > MAX_PHOTOS) {
+      setError(`You can upload up to ${MAX_PHOTOS} photos.`);
+    } else {
+      setError(null);
+    }
+    setFiles(images.slice(0, MAX_PHOTOS));
+  };
+
+  const removePhotoAt = (index: number, files: File[], setFiles: (files: File[]) => void) => {
+    setFiles(files.filter((_, i) => i !== index));
+  };
 
   const normalizeService = (typeValue: string) => {
     const cleaned = typeValue.trim().toLowerCase();
@@ -163,6 +206,7 @@ export default function BookingPageClient() {
     setQuoteError(null);
     setQuoteSuccess(null);
     try {
+      const photos = await readFilesToBase64(quotePhotos);
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -175,6 +219,7 @@ export default function BookingPageClient() {
           contactName: quoteContactName,
           email: quoteEmail,
           phone: quotePhone,
+          photos,
           abVariant,
         }),
       });
@@ -195,6 +240,7 @@ export default function BookingPageClient() {
     setBookError(null);
     setBookSuccess(null);
     try {
+      const photos = await readFilesToBase64(bookPhotos);
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -209,6 +255,7 @@ export default function BookingPageClient() {
           email: bookEmail,
           phone: bookPhone,
           appointmentStart: bookDateTime?.toISOString() ?? null,
+          photos,
           abVariant,
         }),
       });
@@ -272,6 +319,34 @@ export default function BookingPageClient() {
               placeholder="Add helpful details or leave blank"
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
             />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-700">Add photos (optional)</label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => handlePhotoSelect(e, setBookPhotos, setBookPhotoError)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+            />
+            <p className="text-xs text-slate-600">Up to {MAX_PHOTOS} photos, max 5MB each.</p>
+            {bookPhotoError && <p className="text-xs text-rose-600">{bookPhotoError}</p>}
+            {bookPhotos.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {bookPhotos.map((file, idx) => (
+                  <div key={file.name + idx} className="flex items-center gap-2 rounded border border-slate-200 px-2 py-1 text-xs text-slate-700">
+                    <span>{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removePhotoAt(idx, bookPhotos, setBookPhotos)}
+                      className="text-rose-600 hover:text-rose-700"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="space-y-3">
             <p className="text-sm font-semibold text-slate-800">When do you need the service?</p>
@@ -525,6 +600,35 @@ export default function BookingPageClient() {
                   placeholder="Add helpful details or leave blank"
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-700">Add photos (optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => handlePhotoSelect(e, setQuotePhotos, setQuotePhotoError)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                />
+                <p className="text-xs text-slate-600">Up to {MAX_PHOTOS} photos, max 5MB each.</p>
+                {quotePhotoError && <p className="text-xs text-rose-600">{quotePhotoError}</p>}
+                {quotePhotos.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {quotePhotos.map((file, idx) => (
+                      <div key={file.name + idx} className="flex items-center gap-2 rounded border border-slate-200 px-2 py-1 text-xs text-slate-700">
+                        <span>{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removePhotoAt(idx, quotePhotos, setQuotePhotos)}
+                          className="text-rose-600 hover:text-rose-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
