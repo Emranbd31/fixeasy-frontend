@@ -6,7 +6,6 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { loadStripe } from "@stripe/stripe-js";
 import { MAIN_SERVICES, SUB_SERVICES } from "@/lib/service-options";
 
 type ServiceOption = {
@@ -14,11 +13,8 @@ type ServiceOption = {
   subServices: string[];
 };
 
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null;
-
 type Urgency = "emergency" | "scheduled";
+type RequestType = "quote" | "book";
 
 const SERVICE_OPTIONS: ServiceOption[] = MAIN_SERVICES.map((label) => ({
   label,
@@ -30,8 +26,12 @@ export default function BookingPageClient() {
   const [service, setService] = useState<string>("");
   const [subService, setSubService] = useState<string>("");
   const [urgency, setUrgency] = useState<Urgency>("emergency");
+  const [requestType, setRequestType] = useState<RequestType>("quote");
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [appointmentStart, setAppointmentStart] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -39,6 +39,7 @@ export default function BookingPageClient() {
   const addressRef = useRef<HTMLInputElement | null>(null);
   const modalScrollRef = useRef<HTMLDivElement | null>(null);
   const searchParams = useSearchParams();
+  const abVariant = useMemo(() => (Math.random() < 0.5 ? "A" : "B"), []);
 
   const selectedServiceOption = useMemo(
     () => (service ? SERVICE_OPTIONS.find((s) => s.label === service) || null : null),
@@ -99,11 +100,25 @@ export default function BookingPageClient() {
     }
   }, [searchParams]);
 
-  const canSubmit = service.trim().length > 0 && address.trim().length > 0 && (!appointmentStart || urgency === "scheduled" || urgency === "emergency");
+  const emailValid = useMemo(() => /\S+@\S+\.\S+/.test(email.trim()), [email]);
+  const phoneValid = useMemo(() => phone.replace(/\D/g, "").length >= 8, [phone]);
+  const hasContact = emailValid || phoneValid;
+
+  const canSubmit =
+    service.trim().length > 0 &&
+    address.trim().length > 0 &&
+    hasContact &&
+    (requestType === "quote" || !!appointmentStart);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
+    const appointmentIso =
+      requestType === "book"
+        ? appointmentStart?.toISOString() ?? null
+        : urgency === "scheduled" && appointmentStart
+          ? appointmentStart.toISOString()
+          : null;
     setIsSubmitting(true);
     setSubmitError(null);
     setSubmitSuccess(null);
@@ -111,10 +126,15 @@ export default function BookingPageClient() {
       const payload = {
         service,
         subService,
+        requestType,
         urgency,
         description,
         address,
-        appointmentStart: urgency === "scheduled" && appointmentStart ? appointmentStart.toISOString() : null,
+        contactName,
+        email,
+        phone,
+        appointmentStart: appointmentIso,
+        abVariant,
       };
       const res = await fetch("/api/leads", {
         method: "POST",
@@ -124,7 +144,6 @@ export default function BookingPageClient() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || "Unable to submit request");
       setSubmitSuccess("Thanks! Your request has been submitted. We’ll confirm shortly.");
-      setOpen(false);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
       setSubmitError(msg);
@@ -136,8 +155,8 @@ export default function BookingPageClient() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-16 text-center">
-        <h1 className="text-3xl font-bold text-slate-900">Book a service</h1>
-        <p className="mt-2 text-slate-600">Tell us what you need. No contact details required until confirmation.</p>
+        <h1 className="text-3xl font-bold text-slate-900">{abVariant === "A" ? "Request a quote" : "Get quotes in minutes"}</h1>
+        <p className="mt-2 text-slate-600">Share the basics. We’ll match you with pros and handle scheduling after you accept.</p>
         <button
           type="button"
           onClick={() => {
@@ -146,7 +165,7 @@ export default function BookingPageClient() {
           }}
           className="mt-6 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700"
         >
-          Book Now
+          {abVariant === "A" ? "Request a Quote" : "Get Quotes"}
         </button>
       </div>
 
@@ -160,8 +179,14 @@ export default function BookingPageClient() {
             >
               ✕
             </button>
-            <h2 className="text-xl font-semibold text-slate-900">Quick request</h2>
-            <p className="text-sm text-slate-600">We’ll confirm with a professional right away.</p>
+            <h2 className="text-xl font-semibold text-slate-900">
+              {requestType === "quote" ? "Quick quote request" : "Schedule now (full booking)"}
+            </h2>
+            <p className="text-sm text-slate-600">
+              {requestType === "quote"
+                ? "We’ll notify nearby professionals and send you quotes."
+                : "Pick a time now if you prefer to schedule immediately."}
+            </p>
 
             <form onSubmit={handleSubmit} className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
               <div ref={modalScrollRef} className="space-y-2">
@@ -213,6 +238,71 @@ export default function BookingPageClient() {
                 />
               </div>
 
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-700">Name (optional)</label>
+                  <input
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-700">Email or phone</label>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                      placeholder="email@example.com"
+                      type="email"
+                    />
+                    <input
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
+                      placeholder="+353 87 123 4567"
+                    />
+                  </div>
+                  {!hasContact && (
+                    <p className="text-xs text-rose-600">Please add at least one contact method so we can send your quotes.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-700">Choose your path</label>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => setRequestType("quote")}
+                    className={[
+                      "rounded-lg border px-4 py-3 text-left text-sm font-semibold transition",
+                      requestType === "quote"
+                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                    ].join(" ")}
+                  >
+                    Request quotes (recommended)
+                    <span className="mt-1 block text-xs font-normal text-slate-600">No date/time needed now.</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRequestType("book")}
+                    className={[
+                      "rounded-lg border px-4 py-3 text-left text-sm font-semibold transition",
+                      requestType === "book"
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                    ].join(" ")}
+                  >
+                    Schedule now
+                    <span className="mt-1 block text-xs font-normal text-slate-600">Pick a time and we’ll confirm.</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <p className="text-sm font-semibold text-slate-800">When do you need the service?</p>
                 <div className="flex flex-col gap-2 sm:flex-row">
@@ -226,7 +316,7 @@ export default function BookingPageClient() {
                         : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
                     ].join(" ")}
                   >
-                    Emergency (Book Now — High Priority)
+                    Emergency (ASAP)
                   </button>
                   <button
                     type="button"
@@ -238,11 +328,11 @@ export default function BookingPageClient() {
                         : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
                     ].join(" ")}
                   >
-                    Schedule for later
+                    Flexible timing
                   </button>
                 </div>
 
-                {urgency === "scheduled" && (
+                {requestType === "book" && (
                   <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
                     <DatePicker
                       selected={appointmentStart}
@@ -254,12 +344,20 @@ export default function BookingPageClient() {
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
                       placeholderText="Select date & time"
                     />
+                    {!appointmentStart && (
+                      <p className="text-xs text-slate-600">Pick a time to submit a scheduled booking. Leave blank to request quotes instead.</p>
+                    )}
                   </div>
                 )}
               </div>
 
               {submitError && <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{submitError}</div>}
-              {submitSuccess && <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{submitSuccess}</div>}
+              {submitSuccess && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  {submitSuccess}
+                  <p className="mt-1 text-xs text-emerald-800">We’ll alert nearby pros. You can confirm time and payment after you accept a quote.</p>
+                </div>
+              )}
 
               <div className="flex justify-end gap-2 pt-2">
                 <button
@@ -279,7 +377,7 @@ export default function BookingPageClient() {
                       : "bg-blue-600 text-white hover:bg-blue-700",
                   ].join(" ")}
                 >
-                  {isSubmitting ? "Sending..." : "Submit request"}
+                  {isSubmitting ? "Sending..." : requestType === "quote" ? "Send quote request" : "Schedule booking"}
                 </button>
               </div>
             </form>
