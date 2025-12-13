@@ -48,6 +48,10 @@ export default function ProfessionalRegisterPage() {
   const [eircode, setEircode] = useState("");
   const [address, setAddress] = useState("");
   const [radius, setRadius] = useState("");
+  const countyOptions = useMemo(
+    () => ["Dublin", "Cork", "Galway", "Limerick", "Waterford", "Kilkenny", "Wexford", "Kildare", "Meath", "Wicklow", "Westmeath"],
+    []
+  );
 
   const [experience, setExperience] = useState("");
   const [businessName, setBusinessName] = useState("");
@@ -274,6 +278,18 @@ export default function ProfessionalRegisterPage() {
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
               placeholder="e.g. 20km or Dublin 1,2,4"
             />
+            <div className="mt-2 flex flex-wrap gap-2">
+              {countyOptions.map((county) => (
+                <button
+                  type="button"
+                  key={county}
+                  onClick={() => setRadius((prev) => (prev ? `${prev}, ${county}` : county))}
+                  className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 hover:border-blue-400 hover:text-blue-700"
+                >
+                  {county}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       );
