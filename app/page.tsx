@@ -940,37 +940,101 @@ function BookModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 function ProModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [name, setName] = useState("");
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [service, setService] = useState("");
+  const [password, setPassword] = useState("");
+  const [verified, setVerified] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedSubServices, setSelectedSubServices] = useState<string[]>([]);
+  const [eircode, setEircode] = useState("");
+  const [address, setAddress] = useState("");
+  const [radius, setRadius] = useState("");
+  const [experience, setExperience] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [bio, setBio] = useState("");
   const [notes, setNotes] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+  const [idDocs, setIdDocs] = useState<File[]>([]);
+  const [insuranceDocs, setInsuranceDocs] = useState<File[]>([]);
+  const [certDocs, setCertDocs] = useState<File[]>([]);
+  const [emergencyJobs, setEmergencyJobs] = useState(true);
+  const [scheduledJobs, setScheduledJobs] = useState(true);
+  const [workingHours, setWorkingHours] = useState("Mon-Fri, 8am-6pm");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
-  const selectedService = useMemo(
-    () => (service ? SERVICE_OPTIONS.find((s) => s.label === service) || null : null),
-    [service]
-  );
 
-  const canSubmit = name.trim().length > 1 && /\S+@\S+\.\S+/.test(email.trim()) && phone.replace(/\D/g, "").length >= 8 && !!service;
+  const selectedServiceOptions = useMemo(
+    () => SERVICE_OPTIONS.filter((s) => selectedServices.includes(s.label)),
+    [selectedServices]
+  );
+  const allSubServices = useMemo(() => selectedServiceOptions.flatMap((s) => s.subServices), [selectedServiceOptions]);
+
+  const canAdvance = (currentStep: number) => {
+    if (currentStep === 1) {
+      return (
+        fullName.trim().length > 1 &&
+        /\S+@\S+\.\S+/.test(email.trim()) &&
+        phone.replace(/\D/g, "").length >= 8 &&
+        password.trim().length >= 8 &&
+        verified
+      );
+    }
+    if (currentStep === 2) return selectedServices.length > 0;
+    if (currentStep === 3) return address.trim().length > 3 && eircode.trim().length > 2;
+    return true;
+  };
+
+  const handleFileSelect = (setter: (files: File[]) => void) => (e: ChangeEvent<HTMLInputElement>) => {
+    const list = e.target.files ? Array.from(e.target.files) : [];
+    const limited = list.filter((f) => f.size <= MAX_PHOTOS * 1024 * 1024).slice(0, MAX_PHOTOS);
+    setter(limited);
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (step < 7) {
+      if (!canAdvance(step)) return;
+      setStep((prev) => (prev + 1) as any);
+      return;
+    }
     setIsSubmitting(true);
     setSubmitError(null);
     setSubmitSuccess(null);
     try {
+      const payload = {
+        fullName,
+        email,
+        phone,
+        password,
+        services: selectedServices,
+        subServices: selectedSubServices,
+        address,
+        eircode,
+        radius,
+        experience,
+        businessName,
+        bio,
+        notes,
+        emergencyJobs,
+        scheduledJobs,
+        workingHours,
+        profilePhoto: profilePhoto ? (await readFilesToBase64([profilePhoto]))[0] : null,
+        idDocs: await readFilesToBase64(idDocs),
+        insuranceDocs: await readFilesToBase64(insuranceDocs),
+        certDocs: await readFilesToBase64(certDocs),
+      };
       const res = await fetch("/api/professionals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, service, notes }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || "Unable to submit");
-      const first = (name || email || "there").split(" ")[0];
-      setSubmitSuccess(`Thanks, ${first}! We’ll review your profile and get in touch.`);
+      const first = (fullName || email || "there").split(" ")[0];
+      setSubmitSuccess(`Thanks, ${first}! Your profile is set. You’ll start receiving leads now.`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
       setSubmitError(msg);
@@ -979,71 +1043,200 @@ function ProModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     }
   };
 
-  return (
-    <Modal open={open} onClose={onClose} title="Become a professional" subtitle="Join our vetted network and receive jobs.">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700">Full name</label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
-            placeholder="Your name"
-          />
+  const progress = Math.round(((step - 1) / 7) * 100);
+
+  const renderStep = () => {
+    if (step === 1) {
+      return (
+        <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">Full name</label>
+              <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="e.g. John Murphy" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">Phone</label>
+              <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+353 8X XXX XXXX" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">Email</label>
+              <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">Password</label>
+              <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={() => setVerified(true)} className="rounded-lg border border-blue-500 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">
+              Send verification code
+            </button>
+            {verified && <span className="text-xs text-emerald-700 font-semibold">Verified</span>}
+          </div>
         </div>
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700">Email</label>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
-            placeholder="email@example.com"
-            type="email"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700">Phone</label>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
-            placeholder="+353 87 123 4567"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700">Main service</label>
+      );
+    }
+    if (step === 2) {
+      return (
+        <div className="space-y-3">
+          <label className="text-xs font-semibold text-slate-700">Services and sub-services</label>
           <Autocomplete
+            multiple
             options={SERVICE_OPTIONS}
-            value={selectedService}
-            onChange={(_, val) => setService(val?.label || "")}
+            value={selectedServiceOptions}
+            onChange={(_, vals) => {
+              setSelectedServices(vals.map((v) => v.label));
+              setSelectedSubServices([]);
+            }}
             getOptionLabel={(option) => option?.label ?? ""}
             isOptionEqualToValue={(option, value) => option.label === value.label}
-            renderInput={(params) => <TextField {...params} label="Select service" size="small" />}
+            renderInput={(params) => <TextField {...params} label="Select services" size="small" />}
           />
+          {selectedServiceOptions.length > 0 && allSubServices.length > 0 && (
+            <Autocomplete
+              multiple
+              options={allSubServices}
+              value={selectedSubServices}
+              onChange={(_, vals) => setSelectedSubServices(vals)}
+              renderInput={(params) => <TextField {...params} label="Select sub-services (optional)" size="small" />}
+            />
+          )}
         </div>
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700">Notes (optional)</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring"
-            placeholder="Experience, coverage area, licenses"
-          />
+      );
+    }
+    if (step === 3) {
+      return (
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700">Eircode</label>
+            <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={eircode} onChange={(e) => setEircode(e.target.value)} placeholder="e.g. D02 X285" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700">Address</label>
+            <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street, city" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700">Radius / service regions</label>
+            <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={radius} onChange={(e) => setRadius(e.target.value)} placeholder="e.g. 20km or Dublin 1,2,4" />
+          </div>
         </div>
+      );
+    }
+    if (step === 4) {
+      return (
+        <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">Years of experience</label>
+              <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" type="number" min={0} value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="e.g. 5" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">Business name (optional)</label>
+              <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Company or trading name" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700">Short bio / intro</label>
+            <textarea
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              rows={3}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Tell customers about your expertise."
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700">Profile photo (optional)</label>
+            <input type="file" accept="image/*" onChange={(e: ChangeEvent<HTMLInputElement>) => setProfilePhoto(e.target.files?.[0] || null)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+          </div>
+        </div>
+      );
+    }
+    if (step === 5) {
+      return (
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700">ID (passport/driver license)</label>
+            <input type="file" accept="image/*,application/pdf" multiple onChange={handleFileSelect(setIdDocs)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700">Insurance / liability</label>
+            <input type="file" accept="image/*,application/pdf" multiple onChange={handleFileSelect(setInsuranceDocs)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700">Certificates</label>
+            <input type="file" accept="image/*,application/pdf" multiple onChange={handleFileSelect(setCertDocs)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+          </div>
+          <p className="text-xs text-slate-600">Optional now, but helps us verify your profile and show trust badges.</p>
+        </div>
+      );
+    }
+    if (step === 6) {
+      return (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setEmergencyJobs(!emergencyJobs)}
+              className={[
+                "rounded-lg border px-3 py-2 text-xs font-semibold transition",
+                emergencyJobs ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+              ].join(" ")}
+            >
+              Emergency jobs: {emergencyJobs ? "Yes" : "No"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setScheduledJobs(!scheduledJobs)}
+              className={[
+                "rounded-lg border px-3 py-2 text-xs font-semibold transition",
+                scheduledJobs ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+              ].join(" ")}
+            >
+              Scheduled jobs: {scheduledJobs ? "Yes" : "No"}
+            </button>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700">Working hours</label>
+            <input
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              value={workingHours}
+              onChange={(e) => setWorkingHours(e.target.value)}
+              placeholder="e.g. Mon-Fri, 8am-6pm"
+            />
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-slate-700">Review and submit. You can start receiving leads immediately after finishing.</p>
         {submitError && <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{submitError}</div>}
         {submitSuccess && <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{submitSuccess}</div>}
-        <div className="flex justify-end gap-2 pt-2">
-          <button type="button" onClick={onClose} className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Cancel</button>
+      </div>
+    );
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Become a professional" subtitle="Join our vetted network and receive jobs." wide>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 mb-3">
+        <div className="h-full bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {renderStep()}
+        <div className="flex justify-between gap-2 pt-2">
+          <button type="button" onClick={() => { if (step > 1) setStep((prev) => (prev - 1) as any); else onClose(); }} className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+            {step > 1 ? "Back" : "Cancel"}
+          </button>
           <button
             type="submit"
-            disabled={!canSubmit || isSubmitting}
+            disabled={!canAdvance(step) || isSubmitting}
             className={[
               "rounded-lg px-4 py-2 text-sm font-semibold",
-              !canSubmit || isSubmitting ? "cursor-not-allowed bg-slate-200 text-slate-500" : "bg-blue-600 text-white hover:bg-blue-700",
+              !canAdvance(step) || isSubmitting ? "cursor-not-allowed bg-slate-200 text-slate-500" : "bg-blue-600 text-white hover:bg-blue-700",
             ].join(" ")}
           >
-            {isSubmitting ? "Submitting..." : "Submit"}
+            {step < 7 ? "Next" : isSubmitting ? "Submitting..." : "Finish"}
           </button>
         </div>
       </form>
