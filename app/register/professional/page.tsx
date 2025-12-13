@@ -16,6 +16,8 @@ const SERVICE_OPTIONS: ServiceOption[] = MAIN_SERVICES.map((label) => ({
 const MAX_FILES = 5;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
+export const dynamic = "force-dynamic";
+
 const toBase64Files = async (files: File[]) => {
   const limited = files.slice(0, MAX_FILES);
   return Promise.all(
