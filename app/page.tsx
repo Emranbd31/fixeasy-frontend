@@ -971,6 +971,10 @@ function ProModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     [selectedServices]
   );
   const allSubServices = useMemo(() => selectedServiceOptions.flatMap((s) => s.subServices), [selectedServiceOptions]);
+  const countyOptions = useMemo(
+    () => ["Dublin", "Cork", "Galway", "Limerick", "Waterford", "Kilkenny", "Wexford", "Kildare", "Meath", "Wicklow", "Westmeath"],
+    []
+  );
 
   const canAdvance = (currentStep: number) => {
     if (currentStep === 1) {
@@ -1118,6 +1122,18 @@ function ProModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-700">Radius / service regions</label>
             <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={radius} onChange={(e) => setRadius(e.target.value)} placeholder="e.g. 20km or Dublin 1,2,4" />
+            <div className="mt-2 flex flex-wrap gap-2">
+              {countyOptions.map((county) => (
+                <button
+                  type="button"
+                  key={county}
+                  onClick={() => setRadius((prev) => (prev ? `${prev}, ${county}` : county))}
+                  className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 hover:border-blue-400 hover:text-blue-700"
+                >
+                  {county}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       );
