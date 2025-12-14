@@ -848,6 +848,9 @@ function BookModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     if (step === 3) {
       return (
         <div className="space-y-4">
+          <p className="text-sm text-slate-700">
+            You&apos;re still just getting a quote — no booking yet. You&apos;ll confirm before anything is final.
+          </p>
           {urgency === "scheduled" ? (
             <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
               <label className="text-xs font-semibold text-slate-700">Select date & time</label>
@@ -1499,9 +1502,10 @@ export default function HomePage() {
                   transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-white/90 backdrop-blur-sm text-slate-900 rounded-full font-bold text-base md:text-lg shadow-2xl hover:bg-white transition-all duration-300"
                   onClick={() => {
-                    setProOpen(true);
+                    setProOpen(false);
                     setQuoteOpen(false);
                     setBookOpen(false);
+                    window.location.href = "/register/professional";
                   }}
                 >
                   💼 Become a Professional
@@ -1953,10 +1957,11 @@ export default function HomePage() {
           </div>
 
           <div className="text-center mt-8">
-            <Link href="/register/professional">
-              <button className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
-                💼 Join as Professional &amp; Get Requests
-              </button>
+            <Link
+              href="/register/professional"
+              className="inline-block px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+            >
+              💼 Join as Professional &amp; Get Requests
             </Link>
           </div>
         </div>
@@ -2573,7 +2578,7 @@ export default function HomePage() {
               </div>
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 className="px-12 py-5 bg-transparent text-white rounded-2xl font-bold text-lg border-2 border-white hover:bg-white/10 transition-all duration-300"
-                onClick={() => { setProOpen(true); setQuoteOpen(false); setBookOpen(false); }}>
+                onClick={() => { setProOpen(false); setQuoteOpen(false); setBookOpen(false); window.location.href = "/register/professional"; }}>
                 Become a Professional
               </motion.button>
             </div>

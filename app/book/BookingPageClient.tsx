@@ -512,6 +512,9 @@ export default function BookingPageClient() {
     if (bookStep === 3) {
       return (
         <div className="space-y-4">
+          <p className="text-sm text-slate-700">
+            You&apos;re still just getting a quote — no booking yet. You&apos;ll confirm before anything is final.
+          </p>
           {bookUrgency === "scheduled" ? (
             <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
               <label className="text-xs font-semibold text-slate-700">Select date & time</label>
