@@ -709,6 +709,9 @@ function BookModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     if (step === 1) {
       return (
         <div className="space-y-4">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+            You&apos;re starting with a free estimate. You&apos;ll confirm before any booking is made.
+          </div>
           <div className="space-y-2">
             <label className="text-xs font-semibold text-slate-700">Service</label>
             <Autocomplete
@@ -798,6 +801,7 @@ function BookModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     if (step === 2) {
       return (
         <div className="space-y-4">
+          <p className="text-xs text-slate-600">Still just a quote — no booking yet.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-700">Name (optional)</label>
@@ -1456,10 +1460,23 @@ export default function HomePage() {
               </h1>
 
               <p className="text-base md:text-lg lg:text-xl text-gray-200 mb-4 md:mb-6 leading-relaxed max-w-xl font-light">
-                Book or get a quote from <span className="font-bold text-cyan-300">trusted professionals</span> for cleaning, repairs, and more. Quick requests, clear pricing, and verified pros.
+                Get a free estimate or request a booking with <span className="font-bold text-cyan-300">trusted professionals</span> for cleaning, repairs, and more. You&apos;ll review details before anything is confirmed.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(16, 185, 129, 0.5)' }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                  className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-full font-bold text-base md:text-lg shadow-2xl hover:shadow-emerald-500/50 transition-all duration-300"
+                  onClick={() => {
+                    setBookOpen(true);
+                    setQuoteOpen(false);
+                    setProOpen(false);
+                  }}
+                >
+                  🛠 Book a Service
+                </motion.button>
                 <div className="w-full sm:w-auto">
                   <motion.button
                     whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(6, 182, 212, 0.5)' }}
@@ -1474,21 +1491,8 @@ export default function HomePage() {
                   >
                     💬 Get Free Quote
                   </motion.button>
-                  <p className="mt-1 text-xs text-white/80">Free estimate only. No booking. No payment.</p>
+                  <p className="mt-1 text-xs text-white/80">No booking. No payment.</p>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(16, 185, 129, 0.5)' }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-full font-bold text-base md:text-lg shadow-2xl hover:shadow-emerald-500/50 transition-all duration-300"
-                  onClick={() => {
-                    setBookOpen(true);
-                    setQuoteOpen(false);
-                    setProOpen(false);
-                  }}
-                >
-                  🛠 Book a Service
-                </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(255, 255, 255, 0.3)' }}
                   whileTap={{ scale: 0.95 }}
@@ -1715,15 +1719,18 @@ export default function HomePage() {
                       </div>
 
                       {/* Book Button */}
-                      <div className="flex items-center justify-between text-blue-600 font-semibold text-sm">
-                        <span className="group-hover:text-blue-700 transition-colors">Continue to Booking</span>
-                        <motion.span
-                          animate={{ x: [0, 4, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                          className="text-blue-600 group-hover:text-blue-700"
-                        >
-                          →
-                        </motion.span>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-blue-600 font-semibold text-sm">
+                          <span className="group-hover:text-blue-700 transition-colors">Get Price / Book</span>
+                          <motion.span
+                            animate={{ x: [0, 4, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                            className="text-blue-600 group-hover:text-blue-700"
+                          >
+                            →
+                          </motion.span>
+                        </div>
+                        <p className="text-xs text-gray-500">Free estimate. No commitment.</p>
                       </div>
                     </div>
                   </div>
@@ -2556,18 +2563,20 @@ export default function HomePage() {
                 onClick={() => { setBookOpen(true); setQuoteOpen(false); setProOpen(false); }}>
                 Book a Service
               </motion.button>
+              <div className="flex flex-col items-center">
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                  className="px-12 py-5 bg-white/90 text-blue-700 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300"
+                  onClick={() => { setQuoteOpen(true); setBookOpen(false); setProOpen(false); }}>
+                  Get Free Quote
+                </motion.button>
+                <p className="mt-2 text-sm text-white/80">No booking. No payment.</p>
+              </div>
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 className="px-12 py-5 bg-transparent text-white rounded-2xl font-bold text-lg border-2 border-white hover:bg-white/10 transition-all duration-300"
                 onClick={() => { setProOpen(true); setQuoteOpen(false); setBookOpen(false); }}>
-                Join as Professional
-              </motion.button>
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                className="px-12 py-5 bg-white/90 text-blue-700 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300"
-                onClick={() => { setQuoteOpen(true); setBookOpen(false); setProOpen(false); }}>
-                Get Free Quote
+                Become a Professional
               </motion.button>
             </div>
-            <p className="mt-4 text-sm text-white/80">Free estimate only. No booking. No payment.</p>
           </motion.div>
         </div>
       </section>

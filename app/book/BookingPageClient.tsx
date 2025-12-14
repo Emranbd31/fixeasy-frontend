@@ -340,6 +340,9 @@ export default function BookingPageClient() {
     if (bookStep === 1) {
       return (
         <div className="space-y-4">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+            You&apos;re starting with a free estimate. You&apos;ll confirm before any booking is made.
+          </div>
           <div className="space-y-2">
             <label className="text-xs font-semibold text-slate-700">Service</label>
             <Autocomplete
@@ -439,6 +442,7 @@ export default function BookingPageClient() {
     if (bookStep === 2) {
       return (
         <div className="space-y-4">
+          <p className="text-xs text-slate-600">Still just a quote — no booking yet.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-700">Name (optional)</label>
@@ -617,9 +621,19 @@ export default function BookingPageClient() {
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-16 text-center">
         <h1 className="text-3xl font-bold text-slate-900">Choose how you’d like to get started</h1>
-        <p className="mt-2 text-slate-600">
-          Get a free quote (estimate only) or send a booking request to be matched with a professional.
-        </p>
+        <p className="mt-2 text-slate-600">Pick the option that fits your situation.</p>
+        <div className="mt-5 w-full max-w-2xl text-left">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Get Free Quote</p>
+              <p className="mt-1 text-sm text-slate-600">See estimated price. No booking. No payment.</p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Book a Service</p>
+              <p className="mt-1 text-sm text-slate-600">Request a professional. You’ll review before confirming.</p>
+            </div>
+          </div>
+        </div>
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
           <div className="flex flex-col items-center">
             <button
@@ -634,7 +648,7 @@ export default function BookingPageClient() {
             >
               {quoteButtonLabel}
             </button>
-            <p className="mt-1 text-xs text-slate-600">Free estimate only. No booking. No payment.</p>
+            <p className="mt-1 text-xs text-slate-600">See estimated price. No booking. No payment.</p>
           </div>
           <div className="flex flex-col items-center">
             <button
@@ -648,10 +662,10 @@ export default function BookingPageClient() {
               }}
               className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:border-slate-400 hover:bg-white"
             >
-              Continue to Booking
+              Book a Service
             </button>
             <p className="mt-1 max-w-xs text-xs text-slate-600">
-              Book a trusted local professional in a few steps. You’ll review details before anything is confirmed.
+              Request a professional. You’ll review before confirming.
             </p>
           </div>
         </div>

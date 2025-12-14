@@ -447,11 +447,13 @@ export default function ProfessionalRegisterPage() {
         <ul className="mt-4 list-disc list-inside space-y-1 text-left text-sm text-slate-700">
           <li>Work in your area</li>
           <li>Flexible schedule</li>
-          <li>Secure payments via FixEasy</li>
-          <li>No marketing or advertising needed</li>
+          <li>Secure payouts via FixEasy</li>
+          <li>No advertising or marketing needed</li>
         </ul>
         <p className="mt-4 text-sm text-slate-600">
-          Registration takes about 5–10 minutes. Our team reviews applications within a few days.
+          Registration takes 5–10 minutes.
+          <br />
+          Applications are reviewed within a few days.
         </p>
         <button
           type="button"
@@ -481,11 +483,13 @@ export default function ProfessionalRegisterPage() {
               <ul className="list-disc list-inside space-y-1 text-sm text-slate-700">
                 <li>Work in your area</li>
                 <li>Flexible schedule</li>
-                <li>Secure payments via FixEasy</li>
-                <li>No marketing or advertising needed</li>
+                <li>Secure payouts via FixEasy</li>
+                <li>No advertising or marketing needed</li>
               </ul>
               <p className="mt-3 text-sm text-slate-600">
-                Registration takes about 5–10 minutes. Our team reviews applications within a few days.
+                Registration takes 5–10 minutes.
+                <br />
+                Applications are reviewed within a few days.
               </p>
             </div>
             <div className="mt-4 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
