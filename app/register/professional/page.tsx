@@ -149,7 +149,7 @@ export default function ProfessionalRegisterPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || "Unable to submit your application");
-      setSubmitSuccess("Thanks! Profile saved. You can start receiving leads now.");
+      setSubmitSuccess("Thanks! Application submitted. Our team reviews applications within a few days.");
       setOpen(false);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
@@ -158,6 +158,10 @@ export default function ProfessionalRegisterPage() {
       setIsSubmitting(false);
     }
   };
+
+  const stepTitle =
+    ["Basic Details", "Services", "Service Area", "Profile", "Documents", "Preferences", "Review & Submit"][step - 1] ??
+    "Review & Submit";
 
   const progress = Math.round(((step - 1) / 7) * 100);
 
@@ -421,7 +425,7 @@ export default function ProfessionalRegisterPage() {
 
     return (
       <div className="space-y-3">
-        <p className="text-sm text-slate-700">Review and submit. You can start receiving leads immediately after finishing.</p>
+        <p className="text-sm text-slate-700">Review and submit. Our team reviews applications within a few days.</p>
         {submitError && (
           <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {submitError}
@@ -439,8 +443,16 @@ export default function ProfessionalRegisterPage() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-16 text-center">
-        <h1 className="text-3xl font-bold text-slate-900">Become a FixEasy Professional</h1>
-        <p className="mt-2 text-slate-600">Quick intake — we’ll review and invite you to the platform.</p>
+        <h1 className="text-3xl font-bold text-slate-900">Get local jobs. Get paid weekly.</h1>
+        <ul className="mt-4 list-disc list-inside space-y-1 text-left text-sm text-slate-700">
+          <li>Work in your area</li>
+          <li>Flexible schedule</li>
+          <li>Secure payments via FixEasy</li>
+          <li>No marketing or advertising needed</li>
+        </ul>
+        <p className="mt-4 text-sm text-slate-600">
+          Registration takes about 5–10 minutes. Our team reviews applications within a few days.
+        </p>
         <button
           type="button"
           onClick={() => {
@@ -450,7 +462,7 @@ export default function ProfessionalRegisterPage() {
           }}
           className="mt-6 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700"
         >
-          Apply now
+          Start registration
         </button>
       </div>
 
@@ -464,14 +476,27 @@ export default function ProfessionalRegisterPage() {
             >
               ✕
             </button>
-            <h2 className="text-xl font-semibold text-slate-900">Quick application</h2>
-            <p className="text-sm text-slate-600">Tell us your trade and contact. We’ll follow up to finalize.</p>
-            <div className="mt-3 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+            <h2 className="text-xl font-semibold text-slate-900">Get local jobs. Get paid weekly.</h2>
+            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-left">
+              <ul className="list-disc list-inside space-y-1 text-sm text-slate-700">
+                <li>Work in your area</li>
+                <li>Flexible schedule</li>
+                <li>Secure payments via FixEasy</li>
+                <li>No marketing or advertising needed</li>
+              </ul>
+              <p className="mt-3 text-sm text-slate-600">
+                Registration takes about 5–10 minutes. Our team reviews applications within a few days.
+              </p>
+            </div>
+            <div className="mt-4 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
               <div className="h-full bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
             </div>
 
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
               <div ref={modalScrollRef} className="space-y-4">
+                <p className="text-sm font-semibold text-slate-800">
+                  Step {step} of 7 – {stepTitle}
+                </p>
                 {renderStep()}
 
                 <div className="flex justify-end gap-2">

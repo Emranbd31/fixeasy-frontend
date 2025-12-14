@@ -75,7 +75,7 @@ export default function Header() {
                 whileTap={{ scale: 0.95 }}
                 className="px-7 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-full font-semibold shadow-lg shadow-blue-600/30 transition-all text-sm"
               >
-                Book Now
+                Book a Service
               </motion.button>
             </Link>
           </div>
@@ -118,7 +118,7 @@ export default function Header() {
             </Link>
             <Link href="/book" className="block">
               <button className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-full font-semibold shadow-lg">
-                Book Now
+                Book a Service
               </button>
             </Link>
           </motion.div>

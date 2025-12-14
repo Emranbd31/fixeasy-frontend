@@ -403,7 +403,15 @@ function Modal({
   );
 }
 
-function QuoteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function QuoteModal({
+  open,
+  onClose,
+  onProceedToBooking,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onProceedToBooking?: () => void;
+}) {
   const [service, setService] = useState("");
   const [subService, setSubService] = useState("");
   const [description, setDescription] = useState("");
@@ -462,8 +470,11 @@ function QuoteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Get quotes" subtitle="Quick request—no payment or schedule required." wide>
+    <Modal open={open} onClose={onClose} title="Get a Free Quote" subtitle="Free estimate only. No booking. No payment." wide>
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+          You are requesting a quote. This does not confirm a booking.
+        </div>
         <div className="space-y-2">
           <label className="text-xs font-semibold text-slate-700">Service</label>
           <Autocomplete
@@ -591,8 +602,17 @@ function QuoteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex flex-col-reverse justify-end gap-2 pt-2 sm:flex-row sm:items-center">
           <button type="button" onClick={onClose} className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Cancel</button>
+          {onProceedToBooking && (
+            <button
+              type="button"
+              onClick={onProceedToBooking}
+              className="rounded-lg border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+            >
+              Proceed to Booking
+            </button>
+          )}
           <button
             type="submit"
             disabled={!canSubmit || isSubmitting}
@@ -601,7 +621,7 @@ function QuoteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               !canSubmit || isSubmitting ? "cursor-not-allowed bg-slate-200 text-slate-500" : "bg-blue-600 text-white hover:bg-blue-700",
             ].join(" ")}
           >
-            {isSubmitting ? "Sending..." : "Send request"}
+            {isSubmitting ? "Sending..." : "Request Free Quote"}
           </button>
         </div>
       </form>
@@ -890,7 +910,13 @@ function BookModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Book now" subtitle="Full booking wizard with schedule and confirmation." wide>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Book a Service"
+      subtitle="Book a trusted local professional in a few steps. You’ll review details before anything is confirmed."
+      wide
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-center justify-between gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700">
           {[1, 2, 3, 4].map((num) => (
@@ -904,13 +930,23 @@ function BookModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                 {num}
               </span>
               <span className={step === num ? "text-blue-700" : "text-slate-600"}>
-                {["Service", "Contact", "Schedule", "Estimate"][num - 1]}
+                {["Service", "Address", "Schedule", "Review"][num - 1]}
               </span>
             </div>
           ))}
         </div>
 
+        <p className="mt-2 text-sm font-semibold text-slate-700">
+          Step {step} of 4 – {["Service", "Address", "Schedule", "Review"][step - 1] ?? "Review"}
+        </p>
+
         {renderStep()}
+
+        {step === 4 && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            No payment is taken until your booking is confirmed.
+          </div>
+        )}
 
         <div className="flex justify-between gap-2 pt-2">
           <button
@@ -931,7 +967,15 @@ function BookModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               !stepValid(step) || isSubmitting ? "cursor-not-allowed bg-slate-200 text-slate-500" : "bg-emerald-600 text-white hover:bg-emerald-700",
             ].join(" ")}
           >
-            {step < 4 ? "Next" : isSubmitting ? "Submitting..." : "Confirm booking"}
+            {isSubmitting
+              ? "Submitting..."
+              : step === 1
+                ? "Add Contact & Address"
+                : step === 2
+                  ? "Choose Schedule"
+                  : step === 3
+                    ? "Review & Estimate"
+                    : "Confirm Booking Request"}
           </button>
         </div>
       </form>
@@ -1416,19 +1460,22 @@ export default function HomePage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
-                <motion.button
-                  whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(6, 182, 212, 0.5)' }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full font-bold text-base md:text-lg shadow-2xl hover:shadow-cyan-500/50 transition-all duration-300"
-                  onClick={() => {
-                    setQuoteOpen(true);
-                    setBookOpen(false);
-                    setProOpen(false);
-                  }}
-                >
-                  💬 Get Quotes
-                </motion.button>
+                <div className="w-full sm:w-auto">
+                  <motion.button
+                    whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(6, 182, 212, 0.5)' }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                    className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full font-bold text-base md:text-lg shadow-2xl hover:shadow-cyan-500/50 transition-all duration-300"
+                    onClick={() => {
+                      setQuoteOpen(true);
+                      setBookOpen(false);
+                      setProOpen(false);
+                    }}
+                  >
+                    💬 Get Free Quote
+                  </motion.button>
+                  <p className="mt-1 text-xs text-white/80">Free estimate only. No booking. No payment.</p>
+                </div>
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(16, 185, 129, 0.5)' }}
                   whileTap={{ scale: 0.95 }}
@@ -1440,7 +1487,7 @@ export default function HomePage() {
                     setProOpen(false);
                   }}
                 >
-                  🛠 Book Now
+                  🛠 Book a Service
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(255, 255, 255, 0.3)' }}
@@ -1669,7 +1716,7 @@ export default function HomePage() {
 
                       {/* Book Button */}
                       <div className="flex items-center justify-between text-blue-600 font-semibold text-sm">
-                        <span className="group-hover:text-blue-700 transition-colors">Book Now</span>
+                        <span className="group-hover:text-blue-700 transition-colors">Continue to Booking</span>
                         <motion.span
                           animate={{ x: [0, 4, 0] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
@@ -2507,7 +2554,7 @@ export default function HomePage() {
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 className="px-12 py-5 bg-white text-blue-600 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300"
                 onClick={() => { setBookOpen(true); setQuoteOpen(false); setProOpen(false); }}>
-                Book Now
+                Book a Service
               </motion.button>
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 className="px-12 py-5 bg-transparent text-white rounded-2xl font-bold text-lg border-2 border-white hover:bg-white/10 transition-all duration-300"
@@ -2517,14 +2564,23 @@ export default function HomePage() {
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 className="px-12 py-5 bg-white/90 text-blue-700 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300"
                 onClick={() => { setQuoteOpen(true); setBookOpen(false); setProOpen(false); }}>
-                Get Quotes
+                Get Free Quote
               </motion.button>
             </div>
+            <p className="mt-4 text-sm text-white/80">Free estimate only. No booking. No payment.</p>
           </motion.div>
         </div>
       </section>
 
-      <QuoteModal open={quoteOpen} onClose={() => setQuoteOpen(false)} />
+      <QuoteModal
+        open={quoteOpen}
+        onClose={() => setQuoteOpen(false)}
+        onProceedToBooking={() => {
+          setQuoteOpen(false);
+          setBookOpen(true);
+          setProOpen(false);
+        }}
+      />
       <BookModal open={bookOpen} onClose={() => setBookOpen(false)} />
       <ProModal open={proOpen} onClose={() => setProOpen(false)} />
     </main>

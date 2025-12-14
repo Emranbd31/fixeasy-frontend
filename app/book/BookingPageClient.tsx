@@ -22,6 +22,7 @@ const SERVICE_OPTIONS: ServiceOption[] = MAIN_SERVICES.map((label) => ({
 }));
 
 const STEP_LABELS = ["Service & issue", "Contact & address", "Date/Time & review", "Price estimate"];
+const BOOK_STEP_STAGE_LABELS = ["Service", "Address", "Schedule", "Review"];
 const MAX_PHOTOS = 5;
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
 const BUDGET_OPTIONS = ["€80–€120", "€120–€200", "€200–€350", "I don’t know / Let the pro advise"];
@@ -610,39 +611,49 @@ export default function BookingPageClient() {
     </div>
   );
 
-  const quoteButtonLabel = abVariant === "A" ? "Get a Quote" : "Request a Quote";
+  const quoteButtonLabel = abVariant === "A" ? "Get Free Quote" : "Get Free Quote";
 
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-16 text-center">
         <h1 className="text-3xl font-bold text-slate-900">Choose how you’d like to get started</h1>
-        <p className="mt-2 text-slate-600">Get quotes from professionals or book a service right away.</p>
-        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => {
-              setQuoteOpen(true);
-              setBookOpen(false);
-              recordPathChoice("quote");
-              setTimeout(() => scrollModalToTop(quoteModalScrollRef), 0);
-            }}
-            className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700"
-          >
-            {quoteButtonLabel}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setBookOpen(true);
-              setBookStep(1);
-              setQuoteOpen(false);
-              recordPathChoice("book");
-              setTimeout(() => scrollModalToTop(bookModalScrollRef), 0);
-            }}
-            className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:border-slate-400 hover:bg-white"
-          >
-            Book Now (full wizard)
-          </button>
+        <p className="mt-2 text-slate-600">
+          Get a free quote (estimate only) or send a booking request to be matched with a professional.
+        </p>
+        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
+          <div className="flex flex-col items-center">
+            <button
+              type="button"
+              onClick={() => {
+                setQuoteOpen(true);
+                setBookOpen(false);
+                recordPathChoice("quote");
+                setTimeout(() => scrollModalToTop(quoteModalScrollRef), 0);
+              }}
+              className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700"
+            >
+              {quoteButtonLabel}
+            </button>
+            <p className="mt-1 text-xs text-slate-600">Free estimate only. No booking. No payment.</p>
+          </div>
+          <div className="flex flex-col items-center">
+            <button
+              type="button"
+              onClick={() => {
+                setBookOpen(true);
+                setBookStep(1);
+                setQuoteOpen(false);
+                recordPathChoice("book");
+                setTimeout(() => scrollModalToTop(bookModalScrollRef), 0);
+              }}
+              className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:border-slate-400 hover:bg-white"
+            >
+              Continue to Booking
+            </button>
+            <p className="mt-1 max-w-xs text-xs text-slate-600">
+              Book a trusted local professional in a few steps. You’ll review details before anything is confirmed.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -660,8 +671,11 @@ export default function BookingPageClient() {
             >
               ✕
             </button>
-            <h2 className="text-xl font-semibold text-slate-900">Quick quote request</h2>
-            <p className="text-sm text-slate-600">We’ll notify available pros and send you quotes.</p>
+            <h2 className="text-xl font-semibold text-slate-900">Get a Free Quote</h2>
+            <p className="text-sm text-slate-600">Free estimate only. No booking. No payment.</p>
+            <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+              You are requesting a quote. This does not confirm a booking.
+            </div>
 
             <form onSubmit={handleQuoteSubmit} className="mt-4 flex-1 space-y-4 pr-1">
               <div className="space-y-2">
@@ -829,13 +843,25 @@ export default function BookingPageClient() {
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-col-reverse justify-end gap-2 pt-2 sm:flex-row sm:items-center">
                 <button
                   type="button"
                   onClick={() => setQuoteOpen(false)}
                   className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                 >
                   Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuoteOpen(false);
+                    setBookOpen(true);
+                    setBookStep(1);
+                    setTimeout(() => scrollModalToTop(bookModalScrollRef), 0);
+                  }}
+                  className="rounded-lg border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                >
+                  Proceed to Booking
                 </button>
                 <button
                   type="submit"
@@ -847,7 +873,7 @@ export default function BookingPageClient() {
                       : "bg-blue-600 text-white hover:bg-blue-700",
                   ].join(" ")}
                 >
-                  {quoteSubmitting ? "Sending..." : "Send quote request"}
+                  {quoteSubmitting ? "Sending..." : "Request Free Quote"}
                 </button>
               </div>
             </form>
@@ -869,10 +895,15 @@ export default function BookingPageClient() {
             >
               ✕
             </button>
-            <h2 className="text-xl font-semibold text-slate-900">Book now</h2>
-            <p className="text-sm text-slate-600">Move through the full wizard to schedule and review before payment.</p>
+            <h2 className="text-xl font-semibold text-slate-900">Book a Service</h2>
+            <p className="text-sm text-slate-600">
+              Book a trusted local professional in a few steps. You’ll review details before anything is confirmed.
+            </p>
 
             <div className="mt-4">{renderStepper()}</div>
+            <p className="mt-2 text-sm font-semibold text-slate-700">
+              Step {bookStep} of {STEP_LABELS.length} – {BOOK_STEP_STAGE_LABELS[bookStep - 1] ?? "Review"}
+            </p>
 
             <form onSubmit={handleBookFormSubmit} className="mt-4 flex-1 space-y-4">
               {renderBookStep()}
@@ -882,6 +913,12 @@ export default function BookingPageClient() {
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
                   {bookSuccess}
                   <p className="mt-1 text-xs text-emerald-800">We’re assigning a professional and will confirm the booking.</p>
+                </div>
+              )}
+
+              {bookStep === STEP_LABELS.length && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  No payment is taken until your booking is confirmed.
                 </div>
               )}
 
@@ -906,7 +943,15 @@ export default function BookingPageClient() {
                       : "bg-emerald-600 text-white hover:bg-emerald-700",
                   ].join(" ")}
                 >
-                  {bookStep < 4 ? "Next" : bookSubmitting ? "Submitting..." : "Submit booking"}
+                  {bookSubmitting
+                    ? "Submitting..."
+                    : bookStep === 1
+                      ? "Add Contact & Address"
+                      : bookStep === 2
+                        ? "Choose Schedule"
+                        : bookStep === 3
+                          ? "Review & Estimate"
+                          : "Confirm Booking Request"}
                 </button>
               </div>
             </form>
