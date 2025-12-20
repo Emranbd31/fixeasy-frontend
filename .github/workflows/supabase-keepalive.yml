@@ -1,0 +1,15 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping keepalive endpoint
+        run: |
+          curl -fsSL "https://fixeasy.irish/api/supabase/keepalive" > /dev/null
+
