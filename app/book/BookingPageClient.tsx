@@ -622,54 +622,75 @@ export default function BookingPageClient() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-16 text-center">
-        <h1 className="text-3xl font-bold text-slate-900">Choose how you’d like to get started</h1>
-        <p className="mt-2 text-slate-600">Pick the option that fits your situation.</p>
-        <div className="mt-5 w-full max-w-2xl text-left">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <p className="text-sm font-semibold text-slate-900">Get Free Quote</p>
-              <p className="mt-1 text-sm text-slate-600">See estimated price. No booking. No payment.</p>
-            </div>
-            <div>
+      <div className="mx-auto max-w-5xl px-4 py-12 md:py-16">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-10">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">Get started</h1>
+            <p className="mt-2 text-slate-600">
+              Choose the option you need. You’ll review details before anything is confirmed.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-6">
               <p className="text-sm font-semibold text-slate-900">Book a Service</p>
               <p className="mt-1 text-sm text-slate-600">Request a professional. You’ll review before confirming.</p>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                <li>
+                  <span className="font-semibold text-slate-900">Step-by-step:</span> Service → Address → Schedule → Review
+                </li>
+                <li>
+                  <span className="font-semibold text-slate-900">No payment:</span> taken until your booking is confirmed
+                </li>
+              </ul>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setBookOpen(true);
+                  setBookStep(1);
+                  setQuoteOpen(false);
+                  recordPathChoice("book");
+                  setTimeout(() => scrollModalToTop(bookModalScrollRef), 0);
+                }}
+                className="mt-5 w-full rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700"
+              >
+                Book a Service
+              </button>
+              <p className="mt-2 text-xs text-slate-600">You’ll confirm your booking request at the final step.</p>
             </div>
-          </div>
-        </div>
-        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
-          <div className="flex flex-col items-center">
-            <button
-              type="button"
-              onClick={() => {
-                setQuoteOpen(true);
-                setBookOpen(false);
-                recordPathChoice("quote");
-                setTimeout(() => scrollModalToTop(quoteModalScrollRef), 0);
-              }}
-              className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700"
-            >
-              {quoteButtonLabel}
-            </button>
-            <p className="mt-1 text-xs text-slate-600">See estimated price. No booking. No payment.</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <button
-              type="button"
-              onClick={() => {
-                setBookOpen(true);
-                setBookStep(1);
-                setQuoteOpen(false);
-                recordPathChoice("book");
-                setTimeout(() => scrollModalToTop(bookModalScrollRef), 0);
-              }}
-              className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:border-slate-400 hover:bg-white"
-            >
-              Book a Service
-            </button>
-            <p className="mt-1 max-w-xs text-xs text-slate-600">
-              Request a professional. You’ll review before confirming.
-            </p>
+
+            <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-6">
+              <p className="text-sm font-semibold text-slate-900">Get Free Quote</p>
+              <p className="mt-1 text-sm text-slate-600">See estimated price. No booking. No payment.</p>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                <li>
+                  <span className="font-semibold text-slate-900">Estimate only:</span> get an expected price range
+                </li>
+                <li>
+                  <span className="font-semibold text-slate-900">No commitment:</span> you decide if you want to book
+                </li>
+                <li>
+                  <span className="font-semibold text-slate-900">No payment:</span> nothing is charged in the quote flow
+                </li>
+              </ul>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setQuoteOpen(true);
+                  setBookOpen(false);
+                  recordPathChoice("quote");
+                  setTimeout(() => scrollModalToTop(quoteModalScrollRef), 0);
+                }}
+                className="mt-5 w-full rounded-full border border-blue-600 bg-white px-6 py-3 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-50"
+              >
+                {quoteButtonLabel}
+              </button>
+              <p className="mt-2 text-xs text-slate-600">Free estimate only. No booking. No payment.</p>
+            </div>
           </div>
         </div>
       </div>
