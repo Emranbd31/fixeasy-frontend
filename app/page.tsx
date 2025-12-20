@@ -1466,12 +1466,12 @@ export default function HomePage() {
                 Get a free estimate or request a booking with <span className="font-bold text-cyan-300">trusted professionals</span> for cleaning, repairs, and more. You&apos;ll review details before anything is confirmed.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-3 mb-4 md:mb-6">
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(16, 185, 129, 0.5)' }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-full font-bold text-base md:text-lg shadow-2xl hover:shadow-emerald-500/50 transition-all duration-300"
+                  className="w-full sm:w-auto whitespace-nowrap px-7 md:px-8 lg:px-10 py-3 md:py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-full font-bold text-base lg:text-lg shadow-2xl hover:shadow-emerald-500/50 transition-all duration-300"
                   onClick={() => {
                     setBookOpen(true);
                     setQuoteOpen(false);
@@ -1485,7 +1485,7 @@ export default function HomePage() {
                     whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(6, 182, 212, 0.5)' }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full font-bold text-base md:text-lg shadow-2xl hover:shadow-cyan-500/50 transition-all duration-300"
+                    className="w-full sm:w-auto whitespace-nowrap px-7 md:px-8 lg:px-10 py-3 md:py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full font-bold text-base lg:text-lg shadow-2xl hover:shadow-cyan-500/50 transition-all duration-300"
                     onClick={() => {
                       setQuoteOpen(true);
                       setBookOpen(false);
@@ -1494,13 +1494,13 @@ export default function HomePage() {
                   >
                     💬 Get Free Quote
                   </motion.button>
-                  <p className="mt-1 text-xs text-white/80">No booking. No payment.</p>
+                  <p className="mt-1 text-xs text-white/80 text-center">No booking. No payment.</p>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(255, 255, 255, 0.3)' }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  className="w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-white/90 backdrop-blur-sm text-slate-900 rounded-full font-bold text-base md:text-lg shadow-2xl hover:bg-white transition-all duration-300"
+                  className="w-full sm:w-auto whitespace-nowrap px-7 md:px-8 lg:px-10 py-3 md:py-4 bg-white/90 backdrop-blur-sm text-slate-900 rounded-full font-bold text-base lg:text-lg shadow-2xl hover:bg-white transition-all duration-300"
                   onClick={() => {
                     setProOpen(false);
                     setQuoteOpen(false);
