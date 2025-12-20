@@ -15,5 +15,6 @@ FixEasy-V4-RealHero.zip
 **/*.test.ts
 pages_backup/
 .pages_backup/
+tmp-mockups/
 
 .vercel
