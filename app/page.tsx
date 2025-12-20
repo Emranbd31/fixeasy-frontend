@@ -1422,23 +1422,21 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden pt-8 pb-8 md:pt-12 md:pb-12 lg:pt-16 lg:pb-16 min-h-[80vh] md:min-h-[90vh] flex items-center">
-        {/* Background Image - Positioned on Right Side */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute right-0 top-0 bottom-0 w-full md:w-[60%]">
-            <Image
-              src="/images/service/hero image.png"
-              alt="Trusted FixEasy professional with happy client"
-              className="w-full h-full object-cover object-left brightness-90"
-              fill
-              sizes="100vw"
-              onError={(e) => { e.currentTarget.src = fallbackServiceImage; }}
-              unoptimized
-            />
-          </div>
-          {/* Extra wide, soft gradient overlay for natural blend */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/80 via-slate-900/40 to-transparent" style={{ width: '100%', maxWidth: '100vw' }}></div>
-        </div>
+	      <section className="relative overflow-hidden pt-8 pb-8 md:pt-12 md:pb-12 lg:pt-16 lg:pb-16 min-h-[80vh] md:min-h-[90vh] flex items-center">
+	        {/* Background Image */}
+	        <div className="absolute inset-0 z-0">
+	          <Image
+	            src="/images/service/hero image.png"
+	            alt="Trusted FixEasy professional with happy client"
+	            className="w-full h-full object-cover object-[70%_center] md:object-[82%_center] brightness-90"
+	            fill
+	            sizes="100vw"
+	            onError={(e) => { e.currentTarget.src = fallbackServiceImage; }}
+	            unoptimized
+	          />
+	          {/* Readability overlay: top fade on mobile, left fade on md+ */}
+	          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/95 via-slate-900/70 to-slate-900/25 md:bg-gradient-to-r md:from-slate-900/95 md:via-slate-900/80 md:to-transparent"></div>
+	        </div>
 
         {/* Decorative Background Elements - More subtle */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-400 rounded-full mix-blend-soft-light filter blur-3xl opacity-10 animate-pulse z-10"></div>
