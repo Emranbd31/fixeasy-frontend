@@ -1431,38 +1431,40 @@ export default function HomePage() {
 	            className="h-full w-full object-cover object-[60%_center] md:object-[65%_center] lg:object-[70%_center] brightness-90"
 	            fill
 	            sizes="100vw"
-	            onError={(e) => { e.currentTarget.src = fallbackServiceImage; }}
+	            onError={(e) => {
+	              e.currentTarget.src = fallbackServiceImage;
+	            }}
 	            unoptimized
 	          />
-	          {/* Readability overlay: top fade on mobile, left fade on md+ */}
-	          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/55 to-slate-900/10 md:bg-gradient-to-r md:from-slate-900/85 md:via-slate-900/55 md:to-transparent"></div>
+	          {/* Readability overlay */}
+	          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/55 to-slate-900/15 md:bg-gradient-to-r md:from-slate-900/90 md:via-slate-900/55 md:to-transparent"></div>
 	        </div>
 	
 	        <div className="container relative z-10 mx-auto px-4 md:px-8 lg:px-12">
-	          <div className="max-w-xl">
+	          <div className="max-w-2xl">
 	            <motion.div
-	              initial={{ opacity: 0, y: 14 }}
+	              initial={{ opacity: 0, y: 10 }}
 	              animate={{ opacity: 1, y: 0 }}
-	              transition={{ duration: 0.55, ease: [0.25, 0.1, 0.25, 1] }}
-	              className="rounded-3xl border border-white/15 bg-slate-900/35 p-6 shadow-xl backdrop-blur-md md:p-8"
+	              transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+	              className="text-left"
 	            >
 	              <h1 className="text-4xl font-extrabold tracking-tight text-white md:text-6xl">
 	                Home services,<br />
 	                <span className="text-cyan-300">made easy</span>
 	              </h1>
 	
-	              <p className="mt-4 text-base leading-relaxed text-slate-200 md:text-lg">
+	              <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-200 md:text-lg">
 	                Get a free estimate or request a booking with{" "}
 	                <span className="font-semibold text-cyan-200">trusted professionals</span> for cleaning, repairs, and
 	                more. You&apos;ll review details before anything is confirmed.
 	              </p>
 	
-	              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+	              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start">
 	                <motion.button
 	                  whileHover={{ scale: 1.02 }}
 	                  whileTap={{ scale: 0.98 }}
 	                  transition={{ type: "spring", stiffness: 380, damping: 22 }}
-	                  className="w-full rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700"
+	                  className="w-full sm:w-auto rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 px-7 py-3 text-sm font-semibold text-white shadow-md hover:from-blue-700 hover:to-cyan-700"
 	                  onClick={() => {
 	                    setBookOpen(true);
 	                    setQuoteOpen(false);
@@ -1472,12 +1474,12 @@ export default function HomePage() {
 	                  Book a Service
 	                </motion.button>
 	
-	                <div className="flex flex-col">
+	                <div className="flex w-full flex-col sm:w-auto">
 	                  <motion.button
 	                    whileHover={{ scale: 1.02 }}
 	                    whileTap={{ scale: 0.98 }}
 	                    transition={{ type: "spring", stiffness: 380, damping: 22 }}
-	                    className="w-full rounded-full border border-cyan-200/35 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-white/15"
+	                    className="w-full sm:w-auto rounded-full border border-white/35 bg-white/10 px-7 py-3 text-sm font-semibold text-white shadow-sm hover:bg-white/15"
 	                    onClick={() => {
 	                      setQuoteOpen(true);
 	                      setBookOpen(false);
@@ -1493,7 +1495,7 @@ export default function HomePage() {
 	                  whileHover={{ scale: 1.02 }}
 	                  whileTap={{ scale: 0.98 }}
 	                  transition={{ type: "spring", stiffness: 380, damping: 22 }}
-	                  className="w-full rounded-full border border-white/20 bg-transparent px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 sm:col-span-2"
+	                  className="w-full sm:w-auto rounded-full border border-white/25 bg-transparent px-7 py-3 text-sm font-semibold text-white hover:bg-white/10"
 	                  onClick={() => {
 	                    setProOpen(false);
 	                    setQuoteOpen(false);
@@ -1505,11 +1507,9 @@ export default function HomePage() {
 	                </motion.button>
 	              </div>
 	
-	              <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-white/85">
-	                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">ID verified</span>
-	                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">Insured</span>
-	                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">Secure payments</span>
-	              </div>
+	              <p className="mt-5 text-sm text-white/75">
+	                Verified professionals · Insured services · Secure payments
+	              </p>
 	            </motion.div>
 	          </div>
 	        </div>
