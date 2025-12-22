@@ -1422,83 +1422,78 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-	      <section className="relative overflow-hidden pt-8 pb-8 md:pt-12 md:pb-12 lg:pt-16 lg:pb-16 min-h-[80vh] md:min-h-[90vh] flex items-center">
+	      <section className="relative overflow-hidden pt-10 pb-10 md:pt-14 md:pb-14 lg:pt-20 lg:pb-20 min-h-[80vh] md:min-h-[90vh] flex items-center">
 	        {/* Background Image */}
 	        <div className="absolute inset-0 z-0">
 	          <Image
 	            src="/images/service/hero image.png"
 	            alt="Trusted FixEasy professional with happy client"
-	            className="w-full h-full object-cover object-[70%_center] md:object-[82%_center] brightness-90"
+	            className="h-full w-full object-cover object-[60%_center] md:object-[65%_center] lg:object-[70%_center] brightness-90"
 	            fill
 	            sizes="100vw"
 	            onError={(e) => { e.currentTarget.src = fallbackServiceImage; }}
 	            unoptimized
 	          />
 	          {/* Readability overlay: top fade on mobile, left fade on md+ */}
-	          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/95 via-slate-900/70 to-slate-900/25 md:bg-gradient-to-r md:from-slate-900/95 md:via-slate-900/80 md:to-transparent"></div>
+	          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/55 to-slate-900/10 md:bg-gradient-to-r md:from-slate-900/85 md:via-slate-900/55 md:to-transparent"></div>
 	        </div>
-
-        {/* Decorative Background Elements - More subtle */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-400 rounded-full mix-blend-soft-light filter blur-3xl opacity-10 animate-pulse z-10"></div>
-        <div className="absolute bottom-20 right-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-soft-light filter blur-3xl opacity-10 animate-pulse z-10" style={{ animationDelay: '2s' }}></div>
-
-        <div className="container mx-auto px-4 md:px-8 lg:px-12 relative z-10">
-          <div className="max-w-2xl lg:max-w-3xl">
-            {/* Content with no background color */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-              className="space-y-4 md:space-y-6 text-left"
-            >
-              {/* Badge moved to Header */}
-
-              <h1 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white mb-3 md:mb-4 leading-tight md:leading-[1.05] tracking-tight">
-                Home services,<br />
-                <span className="bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-200 bg-clip-text text-transparent drop-shadow-lg">
-                  made easy
-                </span>
-              </h1>
-
-              <p className="text-base md:text-lg lg:text-xl text-gray-200 mb-4 md:mb-6 leading-relaxed max-w-xl font-light">
-                Get a free estimate or request a booking with <span className="font-bold text-cyan-300">trusted professionals</span> for cleaning, repairs, and more. You&apos;ll review details before anything is confirmed.
-              </p>
-
-	              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 md:gap-4 mb-4 md:mb-6">
+	
+	        <div className="container relative z-10 mx-auto px-4 md:px-8 lg:px-12">
+	          <div className="max-w-xl">
+	            <motion.div
+	              initial={{ opacity: 0, y: 14 }}
+	              animate={{ opacity: 1, y: 0 }}
+	              transition={{ duration: 0.55, ease: [0.25, 0.1, 0.25, 1] }}
+	              className="rounded-3xl border border-white/15 bg-slate-900/35 p-6 shadow-xl backdrop-blur-md md:p-8"
+	            >
+	              <h1 className="text-4xl font-extrabold tracking-tight text-white md:text-6xl">
+	                Home services,<br />
+	                <span className="text-cyan-300">made easy</span>
+	              </h1>
+	
+	              <p className="mt-4 text-base leading-relaxed text-slate-200 md:text-lg">
+	                Get a free estimate or request a booking with{" "}
+	                <span className="font-semibold text-cyan-200">trusted professionals</span> for cleaning, repairs, and
+	                more. You&apos;ll review details before anything is confirmed.
+	              </p>
+	
+	              <div className="mt-6 grid gap-3 sm:grid-cols-2">
 	                <motion.button
-	                  whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(16, 185, 129, 0.5)' }}
-	                  whileTap={{ scale: 0.95 }}
-	                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-	                  className="w-full sm:w-56 md:w-60 whitespace-nowrap px-6 md:px-7 py-3 md:py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-full font-bold text-base shadow-2xl hover:shadow-emerald-500/50 transition-all duration-300"
+	                  whileHover={{ scale: 1.02 }}
+	                  whileTap={{ scale: 0.98 }}
+	                  transition={{ type: "spring", stiffness: 380, damping: 22 }}
+	                  className="w-full rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700"
 	                  onClick={() => {
 	                    setBookOpen(true);
 	                    setQuoteOpen(false);
 	                    setProOpen(false);
 	                  }}
 	                >
-	                  🛠 Book a Service
+	                  Book a Service
 	                </motion.button>
-	                <div className="w-full sm:w-56 md:w-60">
+	
+	                <div className="flex flex-col">
 	                  <motion.button
-	                    whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(6, 182, 212, 0.5)' }}
-	                    whileTap={{ scale: 0.95 }}
-	                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-	                    className="w-full whitespace-nowrap px-6 md:px-7 py-3 md:py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full font-bold text-base shadow-2xl hover:shadow-cyan-500/50 transition-all duration-300"
+	                    whileHover={{ scale: 1.02 }}
+	                    whileTap={{ scale: 0.98 }}
+	                    transition={{ type: "spring", stiffness: 380, damping: 22 }}
+	                    className="w-full rounded-full border border-cyan-200/35 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-white/15"
 	                    onClick={() => {
 	                      setQuoteOpen(true);
 	                      setBookOpen(false);
 	                      setProOpen(false);
 	                    }}
 	                  >
-	                    💬 Get Free Quote
+	                    Get Free Quote
 	                  </motion.button>
-	                  <p className="mt-1 text-xs text-white/80 text-center">No booking. No payment.</p>
+	                  <p className="mt-2 text-xs text-white/80">No booking. No payment.</p>
 	                </div>
+	
 	                <motion.button
-	                  whileHover={{ scale: 1.05, boxShadow: '0 25px 50px rgba(255, 255, 255, 0.3)' }}
-	                  whileTap={{ scale: 0.95 }}
-	                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-	                  className="w-full sm:w-56 md:w-60 whitespace-nowrap px-6 md:px-7 py-3 md:py-4 bg-white/90 backdrop-blur-sm text-slate-900 rounded-full font-bold text-base shadow-2xl hover:bg-white transition-all duration-300"
+	                  whileHover={{ scale: 1.02 }}
+	                  whileTap={{ scale: 0.98 }}
+	                  transition={{ type: "spring", stiffness: 380, damping: 22 }}
+	                  className="w-full rounded-full border border-white/20 bg-transparent px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 sm:col-span-2"
 	                  onClick={() => {
 	                    setProOpen(false);
 	                    setQuoteOpen(false);
@@ -1506,34 +1501,19 @@ export default function HomePage() {
 	                    window.location.href = "/register/professional";
 	                  }}
 	                >
-	                  💼 Become a Professional
+	                  Become a Professional
 	                </motion.button>
 	              </div>
-
-              {/* Trust Badges - Compact */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.6 }}
-                className="mt-3 md:mt-4 flex flex-wrap gap-2 md:gap-3"
-              >
-                <div className="flex items-center gap-2 bg-green-500/15 backdrop-blur-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full shadow-lg">
-                  <span className="text-lg">✅</span>
-                  <span className="text-xs font-bold text-green-200">ID Verified</span>
-                </div>
-                <div className="flex items-center gap-2 bg-blue-500/15 backdrop-blur-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full shadow-lg">
-                  <span className="text-lg">🛡️</span>
-                  <span className="text-xs font-bold text-blue-200">Insured</span>
-                </div>
-                <div className="flex items-center gap-2 bg-purple-500/15 backdrop-blur-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full shadow-lg">
-                  <span className="text-lg">💳</span>
-                  <span className="text-xs font-bold text-purple-200">Secure Payment</span>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+	
+	              <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-white/85">
+	                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">ID verified</span>
+	                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">Insured</span>
+	                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">Secure payments</span>
+	              </div>
+	            </motion.div>
+	          </div>
+	        </div>
+	      </section>
 
       <section id="services" className="py-8 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
