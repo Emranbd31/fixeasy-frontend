@@ -1425,17 +1425,20 @@ export default function HomePage() {
 	      <section className="relative overflow-hidden pt-10 pb-10 md:pt-14 md:pb-14 lg:pt-20 lg:pb-20 min-h-[80vh] md:min-h-[90vh] flex items-center">
 	        {/* Background Image */}
 	        <div className="absolute inset-0 z-0">
-	          <Image
-	            src="/images/service/hero image.png"
-	            alt="Trusted FixEasy professional with happy client"
-	            className="h-full w-full object-cover object-[60%_center] md:object-[65%_center] lg:object-[70%_center] brightness-90"
-	            fill
-	            sizes="100vw"
-	            onError={(e) => {
-	              e.currentTarget.src = fallbackServiceImage;
-	            }}
-	            unoptimized
-	          />
+	          <picture className="absolute inset-0">
+	            <source media="(max-width: 767px)" srcSet="/images/service/hero-mobile.webp" />
+	            <img
+	              src="/images/service/hero-desktop.webp"
+	              alt="Trusted FixEasy professional with happy client"
+	              className="h-full w-full object-cover object-right brightness-95"
+	              loading="eager"
+	              fetchPriority="high"
+	              decoding="async"
+	              onError={(e) => {
+	                e.currentTarget.src = "/images/service/hero image.png";
+	              }}
+	            />
+	          </picture>
 	          {/* Readability overlay */}
 	          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/55 to-slate-900/15 md:bg-gradient-to-r md:from-slate-900/90 md:via-slate-900/55 md:to-transparent"></div>
 	        </div>
