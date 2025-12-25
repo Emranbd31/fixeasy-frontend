@@ -108,6 +108,7 @@ export default function BookingPageClient() {
   const bookAddressRef = useRef<HTMLInputElement | null>(null);
   const quoteModalScrollRef = useRef<HTMLDivElement | null>(null);
   const bookModalScrollRef = useRef<HTMLDivElement | null>(null);
+  const didInitFromParamsRef = useRef(false);
   const searchParams = useSearchParams();
 
   const selectedQuoteService = useMemo(
@@ -197,16 +198,36 @@ export default function BookingPageClient() {
     return () => listeners.forEach(({ listener }) => listener?.remove?.());
   }, []);
 
-  // Prefill service from ?type=
+  // Prefill service/mode from URL params (?service=, ?mode=, legacy ?type=)
   useEffect(() => {
-    const typeParam = searchParams?.get?.("type");
-    if (typeParam) {
-      const normalized = normalizeService(typeParam);
+    const serviceParam = searchParams?.get?.("service") || searchParams?.get?.("type");
+    if (serviceParam) {
+      const normalized = normalizeService(serviceParam);
       if (normalized) {
         setQuoteService(normalized);
         setBookService(normalized);
       }
     }
+
+    if (didInitFromParamsRef.current) return;
+    const modeParamRaw = (searchParams?.get?.("mode") || "").toLowerCase();
+    const modeParam = modeParamRaw === "booking" ? "book" : modeParamRaw;
+    if (modeParam !== "quote" && modeParam !== "book") return;
+
+    didInitFromParamsRef.current = true;
+    if (modeParam === "quote") {
+      setQuoteOpen(true);
+      setBookOpen(false);
+      recordPathChoice("quote");
+      setTimeout(() => scrollModalToTop(quoteModalScrollRef), 0);
+      return;
+    }
+
+    setBookOpen(true);
+    setBookStep(1);
+    setQuoteOpen(false);
+    recordPathChoice("book");
+    setTimeout(() => scrollModalToTop(bookModalScrollRef), 0);
   }, [searchParams]);
 
   const emailValid = (value: string) => /\S+@\S+\.\S+/.test(value.trim());

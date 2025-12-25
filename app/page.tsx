@@ -1310,8 +1310,9 @@ function ProModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     </Modal>
   );
 }
-import Link from 'next/link';
-import Image from 'next/image';
+	import Link from 'next/link';
+	import Image from 'next/image';
+	import { useRouter } from "next/navigation";
 
 // Fallback image for broken service images
 const fallbackServiceImage = '/images/service/Cleaning.png';
@@ -1367,6 +1368,7 @@ const liveRequests = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredServices, setFilteredServices] = useState(services);
   const [showServiceModal, setShowServiceModal] = useState<{ open: boolean; service: string | null }>({ open: false, service: null });
@@ -1418,6 +1420,15 @@ export default function HomePage() {
       );
       setFilteredServices(filtered);
     }
+  };
+
+  const openServiceChoice = (serviceName: string) => {
+    setShowServiceModal({ open: true, service: serviceName });
+  };
+
+  const goToBookWithService = (mode: "quote" | "booking", serviceName: string) => {
+    const params = new URLSearchParams({ mode, service: serviceName });
+    router.push(`/book?${params.toString()}`);
   };
 
   return (
@@ -1617,33 +1628,39 @@ export default function HomePage() {
                 <div className="p-3 text-sm text-gray-500 font-semibold border-b border-gray-100">
                   {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} found
                 </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {filteredServices.slice(0, 8).map((service) => (
-                    <Link key={service.id} href="/book">
-                      <motion.div
-                        whileHover={{ backgroundColor: '#f0f9ff' }}
-                        className="px-4 py-3 cursor-pointer border-b border-gray-50 last:border-b-0 flex items-center gap-3"
-                      >
-                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                          <Image
-                            src={service.image}
-                            alt={service.name}
-                            className="w-full h-full object-cover"
-                            width={48}
-                            height={48}
-                            onError={(e) => { e.currentTarget.src = fallbackServiceImage; }}
-                            unoptimized
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-900">{service.name}</div>
-                          <div className="text-sm text-gray-500">{service.description}</div>
-                        </div>
-                        <div className="text-blue-600 font-bold">{service.price}</div>
-                      </motion.div>
-                    </Link>
-                  ))}
-                </div>
+	                <div className="max-h-64 overflow-y-auto">
+	                  {filteredServices.slice(0, 8).map((service) => (
+	                    <motion.button
+	                      key={service.id}
+	                      type="button"
+	                      whileHover={{ backgroundColor: '#f0f9ff' }}
+	                      className="flex w-full items-center gap-3 border-b border-gray-50 px-4 py-3 text-left last:border-b-0"
+	                      onClick={() => {
+	                        setSearchQuery("");
+	                        openServiceChoice(service.name);
+	                      }}
+	                    >
+	                      <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg">
+	                        <Image
+	                          src={service.image}
+	                          alt={service.name}
+	                          className="h-full w-full object-cover"
+	                          width={48}
+	                          height={48}
+	                          onError={(e) => {
+	                            e.currentTarget.src = fallbackServiceImage;
+	                          }}
+	                          unoptimized
+	                        />
+	                      </div>
+	                      <div className="flex-1">
+	                        <div className="font-semibold text-gray-900">{service.name}</div>
+	                        <div className="text-sm text-gray-500">{service.description}</div>
+	                      </div>
+	                      <div className="font-bold text-blue-600">{service.price}</div>
+	                    </motion.button>
+	                  ))}
+	                </div>
               </motion.div>
             )}
 
@@ -1685,10 +1702,10 @@ export default function HomePage() {
                   viewport={{ once: true, margin: '-50px' }}
                   transition={{ duration: 0.5, delay: index * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
                   whileHover={{ y: -8, scale: 1.02, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
-                  whileTap={{ scale: 0.98 }}
-                  className="group cursor-pointer"
-                  onClick={() => setShowServiceModal({ open: true, service: service.name })}
-                >
+	                  whileTap={{ scale: 0.98 }}
+	                  className="group cursor-pointer"
+	                  onClick={() => openServiceChoice(service.name)}
+	                >
                   <div className="relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border-2 border-gray-100 hover:border-blue-400 h-full">
                     {/* REAL PHOTO - Like Competitors */}
                     <div className="relative h-40 md:h-48 overflow-hidden">
@@ -1756,26 +1773,44 @@ export default function HomePage() {
             })}
 
             {/* Service Modal for all services */}
-            {showServiceModal.open && showServiceModal.service && (
-              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative">
-                  <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => setShowServiceModal({ open: false, service: null })}>×</button>
-                  <h2 className="text-2xl font-bold mb-4 text-blue-600 flex items-center gap-2">
-                    {serviceIcons[showServiceModal.service] || '✨'} Choose {showServiceModal.service} Option
-                  </h2>
-                  <div className="space-y-4">
-                    {(serviceSuggestions[showServiceModal.service] || [
-                      { name: '✨ Other', description: 'Describe your needs in the booking description box.' }
-                    ]).map(opt => (
-                      <button key={opt.name} className="w-full text-left px-4 py-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-all flex flex-col gap-1" onClick={() => { setShowServiceModal({ open: false, service: null }); window.location.href = '/book?type=' + encodeURIComponent(opt.name); }}>
-                        <div className="font-bold flex items-center gap-2">{opt.name}</div>
-                        <div className="text-sm text-blue-500">{opt.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+	            {showServiceModal.open && showServiceModal.service && (
+	              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+	                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative">
+	                  <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => setShowServiceModal({ open: false, service: null })}>×</button>
+	                  <h2 className="text-2xl font-bold mb-2 text-blue-600">What would you like to do?</h2>
+	                  <p className="text-sm text-gray-600 mb-4">
+	                    <span className="font-semibold text-gray-900">{showServiceModal.service}</span> — choose an option.
+	                  </p>
+	                  <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3 text-sm text-blue-900 mb-5">
+	                    Free quote does not confirm a booking. No payment.
+	                  </div>
+	                  <div className="space-y-3">
+	                    <button
+	                      type="button"
+	                      className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-3 shadow transition-all"
+	                      onClick={() => {
+	                        const serviceName = showServiceModal.service as string;
+	                        setShowServiceModal({ open: false, service: null });
+	                        goToBookWithService("quote", serviceName);
+	                      }}
+	                    >
+	                      Get Free Quote
+	                    </button>
+	                    <button
+	                      type="button"
+	                      className="w-full rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-900 font-semibold px-4 py-3 shadow-sm transition-all"
+	                      onClick={() => {
+	                        const serviceName = showServiceModal.service as string;
+	                        setShowServiceModal({ open: false, service: null });
+	                        goToBookWithService("booking", serviceName);
+	                      }}
+	                    >
+	                      Continue to Booking
+	                    </button>
+	                  </div>
+	                </div>
+	              </div>
+	            )}
           </div>
         </div>
       </section>
