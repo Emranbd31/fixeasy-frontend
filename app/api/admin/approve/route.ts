@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
     let query = (supabase as any)
       .from('professionals')
-      .update({ status: 'approved' });
+      .update({ verified: true, status: 'approved' });
 
     if (proId) query = query.eq('id', proId);
     if (!proId && userIdValue) query = query.eq('user_id', userIdValue);
