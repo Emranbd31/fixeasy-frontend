@@ -32,10 +32,11 @@ export async function POST(request: Request) {
     (body as any).pro_id ??
     (body as any).user_id;
 
-  const bookingIdParsed = uuidSchema.safeParse(bookingId);
+  const bookingIdNum = typeof bookingId === 'number' ? bookingId : Number(String(bookingId ?? ''));
+  const bookingIdOk = Number.isInteger(bookingIdNum) && bookingIdNum > 0;
   const proUserIdParsed = uuidSchema.safeParse(proUserId);
 
-  if (!bookingIdParsed.success || !proUserIdParsed.success) {
+  if (!bookingIdOk || !proUserIdParsed.success) {
     const keys = Object.keys(body || {}).sort();
     if (process.env.NODE_ENV !== 'production') {
       // eslint-disable-next-line no-console
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
       accepted_at: nowIso,
       updated_at: nowIso,
     })
-    .eq("id", bookingIdParsed.data)
+    .eq("id", bookingIdNum)
     .select("*")
     .single();
 
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
   // Placeholder notification hooks; replace with email/SMS integrations.
   return NextResponse.json({
     ok: true,
-    bookingId: bookingIdParsed.data,
+    bookingId: bookingIdNum,
     accepted_by: proUserIdParsed.data,
   });
 }
