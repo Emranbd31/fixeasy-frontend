@@ -355,6 +355,8 @@ export const SUB_SERVICES: Record<string, string[]> = {
     "End-of-tenancy clean",
   ],
   "IT Support": [
+    "Home IT support",
+    "Office IT support",
     "WiFi issues",
     "PC slow",
     "Virus removal",

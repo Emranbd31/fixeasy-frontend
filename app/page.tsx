@@ -1317,10 +1317,10 @@ function ProModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 // Fallback image for broken service images
 const fallbackServiceImage = '/images/service/Cleaning.png';
 
-const services = [
-  { id: 1, name: 'Cleaning', description: 'Professional home & office cleaning', gradient: 'from-blue-400 to-cyan-400', price: '€29', image: '/images/service/Cleaning.png' },
-  { id: 2, name: 'Handyman', description: 'Expert repair & maintenance', gradient: 'from-orange-400 to-red-400', price: '€35', image: '/images/service/Handyman.png' },
-  { id: 3, name: 'Plumbing', description: 'Licensed plumbing services', gradient: 'from-blue-500 to-indigo-500', price: '€45', image: '/images/service/Plumbing.png' },
+	const services = [
+	  { id: 1, name: 'Cleaning', description: 'Professional home & office cleaning', gradient: 'from-blue-400 to-cyan-400', price: '€29', image: '/images/service/Cleaning.png' },
+	  { id: 2, name: 'Handyman', description: 'Expert repair & maintenance', gradient: 'from-orange-400 to-red-400', price: '€35', image: '/images/service/Handyman.png' },
+	  { id: 3, name: 'Plumbing', description: 'Licensed plumbing services', gradient: 'from-blue-500 to-indigo-500', price: '€45', image: '/images/service/Plumbing.png' },
   { id: 4, name: 'Electrical', description: 'Certified electrical work', gradient: 'from-yellow-400 to-orange-500', price: '€55', image: '/images/service/Electrical.png' },
   { id: 5, name: 'Painting', description: 'Interior & exterior painting', gradient: 'from-purple-400 to-pink-500', price: '€40', image: '/images/service/Painting.png' },
   { id: 6, name: 'Gardening', description: 'Lawn care & landscaping', gradient: 'from-green-400 to-emerald-500', price: '€30', image: '/images/service/Gardening.png' },
@@ -1342,16 +1342,18 @@ const services = [
   { id: 22, name: 'Pressure Washing', description: 'Deep cleaning driveways', gradient: 'from-blue-600 to-cyan-700', price: '€40', image: '/images/service/Pressure Washing.png' },
   { id: 23, name: 'Chimney Sweep', description: 'Chimney cleaning & inspection', gradient: 'from-stone-600 to-gray-700', price: '€60', image: '/images/service/Chimney Sweep.png' },
   { id: 24, name: 'Gutter Cleaning', description: 'Gutter maintenance & repair', gradient: 'from-blue-500 to-slate-600', price: '€40', image: '/images/service/Gutter Cleaning.png' },
-  { id: 25, name: 'Air Conditioning', description: 'AC installation & repair', gradient: 'from-cyan-600 to-blue-700', price: '€70', image: '/images/service/Air Conditioning.png' },
-  { id: 26, name: 'Roof Cleaning', description: 'Roof moss removal & cleaning', gradient: 'from-green-600 to-teal-700', price: '€65', image: '/images/service/Roof Cleaning.png' },
-  { id: 27, name: 'Carpet Cleaning', description: 'Deep carpet cleaning service', gradient: 'from-indigo-500 to-purple-600', price: '€50', image: '/images/service/Carpet Cleaning.png' },
-];
+	  { id: 25, name: 'Air Conditioning', description: 'AC installation & repair', gradient: 'from-cyan-600 to-blue-700', price: '€70', image: '/images/service/Air Conditioning.png' },
+	  { id: 26, name: 'Roof Cleaning', description: 'Roof moss removal & cleaning', gradient: 'from-green-600 to-teal-700', price: '€65', image: '/images/service/Roof Cleaning.png' },
+	  { id: 27, name: 'Carpet Cleaning', description: 'Deep carpet cleaning service', gradient: 'from-indigo-500 to-purple-600', price: '€50', image: '/images/service/Carpet Cleaning.png' },
+	  { id: 28, name: 'IT Support', description: 'IT technician for home & office support', gradient: 'from-slate-700 to-blue-800', price: '€55', image: '/images/service/IT Technician.png' },
+	];
 
-const serviceIcons: Record<string, string> = {
-  'Cleaning': '🧹', 'Handyman': '🔨', 'Plumbing': '🔧', 'Electrical': '⚡',
-  'Painting': '🎨', 'Gardening': '🌿', 'Moving': '📦', 'Carpentry': '🪚',
-  'Appliance Repair': '🔌', 'HVAC': '❄️', 'Pest Control': '🐛', 'Locksmith': '🔐'
-};
+	const serviceIcons: Record<string, string> = {
+	  'Cleaning': '🧹', 'Handyman': '🔨', 'Plumbing': '🔧', 'Electrical': '⚡',
+	  'Painting': '🎨', 'Gardening': '🌿', 'Moving': '📦', 'Carpentry': '🪚',
+	  'Appliance Repair': '🔌', 'HVAC': '❄️', 'Pest Control': '🐛', 'Locksmith': '🔐',
+	  'IT Support': '💻'
+	};
 
 // Live Service Requests Data
 const liveRequests = [
@@ -1690,10 +1692,11 @@ export default function HomePage() {
               if (service.name === 'Painting') emoji = '🎨';
               if (service.name === 'Gardening') emoji = '🌿';
               if (service.name === 'Moving') emoji = '🚚';
-              if (service.name === 'Carpentry') emoji = '🪚';
-              if (service.name === 'Appliance Repair') emoji = '🛠️';
-              if (service.name === 'Pest Control') emoji = '🐜';
-              if (service.name === 'Other') emoji = '✨';
+	              if (service.name === 'Carpentry') emoji = '🪚';
+	              if (service.name === 'Appliance Repair') emoji = '🛠️';
+	              if (service.name === 'Pest Control') emoji = '🐜';
+	              if (service.name === 'IT Support') emoji = '💻';
+	              if (service.name === 'Other') emoji = '✨';
               return (
                 <motion.div
                   key={service.id}
@@ -1781,9 +1784,14 @@ export default function HomePage() {
 	                  <p className="text-sm text-gray-600 mb-4">
 	                    <span className="font-semibold text-gray-900">{showServiceModal.service}</span> — choose an option.
 	                  </p>
-	                  <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3 text-sm text-blue-900 mb-5">
-	                    Free quote does not confirm a booking. No payment.
-	                  </div>
+		                  <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3 text-sm text-blue-900 mb-5">
+		                    Free quote does not confirm a booking. No payment.
+		                    {showServiceModal.service === "IT Support" && (
+		                      <div className="mt-2 text-xs text-blue-800">
+		                        Popular: Home IT support · Office IT support
+		                      </div>
+		                    )}
+		                  </div>
 	                  <div className="space-y-3">
 	                    <button
 	                      type="button"
