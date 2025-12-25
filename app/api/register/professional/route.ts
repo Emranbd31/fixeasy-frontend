@@ -1,8 +1,44 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabaseClient';
+import { createSupabaseServerServiceRoleClient } from '@/lib/supabaseClient';
+
+function logSupabaseEnvPresenceOnce(scope: string) {
+    if (process.env.NODE_ENV === 'production') return;
+    const g = globalThis as any;
+    const flag = `__supabase_env_logged__${scope}`;
+    if (g[flag]) return;
+    g[flag] = true;
+
+    const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const hasAnon = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY);
+    const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+    // eslint-disable-next-line no-console
+    console.log(`[env-check:${scope}]`, { hasUrl, hasAnon, hasServiceRole });
+}
+
+function logSupabaseClientChoiceOnce(scope: string, info: { usesServiceRoleClient: boolean }) {
+    if (process.env.NODE_ENV === 'production') return;
+    const g = globalThis as any;
+    const flag = `__supabase_client_choice_logged__${scope}`;
+    if (g[flag]) return;
+    g[flag] = true;
+
+    const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const hasAnon = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY);
+    const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+    // eslint-disable-next-line no-console
+    console.log(`[sb-choice:${scope}]`, {
+        hasUrl,
+        hasAnon,
+        hasServiceRole,
+        usesServiceRoleClient: info.usesServiceRoleClient,
+    });
+}
 
 export async function POST(req: Request) {
     try {
+        logSupabaseEnvPresenceOnce('api/register/professional:POST');
         const body = await req.json();
         const {
             user_id,
@@ -25,7 +61,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const supabase = createSupabaseServerClient() as any; // widen types to avoid TS table typing errors
+        const supabase = createSupabaseServerServiceRoleClient() as any; // widen types to avoid TS table typing errors
+        logSupabaseClientChoiceOnce('api/register/professional:POST:before-upsert', { usesServiceRoleClient: true });
 
         // Upsert professional profile
         const { error } = await supabase

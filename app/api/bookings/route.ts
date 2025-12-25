@@ -1,7 +1,42 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { createSupabaseServerClient } from '@/lib/supabaseClient';
+import { createSupabaseServerClient, createSupabaseServerServiceRoleClient } from '@/lib/supabaseClient';
+
+function logSupabaseClientChoiceOnce(scope: string, info: { usesServiceRoleClient: boolean }) {
+  if (process.env.NODE_ENV === 'production') return;
+  const g = globalThis as any;
+  const flag = `__supabase_client_choice_logged__${scope}`;
+  if (g[flag]) return;
+  g[flag] = true;
+
+  const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const hasAnon = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY);
+  const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+  // eslint-disable-next-line no-console
+  console.log(`[sb-choice:${scope}]`, {
+    hasUrl,
+    hasAnon,
+    hasServiceRole,
+    usesServiceRoleClient: info.usesServiceRoleClient,
+  });
+}
+
+function logSupabaseEnvPresenceOnce(scope: string) {
+  if (process.env.NODE_ENV === 'production') return;
+  const g = globalThis as any;
+  const flag = `__supabase_env_logged__${scope}`;
+  if (g[flag]) return;
+  g[flag] = true;
+
+  const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const hasAnon = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY);
+  const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+  // eslint-disable-next-line no-console
+  console.log(`[env-check:${scope}]`, { hasUrl, hasAnon, hasServiceRole });
+}
 
 const bookingPayloadSchema = z.object({
   service: z.string().min(1),
@@ -30,6 +65,7 @@ const ACTION_STATUS: Record<'accept' | 'decline' | 'start' | 'complete', string>
 };
 
 export async function GET(request: Request) {
+  logSupabaseEnvPresenceOnce('api/bookings:GET');
   const supabase = createSupabaseServerClient();
   const sb = supabase as any;
   const { searchParams } = new URL(request.url);
@@ -58,7 +94,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = createSupabaseServerClient();
+  logSupabaseEnvPresenceOnce('api/bookings:POST');
+  const supabase = createSupabaseServerServiceRoleClient();
   const sb = supabase as any;
 
   const formData = await request.formData();
@@ -78,6 +115,8 @@ export async function POST(request: Request) {
   const preferredTime = parsed.data.preferredTime?.trim()
     ? parsed.data.preferredTime.trim()
     : null;
+
+  logSupabaseClientChoiceOnce('api/bookings:POST:before-insert', { usesServiceRoleClient: true });
 
   const { data: inserted, error: insertError } = await sb
     .from('bookings')
@@ -119,6 +158,13 @@ export async function POST(request: Request) {
     });
 
   if (contactUploadError) {
+    const msg = contactUploadError.message || '';
+    if (/bucket not found/i.test(msg)) {
+      return NextResponse.json(
+        { reference: bookingId, warning: 'storage_bucket_missing' },
+        { status: 201 }
+      );
+    }
     return NextResponse.json(
       { error: contactUploadError.message },
       { status: 500 }
@@ -136,6 +182,13 @@ export async function POST(request: Request) {
         upsert: true,
       });
     if (uploadError) {
+      const msg = uploadError.message || '';
+      if (/bucket not found/i.test(msg)) {
+        return NextResponse.json(
+          { reference: bookingId, warning: 'storage_bucket_missing' },
+          { status: 201 }
+        );
+      }
       return NextResponse.json(
         { error: uploadError.message },
         { status: 500 }
@@ -162,7 +215,8 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = createSupabaseServerClient();
+  logSupabaseEnvPresenceOnce('api/bookings:PATCH');
+  const supabase = createSupabaseServerServiceRoleClient();
   const sb = supabase as any;
   const payload = await request.json().catch(() => null);
   const parsed = bookingActionSchema.safeParse(payload);

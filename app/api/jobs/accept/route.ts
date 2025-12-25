@@ -1,22 +1,31 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createSupabaseServerClient } from "@/lib/supabaseClient";
+import { createSupabaseServerServiceRoleClient } from "@/lib/supabaseClient";
 
-const schema = z.object({
-  jobId: z.string().uuid(),
-  proId: z.string().uuid(),
-});
+const schema = z.union([
+  z.object({ jobId: z.string().uuid(), proId: z.string().uuid() }),
+  z.object({ bookingId: z.string().uuid(), professionalId: z.string().uuid() }),
+]);
 
 export async function POST(request: Request) {
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseServerServiceRoleClient();
   const sb = supabase as any;
   const body = await request.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
+    if (process.env.NODE_ENV !== 'production') {
+      const keys = body && typeof body === 'object' ? Object.keys(body as any).sort() : [];
+      // eslint-disable-next-line no-console
+      console.log('[jobs/accept] invalid payload keys', {
+        hasBody: Boolean(body),
+        keys,
+      });
+    }
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const { jobId, proId } = parsed.data;
+  const jobId = (parsed.data as any).jobId ?? (parsed.data as any).bookingId;
+  const proId = (parsed.data as any).proId ?? (parsed.data as any).professionalId;
 
   const { data, error } = await sb
     .from("bookings")
