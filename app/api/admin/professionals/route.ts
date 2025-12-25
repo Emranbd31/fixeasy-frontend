@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchAdminBackend } from '@/lib/api-client'
+import { createSupabaseServerServiceRoleClient } from '@/lib/supabaseClient'
 import { requireAdminSecret } from '@/lib/adminAuth'
 
 export async function GET(req: NextRequest) {
@@ -8,16 +8,23 @@ export async function GET(req: NextRequest) {
     if (guard) return NextResponse.json(guard, { status: 401 })
 
     const url = new URL(req.url)
-    const backendPath = `/admin/professionals${url.search}`
-    const result = await fetchAdminBackend(backendPath, { method: 'GET' }, req)
-    if (!result.ok) {
-      const body = result.data ?? { error: 'Backend error' }
-      const payload = typeof body === 'object' ? body : { error: String(body ?? '') }
-      return NextResponse.json(payload, { status: result.status })
-    }
-    return NextResponse.json(result.data ?? {}, { status: result.status })
+    const status = url.searchParams.get('status')?.trim() || null
+    const limitRaw = url.searchParams.get('limit')?.trim() || null
+    const limit = limitRaw ? Math.min(Math.max(Number(limitRaw) || 0, 1), 500) : 200
+
+    const supabase = createSupabaseServerServiceRoleClient()
+    let query = (supabase as any)
+      .from('professionals')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    if (status) query = query.eq('status', status)
+
+    const { data, error } = await query
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ professionals: data ?? [] })
   } catch (e) {
-    console.error('[admin professionals] proxy failed', e)
-    return NextResponse.json({ error: 'Unable to reach backend' }, { status: 502 })
+    console.error('[admin professionals] failed', e)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
