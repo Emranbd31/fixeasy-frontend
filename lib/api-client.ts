@@ -37,6 +37,14 @@ function readCookieFromRequest(req?: NextRequest | Request): string | null {
 }
 
 export async function readAdminToken(req?: NextRequest | Request): Promise<string | null> {
+  // Support header-based admin secret for App Router admin APIs.
+  // When present, admin routes can be protected without requiring a backend JWT cookie.
+  const expectedAdminSecret = process.env.ADMIN_SECRET?.trim();
+  const providedAdminSecret = req?.headers?.get('x-admin-secret')?.trim();
+  if (expectedAdminSecret && providedAdminSecret && providedAdminSecret === expectedAdminSecret) {
+    return '__admin_secret__';
+  }
+
   const header = req?.headers?.get('authorization') || req?.headers?.get('Authorization');
   if (header?.startsWith('Bearer ')) {
     return header.slice('Bearer '.length);
@@ -94,9 +102,11 @@ export async function fetchAdminBackend<T = any>(
 
   const headers = new Headers(init.headers || {});
   if (!headers.has('Accept')) headers.set('Accept', 'application/json');
-  headers.set('Authorization', `Bearer ${token}`);
-  if (init.body && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
+  if (token !== '__admin_secret__') {
+    headers.set('Authorization', `Bearer ${token}`);
+    if (init.body && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
   }
 
   const res = await fetch(url, {
