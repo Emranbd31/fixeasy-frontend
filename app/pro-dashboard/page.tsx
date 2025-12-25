@@ -20,6 +20,7 @@ type Booking = {
   price_estimate_min?: number;
   price_estimate_max?: number;
   professional_id?: string | null;
+  accepted_by?: string | null;
 };
 
 function Badge({ children }: { children: React.ReactNode }) {
@@ -106,6 +107,7 @@ function ProDashboardPage() {
   const [verified, setVerified] = useState<boolean | null>(null);
   const [name, setName] = useState<string>("");
   const [proId, setProId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [openJobs, setOpenJobs] = useState<Booking[]>([]);
   const [myJobs, setMyJobs] = useState<Booking[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
@@ -120,6 +122,7 @@ function ProDashboardPage() {
         setStatus("unauth");
         return;
       }
+      setCurrentUserId(user.id);
 
       const { data, error } = await sb
         .from("professionals")
@@ -140,12 +143,15 @@ function ProDashboardPage() {
 
   useEffect(() => {
     if (!status || status !== "ok") return;
-    if (!proId) return;
+    if (!proId && !currentUserId) return;
     (async () => {
       setLoadingJobs(true);
       try {
         const unassigned = await fetch(`/api/bookings?unassigned=true`).then((r) => r.json());
-        const mine = await fetch(`/api/bookings?professionalId=${proId}`).then((r) => r.json());
+        const mineQuery = currentUserId
+          ? `/api/bookings?acceptedBy=${encodeURIComponent(currentUserId)}`
+          : `/api/bookings?professionalId=${encodeURIComponent(proId as string)}`;
+        const mine = await fetch(mineQuery).then((r) => r.json());
         setOpenJobs(unassigned.bookings || []);
         setMyJobs(mine.bookings || []);
       } catch (e) {
@@ -154,18 +160,21 @@ function ProDashboardPage() {
         setLoadingJobs(false);
       }
     })();
-  }, [proId, status]);
+  }, [proId, currentUserId, status]);
 
   const handleAccept = async (jobId: string) => {
-    if (!proId) return;
+    if (!currentUserId) return;
     await fetch("/api/jobs/accept", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jobId, proId }),
+      body: JSON.stringify({ jobId, proId: currentUserId }),
     });
     // refresh lists
     const unassigned = await fetch(`/api/bookings?unassigned=true`).then((r) => r.json());
-    const mine = await fetch(`/api/bookings?professionalId=${proId}`).then((r) => r.json());
+    const mineQuery = currentUserId
+      ? `/api/bookings?acceptedBy=${encodeURIComponent(currentUserId)}`
+      : `/api/bookings?professionalId=${encodeURIComponent(proId as string)}`;
+    const mine = await fetch(mineQuery).then((r) => r.json());
     setOpenJobs(unassigned.bookings || []);
     setMyJobs(mine.bookings || []);
   };

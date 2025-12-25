@@ -41,7 +41,7 @@ const normalizeBooking = (raw: any): Booking => {
   const normalized: any = {
     id: raw?.id,
     customerId: raw?.customerId ?? raw?.customer_id ?? '',
-    professionalId: raw?.professionalId ?? raw?.professional_id ?? undefined,
+    professionalId: raw?.professionalId ?? raw?.accepted_by ?? raw?.professional_id ?? undefined,
     serviceCategory: raw?.serviceCategory ?? raw?.service_category ?? raw?.service ?? 'Service',
     problemType: raw?.problemType ?? raw?.problem_type ?? raw?.summary ?? raw?.subService ?? raw?.sub_service ?? '',
     county: raw?.county ?? raw?.location ?? '',
@@ -141,7 +141,8 @@ export default function ProDashboardPage() {
     if (!profile?.id) return;
     (async () => {
       try {
-        const res = await fetch(`/api/bookings?professionalId=${profile.id}`);
+        const key = currentUserId ? `acceptedBy=${encodeURIComponent(currentUserId)}` : `professionalId=${encodeURIComponent(profile.id)}`;
+        const res = await fetch(`/api/bookings?${key}`);
         const j = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(j?.error || 'Failed to load bookings');
         setBookings(Array.isArray(j.bookings) ? j.bookings.map(normalizeBooking) : []);
@@ -149,7 +150,7 @@ export default function ProDashboardPage() {
         setError(e?.message || 'Unable to load jobs');
       }
     })();
-  }, [profile?.id]);
+  }, [profile?.id, currentUserId]);
 
   useEffect(() => {
     (async () => {
@@ -290,12 +291,16 @@ export default function ProDashboardPage() {
       setError('You need a professional profile to accept jobs.');
       return;
     }
+    if (action === 'accept' && !currentUserId) {
+      setError('Please log in again to accept jobs.');
+      return;
+    }
     try {
       setActionBookingId(bookingId);
       const res = await fetch('/api/bookings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId, action, professionalId: action === 'accept' ? profile?.id : undefined }),
+        body: JSON.stringify({ bookingId, action, professionalId: action === 'accept' ? currentUserId : undefined }),
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j?.error || 'Action failed');
