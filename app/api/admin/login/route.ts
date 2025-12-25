@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
+import { getAnyEnvTrimmed } from '@/lib/env';
 
 // Resolve backend base URL from env. Default to localhost in dev, production URL otherwise.
 const BACKEND_URL = (
-  process.env.NEXT_PUBLIC_API_BASE ||
-  process.env.API_BASE_URL ||
+  getAnyEnvTrimmed(['NEXT_PUBLIC_API_BASE', 'NEXT_PUBLIC_API_URL', 'API_BASE_URL', 'BACKEND_URL']) ||
   (process.env.NODE_ENV === 'production' ? 'https://api.fixeasy.irish' : 'http://localhost:8000')
 ).replace(/\/$/, '');
 const BACKEND_LOGIN_URL = `${BACKEND_URL}/admin/login`;

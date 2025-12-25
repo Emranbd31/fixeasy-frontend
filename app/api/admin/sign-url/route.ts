@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabaseClient';
+import { createSupabaseServerServiceRoleClient } from '@/lib/supabaseClient';
+import { getEnvTrimmed } from '@/lib/env';
 
 function checkSecret(req: Request) {
-    const secret = process.env.ADMIN_SECRET;
-    const provided = req.headers.get('x-admin-secret') || '';
-    return secret && provided && secret === provided;
+    const secret = getEnvTrimmed('ADMIN_SECRET');
+    const provided = req.headers.get('x-admin-secret')?.trim() || '';
+    return Boolean(secret && provided && secret === provided);
 }
 
 export async function POST(req: Request) {
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
         if (!checkSecret(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         const { path } = await req.json();
         if (!path) return NextResponse.json({ error: 'path required' }, { status: 400 });
-        const supabase = createSupabaseServerClient() as any;
+        const supabase = createSupabaseServerServiceRoleClient() as any;
         const { data, error } = await supabase.storage.from('pro-uploads').createSignedUrl(path, 60);
         if (error) throw error;
         return NextResponse.json({ url: data?.signedUrl });

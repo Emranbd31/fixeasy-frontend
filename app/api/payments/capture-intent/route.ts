@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { z } from "zod";
+import { getEnvTrimmed } from "@/lib/env";
 
-const stripeSecret = process.env.STRIPE_SECRET_KEY;
+const stripeSecret = getEnvTrimmed("STRIPE_SECRET_KEY");
 const stripe = stripeSecret ? new Stripe(stripeSecret, { apiVersion: "2024-06-20" }) : null;
 
 const schema = z.object({

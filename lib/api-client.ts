@@ -1,8 +1,12 @@
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import { ADMIN_COOKIE_NAME } from '@/lib/adminAuth';
+import { getAnyEnvTrimmed } from '@/lib/env';
 
-const BACKEND_BASE = (process.env.NEXT_PUBLIC_API_BASE || 'https://api.fixeasy.irish').replace(/\/$/, '');
+const BACKEND_BASE = (
+  getAnyEnvTrimmed(['NEXT_PUBLIC_API_BASE', 'NEXT_PUBLIC_API_URL', 'API_BASE_URL', 'BACKEND_URL']) ||
+  'https://api.fixeasy.irish'
+).replace(/\/$/, '');
 
 export type BackendResult<T = any> = {
   ok: boolean;

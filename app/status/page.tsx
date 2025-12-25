@@ -11,8 +11,14 @@ export default function StatusPage() {
   const [supabase, setSupabase] = useState<string>("Checking...");
 
   useEffect(() => {
+    const backendBase =
+      (process.env.NEXT_PUBLIC_API_URL ||
+        process.env.NEXT_PUBLIC_API_BASE ||
+        "https://api.fixeasy.irish"
+      ).replace(/\/$/, "");
+
     // Check backend with GET and look for welcome message
-    fetch("https://fixeasy-backend.onrender.com", { method: "GET" })
+    fetch(backendBase, { method: "GET" })
       .then(async (res) => {
         if (!res.ok) return setBackend(STATUS.FAIL);
         try {
@@ -31,7 +37,7 @@ export default function StatusPage() {
       })
       .catch(() => setBackend(STATUS.FAIL));
     // Check Supabase
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
     if (supabaseUrl) {
       fetch(supabaseUrl + "/rest/v1/", { method: "GET" })
         .then((res) => {

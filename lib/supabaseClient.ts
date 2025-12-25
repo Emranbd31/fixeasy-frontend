@@ -45,6 +45,14 @@ export function createSupabaseBrowserClient(): SupabaseClient<Database> {
   );
 }
 
+let browserClientSingleton: SupabaseClient<Database> | null = null;
+
+export function getSupabaseBrowserClient(): SupabaseClient<Database> {
+  if (browserClientSingleton) return browserClientSingleton;
+  browserClientSingleton = createSupabaseBrowserClient();
+  return browserClientSingleton;
+}
+
 /**
  * Server-side Supabase factory for READ operations.
  * Uses anon key; safe for select/list endpoints.
@@ -76,9 +84,17 @@ export function createSupabaseServerServiceRoleClient(): SupabaseClient<Database
         persistSession: false,
       },
     }
-  );
+ );
 }
 
 // Export a convenience browser client for existing client components that import `supabase`.
 // This ensures server-only code should import createSupabaseServerClient explicitly.
-export const supabase = (typeof window !== 'undefined') ? createSupabaseBrowserClient() : (null as unknown as SupabaseClient<Database>);
+export const supabase =
+  typeof window === 'undefined'
+    ? (null as unknown as SupabaseClient<Database>)
+    : (new Proxy({} as SupabaseClient<Database>, {
+        get(_target, prop) {
+          const client = getSupabaseBrowserClient() as any;
+          return client[prop];
+        },
+      }) as unknown as SupabaseClient<Database>);

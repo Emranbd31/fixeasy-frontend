@@ -42,25 +42,28 @@ export const ADMIN_COOKIE_NAME = "fixeasy_admin_token";
  * Read the admin token from the HttpOnly cookie.
  * Works only in server-side / route handlers / middleware.
  */
-export function getAdminToken(): string | null {
-  // `cookies()` type may be a Promise or a sync object depending on Next version/types.
-  // Cast to `any` to avoid type mismatch across Next.js versions while keeping runtime behavior.
-  const raw = (cookies() as any).get?.(ADMIN_COOKIE_NAME)?.value ?? (cookies() as any)[ADMIN_COOKIE_NAME];
-  if (!raw) return null;
-
-  // Handle "Bearer <token>" or plain token
-  if (raw.startsWith("Bearer ")) {
-    return raw.slice("Bearer ".length);
+export async function getAdminToken(): Promise<string | null> {
+  try {
+    const storeMaybePromise = cookies() as any;
+    const store =
+      typeof storeMaybePromise?.then === "function" ? await storeMaybePromise : storeMaybePromise;
+    const raw =
+      typeof store?.get === "function"
+        ? store.get(ADMIN_COOKIE_NAME)?.value ?? null
+        : (store as any)?.[ADMIN_COOKIE_NAME] ?? null;
+    if (!raw) return null;
+    return raw.startsWith("Bearer ") ? raw.slice("Bearer ".length) : raw;
+  } catch {
+    return null;
   }
-  return raw;
 }
 
 /**
  * Throw an error if there is no valid admin token.
  * You can use this in server components / route handlers.
  */
-export function requireAdminToken(): string {
-  const token = getAdminToken();
+export async function requireAdminToken(): Promise<string> {
+  const token = await getAdminToken();
   if (!token) {
     throw new Error("Admin not authenticated");
   }
@@ -70,12 +73,11 @@ export function requireAdminToken(): string {
 /**
  * Helper to build Authorization header when calling the backend.
  */
-export function getAdminAuthHeader():
-  | { Authorization: string }
-  | Record<string, never> {
-  const token = getAdminToken();
-  if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
+export async function getAdminAuthHeader(): Promise<
+  { Authorization: string } | Record<string, never>
+> {
+  const token = await getAdminToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 // App Router (route handlers) admin guard: header secret

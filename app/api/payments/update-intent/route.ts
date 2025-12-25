@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { z } from "zod";
-import { createSupabaseServerClient } from "@/lib/supabaseClient";
+import { createSupabaseServerServiceRoleClient } from "@/lib/supabaseClient";
+import { getEnvTrimmed } from "@/lib/env";
 
-const stripeSecret = process.env.STRIPE_SECRET_KEY;
+const stripeSecret = getEnvTrimmed("STRIPE_SECRET_KEY");
 const stripe = stripeSecret ? new Stripe(stripeSecret, { apiVersion: "2024-06-20" }) : null;
 
 const schema = z.object({
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
 
   if (!paymentIntentId && parsed.data.bookingId) {
     try {
-      const supabase = createSupabaseServerClient() as any;
+      const supabase = createSupabaseServerServiceRoleClient() as any;
       const { data, error } = await supabase
         .from("bookings")
         .select("payment_intent_id")
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
 
     if (parsed.data.bookingId) {
       try {
-        const supabase = createSupabaseServerClient() as any;
+        const supabase = createSupabaseServerServiceRoleClient() as any;
         await supabase
           .from("bookings")
           .update({ payment_intent_id: intent.id, price_estimate: parsed.data.amount })
