@@ -70,9 +70,10 @@ export async function GET(request: Request) {
   const sb = supabase as any;
   const { searchParams } = new URL(request.url);
   const professionalId = searchParams.get('professionalId');
+  const acceptedBy = searchParams.get('acceptedBy');
   const unassigned = searchParams.get('unassigned') === 'true';
 
-  if (!professionalId && !unassigned) {
+  if (!professionalId && !acceptedBy && !unassigned) {
     return NextResponse.json({ error: 'professionalId is required' }, { status: 400 });
   }
 
@@ -80,8 +81,19 @@ export async function GET(request: Request) {
 
   if (unassigned) {
     query = query.is('professional_id', null).in('status', ['pending', 'awaiting_confirmation']);
+  } else if (acceptedBy) {
+    query = query.eq('accepted_by', acceptedBy);
   } else {
-    query = query.eq('professional_id', professionalId);
+    const looksUuid = professionalId?.includes('-');
+    if (looksUuid) {
+      query = query.eq('accepted_by', professionalId);
+    } else {
+      const professionalIdNum = Number(professionalId);
+      if (!Number.isFinite(professionalIdNum)) {
+        return NextResponse.json({ error: 'professionalId must be a number' }, { status: 400 });
+      }
+      query = query.eq('professional_id', professionalIdNum);
+    }
   }
 
   const { data, error } = await query;
