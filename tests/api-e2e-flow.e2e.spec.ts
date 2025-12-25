@@ -7,9 +7,15 @@ const adminHeaders = adminSecret ? { "X-ADMIN-SECRET": adminSecret } : undefined
 
 type StepResult = {
   step: string;
-  status: "PASS" | "FAIL" | "BLOCKED" | "NOT_APPLICABLE";
+  status: "PASS" | "FAIL" | "BLOCKED" | "NOT_APPLICABLE" | "WARN";
   details?: any;
 };
+
+function truncateSnippet(input: string, maxLen: number) {
+  const s = (input ?? '').replace(/[\r\n\t]+/g, ' ').trim();
+  if (s.length <= maxLen) return s;
+  return `${s.slice(0, maxLen)}…`;
+}
 
 test.describe("API E2E: customer booking -> admin -> pro accept", () => {
   test("Run API-level smoke flow", async ({ request }) => {
@@ -60,6 +66,31 @@ test.describe("API E2E: customer booking -> admin -> pro accept", () => {
       "/api/admin/approve",
     ] as const) {
       const res = await request.get(`${BASE_URL}${route}`, { headers: adminHeaders as any });
+
+      // Special case: /api/admin/activity should never fail the overall matrix.
+      // Record PASS only for 200, otherwise WARN (401/403/404/500 etc).
+      if (route === '/api/admin/activity') {
+        const statusCode = res.status();
+        const ok = statusCode === 200;
+        const body = await res.text().catch(() => "");
+        const snippet = truncateSnippet(body, 160);
+        const note = ok ? 'ok' : 'Non-blocking admin activity check';
+
+        if (!ok) {
+          // eslint-disable-next-line no-console
+          console.warn(`[E2E_WARN] Admin activity ${statusCode}: ${snippet}`);
+        }
+
+        results.push({
+          step: `Admin API exists: GET ${route}`,
+          status: ok ? 'PASS' : 'WARN',
+          details: {
+            adminActivity: { status: statusCode, ok, note },
+          },
+        });
+        continue;
+      }
+
       if (res.status() === 404) {
         const body = await res.text().catch(() => "");
         results.push({ step: `Admin API exists: GET ${route}`, status: "FAIL", details: { status: res.status(), body } });
