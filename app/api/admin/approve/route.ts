@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabaseClient';
-
-const supabase = createSupabaseServerClient();
+import { createSupabaseServerServiceRoleClient } from '@/lib/supabaseClient';
+import { requireAdminSecret } from '@/lib/adminAuth';
 
 export async function POST(request: Request) {
   try {
+    const guard = requireAdminSecret(request);
+    if (guard) return NextResponse.json(guard, { status: 401 });
+
     const body = await request.json();
     const { proId } = body;
     if (!proId) return NextResponse.json({ error: 'Missing proId' }, { status: 400 });
 
+    const supabase = createSupabaseServerServiceRoleClient();
     const { error } = await (supabase as any)
       .from('professionals')
       .update({ status: 'approved' })

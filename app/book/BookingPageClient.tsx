@@ -201,11 +201,22 @@ export default function BookingPageClient() {
   // Prefill service/mode from URL params (?service=, ?mode=, legacy ?type=)
   useEffect(() => {
     const serviceParam = searchParams?.get?.("service") || searchParams?.get?.("type");
+    const subParamRaw = searchParams?.get?.("sub") || "";
     if (serviceParam) {
       const normalized = normalizeService(serviceParam);
       if (normalized) {
         setQuoteService(normalized);
         setBookService(normalized);
+
+			const subParam = subParamRaw.trim().toLowerCase();
+			if (subParam) {
+				const subs = SUB_SERVICES[normalized as keyof typeof SUB_SERVICES] as readonly string[] | undefined;
+				const match = subs?.find((s) => s.toLowerCase() === subParam);
+				if (match) {
+					setQuoteSubService(match);
+					setBookSubService(match);
+				}
+			}
       }
     }
 

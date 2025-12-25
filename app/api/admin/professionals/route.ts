@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fetchAdminBackend } from '@/lib/api-client'
+import { requireAdminSecret } from '@/lib/adminAuth'
 
 export async function GET(req: NextRequest) {
   try {
+    const guard = requireAdminSecret(req)
+    if (guard) return NextResponse.json(guard, { status: 401 })
+
     const url = new URL(req.url)
     const backendPath = `/admin/professionals${url.search}`
     const result = await fetchAdminBackend(backendPath, { method: 'GET' }, req)

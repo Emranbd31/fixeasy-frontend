@@ -77,3 +77,14 @@ export function getAdminAuthHeader():
   if (!token) return {};
   return { Authorization: `Bearer ${token}` };
 }
+
+// App Router (route handlers) admin guard: header secret
+export function requireAdminSecret(request: Request): { error: string } | null {
+  const expected = process.env.ADMIN_SECRET?.trim();
+  if (!expected) return { error: 'Unauthorized' };
+
+  const provided = request.headers.get('x-admin-secret')?.trim();
+  if (!provided || provided !== expected) return { error: 'Unauthorized' };
+
+  return null;
+}

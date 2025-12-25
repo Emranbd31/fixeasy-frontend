@@ -15,7 +15,7 @@ module.exports = {
         '^@/(.*)$': '<rootDir>/$1',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     },
-    testPathIgnorePatterns: ['/node_modules/', '/.next/', '/backup/'],
+    testPathIgnorePatterns: ['/node_modules/', '/.next/', '/backup/', '\\.e2e\\.spec\\.[tj]sx?$'],
     transformIgnorePatterns: [
         '/node_modules/',
         '\\.pnp\.[^\\/]+$',

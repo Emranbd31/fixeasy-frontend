@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from '@/lib/supabaseClient';
+import { requireAdminSecret } from '@/lib/adminAuth';
 
-const supabase = createSupabaseServerClient();
+export async function GET(request: Request) {
+  const guard = requireAdminSecret(request);
+  if (guard) return NextResponse.json(guard, { status: 401 });
 
-export async function GET() {
+  const supabase = createSupabaseServerClient();
   const { data, error } = await supabase
     .from("activity_logs")
     .select("*")

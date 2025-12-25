@@ -670,31 +670,28 @@ function BookModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     setSubmitError(null);
     setSubmitSuccess(null);
     try {
-      const photos = await readFilesToBase64(files);
-      const [min, max] = getEstimate(service);
-      const res = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          requestType: "book",
-          service,
-          subService,
-          description,
-          urgency,
-          address,
-          contactName,
-          email,
-          phone,
-          appointmentStart: urgency === "scheduled" ? dateTime?.toISOString() ?? null : null,
-          priceEstimateMin: min,
-          priceEstimateMax: max,
-          photos,
-        }),
-      });
+      const fd = new FormData();
+      fd.set('mode', 'quote');
+      fd.set('service', service);
+      fd.set('summary', (description && description.trim().length >= 10) ? description.trim() : 'Quote request via website');
+      fd.set('address', address || '');
+      fd.set('eircode', 'D00');
+      // Contact fields are required by /api/bookings
+      fd.set('name', contactName || 'Guest');
+      fd.set('email', email || 'guest@example.com');
+      fd.set('phone', phone || '+353000000000');
+      if (urgency === 'scheduled' && dateTime) {
+        fd.set('preferredDate', dateTime.toISOString().slice(0, 10));
+        fd.set('preferredTime', dateTime.toISOString().slice(11, 16));
+      }
+      // Photos are optional; /api/bookings accepts file inputs prefixed with photos_
+      files.slice(0, 5).forEach((file, idx) => fd.set(`photos_${idx}`, file));
+
+      const res = await fetch('/api/bookings', { method: 'POST', body: fd });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || "Unable to submit booking");
+      if (!res.ok) throw new Error(data?.error || 'Unable to submit quote request');
       const first = (contactName || email || "there").split(" ")[0];
-      setSubmitSuccess(`Thanks, ${first}! Your booking request is in. We’ll confirm and share the professional’s details shortly.`);
+      setSubmitSuccess(`Thanks, ${first}! Your quote request is in. We’ll notify nearby professionals.`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
       setSubmitError(msg);
@@ -1314,6 +1311,8 @@ function ProModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 	import Image from 'next/image';
 	import { useRouter } from "next/navigation";
 
+  import { buildSmartSearchIndex, getSmartSuggestions, type SmartSuggestion } from "@/lib/smart-search";
+
 // Fallback image for broken service images
 const fallbackServiceImage = '/images/service/Cleaning.png';
 
@@ -1374,9 +1373,66 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredServices, setFilteredServices] = useState(services);
   const [showServiceModal, setShowServiceModal] = useState<{ open: boolean; service: string | null }>({ open: false, service: null });
+  const [selectedSubService, setSelectedSubService] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<SmartSuggestion[]>([]);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [bookOpen, setBookOpen] = useState(false);
   const [proOpen, setProOpen] = useState(false);
+
+  const smartIndex = useMemo(() => {
+    const keywordAliasesByService: Record<string, string[]> = {
+      Plumbing: ["leak", "blocked", "pipe", "tap", "drain", "water", "toilet", "sink"],
+      Electrical: ["socket", "switch", "light", "power", "trip", "fuse", "breaker"],
+      Electrician: ["socket", "switch", "light", "power", "trip", "fuse", "breaker"],
+      "Boiler Service": ["boiler", "heating", "radiator", "hot water"],
+      Locksmith: ["lock", "key", "door", "locked out"],
+      Painting: ["paint", "repaint", "wall", "ceiling"],
+      Handyman: ["repair", "fix", "assemble", "mount", "drill"],
+      Gardening: ["garden", "lawn", "hedge", "trim"],
+      Cleaning: ["clean", "deep clean", "vacuum", "mop"],
+      Moving: ["move", "removal", "van"],
+    };
+
+    const serviceDescriptors: Record<string, string> = {
+      Cleaning: "Home & office cleaning",
+      Handyman: "Repairs & installation",
+      Plumbing: "Leaks, drains & pipes",
+      Electrical: "Sockets, lights & switches",
+      Painting: "Interior & exterior painting",
+      Gardening: "Lawn care & maintenance",
+      Moving: "Home & office moving",
+      Carpentry: "Woodwork & fitting",
+      "Appliance Repair": "Fix household appliances",
+      HVAC: "Heating & cooling",
+      "Pest Control": "Insects & rodents",
+      Locksmith: "Locks & keys",
+      Welding: "Metal repairs",
+      "CCTV Installation": "Security cameras",
+      "Solar Panels": "Solar installation",
+      Builder: "Construction & renovation",
+      Roofing: "Roof repair",
+      Flooring: "Floor installation",
+      Tiling: "Tiles & grouting",
+      Plastering: "Walls & ceilings",
+      "Window Cleaning": "Interior/exterior windows",
+      "Pressure Washing": "Driveways & patios",
+      "Chimney Sweep": "Chimney cleaning",
+      "Gutter Cleaning": "Gutters & downpipes",
+      "Air Conditioning": "AC install & repair",
+      "Roof Cleaning": "Moss removal",
+      "Carpet Cleaning": "Deep carpet cleaning",
+      "IT Support": "Home & office IT",
+    };
+
+    return buildSmartSearchIndex({
+      mainServices: MAIN_SERVICES,
+      subServicesByService: SUB_SERVICES,
+      keywordAliasesByService,
+      serviceDescriptors,
+    });
+  }, []);
 
   // Live stats counters
   const [activeRequests, setActiveRequests] = useState(0);
@@ -1414,23 +1470,67 @@ export default function HomePage() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    if (query.trim() === '') {
+    setAiError(null);
+
+    const trimmed = query.trim();
+    if (!trimmed) {
       setFilteredServices(services);
-    } else {
-      const filtered = services.filter(service =>
-        service.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredServices(filtered);
+      setSuggestions([]);
+      return;
     }
+
+    const filtered = services.filter((service) =>
+      service.name.toLowerCase().includes(trimmed.toLowerCase())
+    );
+    setFilteredServices(filtered);
+
+    const nextSuggestions = getSmartSuggestions(trimmed, smartIndex, { limit: 5 });
+    setSuggestions(nextSuggestions);
   };
 
-  const openServiceChoice = (serviceName: string) => {
+  const openServiceChoice = (serviceName: string, subService?: string | null) => {
+    setSelectedSubService(subService ?? null);
     setShowServiceModal({ open: true, service: serviceName });
   };
 
-  const goToBookWithService = (mode: "quote" | "booking", serviceName: string) => {
+  const goToBookWithService = (mode: "quote" | "booking", serviceName: string, subService?: string | null) => {
     const params = new URLSearchParams({ mode, service: serviceName });
+    if (subService) params.set("sub", subService);
     router.push(`/book?${params.toString()}`);
+  };
+
+  const handleSearchSubmit = async () => {
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    setAiBusy(true);
+    setAiError(null);
+    try {
+      const res = await fetch("/api/ai-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "AI search failed");
+
+      const service = typeof data?.service === "string" ? data.service : null;
+      const subService = typeof data?.subService === "string" ? data.subService : null;
+      const confidence = typeof data?.confidence === "number" ? data.confidence : 0;
+
+      if (!service || confidence < 0.55) {
+        setAiError("Try selecting a suggestion below (we couldn't confidently match your query). ");
+        return;
+      }
+
+      setSearchQuery("");
+      setSuggestions([]);
+      openServiceChoice(service, subService);
+    } catch (e: any) {
+      setAiError(e?.message || "Search failed");
+    } finally {
+      setAiBusy(false);
+    }
   };
 
   return (
@@ -1603,6 +1703,12 @@ export default function HomePage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSearchSubmit();
+                  }
+                }}
                 placeholder="Search services... (e.g., cleaning, plumbing, electrical)"
                 className="w-full px-6 py-4 pl-14 text-lg rounded-2xl border-4 border-blue-400 focus:border-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all shadow-lg"
                 style={{ boxShadow: '0 0 0 2px #38bdf8, 0 2px 8px rgba(59,130,246,0.08)' }}
@@ -1621,31 +1727,63 @@ export default function HomePage() {
             </div>
 
             {/* Search Suggestions */}
-            {searchQuery && filteredServices.length > 0 && (
+            {searchQuery && (suggestions.length > 0 || filteredServices.length > 0) && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-3 bg-white rounded-xl shadow-xl border-2 border-gray-100 overflow-hidden"
               >
-                <div className="p-3 text-sm text-gray-500 font-semibold border-b border-gray-100">
-                  {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} found
-                </div>
+          <div className="p-3 text-sm text-gray-500 font-semibold border-b border-gray-100 flex items-center justify-between gap-3">
+            <span>
+              {suggestions.length ? "Suggestions" : `${filteredServices.length} service${filteredServices.length !== 1 ? "s" : ""} found`}
+            </span>
+            <button
+              type="button"
+              onClick={handleSearchSubmit}
+              disabled={aiBusy}
+              className="text-xs font-semibold text-blue-700 hover:text-blue-800 disabled:opacity-60"
+            >
+              {aiBusy ? "Searching…" : "Search"}
+            </button>
+          </div>
+          {aiError && (
+            <div className="px-4 py-2 text-xs text-rose-700 bg-rose-50 border-b border-rose-100">
+              {aiError}
+            </div>
+          )}
 	                <div className="max-h-64 overflow-y-auto">
-	                  {filteredServices.slice(0, 8).map((service) => (
+            {suggestions.length === 0 && filteredServices.length === 0 && searchQuery.trim().length >= 2 ? (
+              <div className="px-4 py-3 text-sm text-gray-600">
+                No matches found. Try a different keyword (e.g., ‘leak’, ‘socket’, ‘boiler’).
+              </div>
+            ) : null}
+            {(suggestions.length ? suggestions : filteredServices.slice(0, 8).map((s) => ({
+              service: s.name,
+              subService: null,
+              descriptor: s.description,
+              score: 0,
+            }))).map((item: any, idx: number) => {
+              const serviceName = item.service;
+              const subService = item.subService as string | null;
+              const card = services.find((s) => s.name === serviceName);
+              const imageSrc = card?.image || fallbackServiceImage;
+              const price = card?.price || "";
+              return (
 	                    <motion.button
-	                      key={service.id}
+                        key={`${serviceName}-${subService ?? ""}-${idx}`}
 	                      type="button"
 	                      whileHover={{ backgroundColor: '#f0f9ff' }}
 	                      className="flex w-full items-center gap-3 border-b border-gray-50 px-4 py-3 text-left last:border-b-0"
 	                      onClick={() => {
 	                        setSearchQuery("");
-	                        openServiceChoice(service.name);
+                          setSuggestions([]);
+                          openServiceChoice(serviceName, subService);
 	                      }}
 	                    >
 	                      <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg">
 	                        <Image
-	                          src={service.image}
-	                          alt={service.name}
+                            src={imageSrc}
+                            alt={serviceName}
 	                          className="h-full w-full object-cover"
 	                          width={48}
 	                          height={48}
@@ -1656,12 +1794,16 @@ export default function HomePage() {
 	                        />
 	                      </div>
 	                      <div className="flex-1">
-	                        <div className="font-semibold text-gray-900">{service.name}</div>
-	                        <div className="text-sm text-gray-500">{service.description}</div>
+                          <div className="font-semibold text-gray-900">
+                {serviceName}
+                {subService ? <span className="text-gray-500 font-medium"> · {subService}</span> : null}
+              </div>
+                          <div className="text-sm text-gray-500">{item.descriptor}</div>
 	                      </div>
-	                      <div className="font-bold text-blue-600">{service.price}</div>
+                        {price ? <div className="font-bold text-blue-600">{price}</div> : null}
 	                    </motion.button>
-	                  ))}
+            );
+          })}
 	                </div>
               </motion.div>
             )}

@@ -38,10 +38,6 @@ export async function POST(request: Request) {
 
   if (!bookingIdOk || !proUserIdParsed.success) {
     const keys = Object.keys(body || {}).sort();
-    if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
-      console.log('[jobs/accept] invalid payload keys', { keys });
-    }
     return NextResponse.json(
       { error: 'Invalid payload', keys },
       { status: 400 }

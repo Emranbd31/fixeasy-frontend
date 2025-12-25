@@ -3,46 +3,13 @@ import { z } from 'zod';
 
 import { createSupabaseServerClient, createSupabaseServerServiceRoleClient } from '@/lib/supabaseClient';
 
-function logSupabaseClientChoiceOnce(scope: string, info: { usesServiceRoleClient: boolean }) {
-  if (process.env.NODE_ENV === 'production') return;
-  const g = globalThis as any;
-  const flag = `__supabase_client_choice_logged__${scope}`;
-  if (g[flag]) return;
-  g[flag] = true;
-
-  const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const hasAnon = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY);
-  const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-  // eslint-disable-next-line no-console
-  console.log(`[sb-choice:${scope}]`, {
-    hasUrl,
-    hasAnon,
-    hasServiceRole,
-    usesServiceRoleClient: info.usesServiceRoleClient,
-  });
-}
-
-function logSupabaseEnvPresenceOnce(scope: string) {
-  if (process.env.NODE_ENV === 'production') return;
-  const g = globalThis as any;
-  const flag = `__supabase_env_logged__${scope}`;
-  if (g[flag]) return;
-  g[flag] = true;
-
-  const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const hasAnon = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY);
-  const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-  // eslint-disable-next-line no-console
-  console.log(`[env-check:${scope}]`, { hasUrl, hasAnon, hasServiceRole });
-}
-
 const bookingPayloadSchema = z.object({
   service: z.string().min(1),
   summary: z.string().min(10).max(300),
   address: z.string().min(5),
   eircode: z.string().min(3),
+  mode: z.string().optional(),
+  status: z.string().optional(),
   preferredDate: z.string().optional(),
   preferredTime: z.string().optional(),
   name: z.string().min(2),
@@ -50,6 +17,16 @@ const bookingPayloadSchema = z.object({
   phone: z.string().min(7),
   user_id: z.string().uuid().optional(),
 });
+
+const allowedInsertStatuses = new Set(['quote_requested', 'booking_requested']);
+
+function resolveInsertStatus(input: { mode?: string; status?: string }) {
+  const mode = input.mode?.toLowerCase().trim();
+  const status = input.status?.toLowerCase().trim();
+  if (mode === 'quote' || status === 'quote_requested') return 'quote_requested';
+  if (status && allowedInsertStatuses.has(status)) return status;
+  return 'booking_requested';
+}
 
 const bookingActionSchema = z.object({
   bookingId: z.string().uuid(),
@@ -65,7 +42,6 @@ const ACTION_STATUS: Record<'accept' | 'decline' | 'start' | 'complete', string>
 };
 
 export async function GET(request: Request) {
-  logSupabaseEnvPresenceOnce('api/bookings:GET');
   const supabase = createSupabaseServerClient();
   const sb = supabase as any;
   const { searchParams } = new URL(request.url);
@@ -106,7 +82,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  logSupabaseEnvPresenceOnce('api/bookings:POST');
   const supabase = createSupabaseServerServiceRoleClient();
   const sb = supabase as any;
 
@@ -128,7 +103,7 @@ export async function POST(request: Request) {
     ? parsed.data.preferredTime.trim()
     : null;
 
-  logSupabaseClientChoiceOnce('api/bookings:POST:before-insert', { usesServiceRoleClient: true });
+  const insertStatus = resolveInsertStatus({ mode: parsed.data.mode, status: parsed.data.status });
 
   const { data: inserted, error: insertError } = await sb
     .from('bookings')
@@ -140,8 +115,9 @@ export async function POST(request: Request) {
       eircode: parsed.data.eircode,
       date: preferredDate,
       time: preferredTime,
+      status: insertStatus,
     })
-    .select('id')
+    .select('id,status')
     .single();
 
   if (insertError || !inserted) {
@@ -152,6 +128,7 @@ export async function POST(request: Request) {
   }
 
   const bookingId = (inserted as any).id as string;
+  const status = (inserted as any).status as string | undefined;
   const bucketName = 'booking-photos';
   const bookingFolder = `${bookingId}`;
   const photoPaths: string[] = [];
@@ -223,11 +200,10 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ reference: bookingId }, { status: 201 });
+  return NextResponse.json({ reference: bookingId, status }, { status: 201 });
 }
 
 export async function PATCH(request: Request) {
-  logSupabaseEnvPresenceOnce('api/bookings:PATCH');
   const supabase = createSupabaseServerServiceRoleClient();
   const sb = supabase as any;
   const payload = await request.json().catch(() => null);
