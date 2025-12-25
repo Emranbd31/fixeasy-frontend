@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabaseClient';
 import { requireAdminSecret } from '@/lib/adminAuth';
 
 export async function GET(request: Request) {
+  // TODO: E2E treats this endpoint as non-blocking (WARN on non-200) because activity logs are optional.
   const guard = requireAdminSecret(request);
   if (guard) return NextResponse.json(guard, { status: 401 });
 
